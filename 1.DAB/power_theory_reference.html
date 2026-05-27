@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AC Power Theory — Complete Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:      #faf9f7;
+  --bg2:     #ffffff;
+  --bg3:     #f2f1ed;
+  --bg4:     #e6e5df;
+  --border:  rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.12);
+  --text:    #1a1a18;
+  --text2:   #5c5c56;
+  --text3:   #9a9a92;
+  --accent:  #1a56db;
+  --accent2: #1044b2;
+  --adim:    rgba(26,86,219,0.08);
+  --adim2:   rgba(26,86,219,0.04);
+  --green:   #0d7a4e;
+  --gdim:    rgba(13,122,78,0.08);
+  --amber:   #92560a;
+  --adimb:   rgba(146,86,10,0.08);
+  --red:     #c0392b;
+  --rdim:    rgba(192,57,43,0.08);
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'IBM Plex Sans', sans-serif;
+  --r:  8px;
+  --rl: 12px;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ── Header ── */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 28px 48px 24px;
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: flex-end; gap: 20px;
+}
+.header-label {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.15em; color: var(--accent);
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.01em; }
+.header-sub { font-size: 13px; color: var(--text2); margin-left: auto; text-align: right; line-height: 1.5; }
+
+/* ── Layout ── */
+.layout { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 81px); }
+
+/* ── Sidebar ── */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky; top: 81px;
+  height: calc(100vh - 81px);
+  overflow-y: auto;
+}
+.sidebar-section {
+  padding: 0 16px 8px;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.12em; color: var(--text3);
+  text-transform: uppercase;
+}
+.nav-btn {
+  display: block; width: 100%; text-align: left;
+  padding: 8px 20px; background: none; border: none;
+  cursor: pointer; font-family: var(--sans); font-size: 13px;
+  color: var(--text2); transition: all 0.15s;
+  border-left: 2px solid transparent; line-height: 1.4;
+}
+.nav-btn:hover { background: var(--bg3); color: var(--text); }
+.nav-btn.active {
+  background: var(--adim2); color: var(--accent);
+  border-left-color: var(--accent); font-weight: 500;
+}
+.nav-btn .nb-num {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); display: block; margin-bottom: 1px;
+}
+.nav-btn.active .nb-num { color: var(--accent2); }
+
+/* ── Content ── */
+.content { padding: 36px 52px 80px; max-width: 820px; }
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Section header ── */
+.sec-id {
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+}
+.sec-title {
+  font-size: 26px; font-weight: 500; color: var(--text);
+  letter-spacing: -0.02em; margin-bottom: 8px; line-height: 1.2;
+}
+.sec-sub { font-size: 15px; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+/* ── Section label ── */
+.slabel {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 12px;
+}
+
+/* ── Prose ── */
+.prose p {
+  font-size: 15px; color: var(--text2);
+  line-height: 1.85; margin-bottom: 14px;
+}
+.prose p:last-child { margin-bottom: 0; }
+.prose strong { color: var(--text); font-weight: 500; }
+
+/* ── Code block ── */
+.code-block {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r); padding: 16px 20px;
+  font-family: var(--mono); font-size: 13px;
+  color: var(--text); line-height: 1.8;
+  margin: 14px 0; overflow-x: auto; white-space: pre;
+}
+.code-block .hl  { color: var(--accent); font-weight: 500; }
+.code-block .hlg { color: var(--green);  font-weight: 500; }
+.code-block .hla { color: var(--amber);  font-weight: 500; }
+.code-block .hlr { color: var(--red);    font-weight: 500; }
+.code-block .dim { color: var(--text3); }
+
+/* ── Formula cards ── */
+.formula-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.formula-card { border-radius: var(--r); padding: 14px 16px; border: 1px solid; }
+.fc-p  { background: var(--gdim);  border-color: rgba(13,122,78,0.2);  }
+.fc-q  { background: var(--adimb); border-color: rgba(146,86,10,0.2);  }
+.fc-s  { background: var(--adim);  border-color: rgba(26,86,219,0.2);  }
+.fc-pf { background: var(--rdim);  border-color: rgba(192,57,43,0.2);  }
+.fc-label {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px;
+}
+.fc-p  .fc-label { color: var(--green); }
+.fc-q  .fc-label { color: var(--amber); }
+.fc-s  .fc-label { color: var(--accent); }
+.fc-pf .fc-label { color: var(--red); }
+.fc-formula {
+  font-family: var(--mono); font-size: 14px; font-weight: 500;
+  color: var(--text); margin-bottom: 6px; line-height: 1.5;
+}
+.fc-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* ── Steps ── */
+.steps { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
+.step {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.step:last-child { border-bottom: none; }
+.step-num {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--accent); background: var(--adim);
+  border-radius: 4px; padding: 3px 8px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.step-body { flex: 1; }
+.step-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.step-desc { font-size: 14px; color: var(--text2); line-height: 1.7; }
+.step-desc code {
+  font-family: var(--mono); font-size: 13px;
+  background: var(--bg3); color: var(--text);
+  padding: 1px 5px; border-radius: 3px;
+}
+
+/* ── Insight box ── */
+.insight {
+  background: var(--adim2); border: 1px solid rgba(26,86,219,0.15);
+  border-radius: var(--r); padding: 16px 18px; margin: 14px 0;
+}
+.insight-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.insight p { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 6px; }
+.insight p:last-child { margin-bottom: 0; }
+.insight strong { color: var(--text); font-weight: 500; }
+
+/* ── Warning box ── */
+.warn {
+  background: var(--rdim); border: 1px solid rgba(192,57,43,0.2);
+  border-radius: var(--r); padding: 14px 16px; margin: 14px 0;
+}
+.warn-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--red); letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.warn p { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+/* ── Table ── */
+.tbl { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+.tbl th {
+  text-align: left; padding: 8px 12px;
+  background: var(--bg3); border-bottom: 1px solid var(--border2);
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tbl td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  color: var(--text2); vertical-align: top; line-height: 1.5;
+}
+.tbl td:first-child { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 500; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--bg3); }
+
+/* ── Example block ── */
+.example {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--rl); overflow: hidden; margin: 14px 0;
+}
+.example-header {
+  padding: 12px 16px; background: var(--bg3);
+  border-bottom: 1px solid var(--border2);
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.example-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.example-row:last-child { border-bottom: none; }
+.example-row .ek { color: var(--text2); font-family: var(--mono); font-size: 12px; }
+.example-row .ev { color: var(--text); font-weight: 500; font-family: var(--mono); font-size: 13px; }
+.example-row.highlight { background: var(--adim); }
+.example-row.highlight .ek { color: var(--accent2); }
+.example-row.highlight .ev { color: var(--accent); }
+
+/* ── Sin/Cos comparison ── */
+.sincos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.sincos-card {
+  border-radius: var(--r); padding: 14px 16px;
+  border: 1px solid var(--border2); background: var(--bg2);
+}
+.sincos-label {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  margin-bottom: 8px;
+}
+.sincos-card.cos .sincos-label { color: var(--green); }
+.sincos-card.sin .sincos-label { color: var(--amber); }
+.sincos-item { font-size: 13px; color: var(--text2); padding: 3px 0; line-height: 1.5; }
+.sincos-item::before { content: "→ "; color: var(--text3); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;display:flex;flex-wrap:wrap;padding:10px;gap:4px;border-right:none;border-bottom:1px solid var(--border)}
+  .sidebar-section{display:none}
+  .nav-btn{width:auto;padding:5px 10px;border-left:none;border-radius:4px;font-size:12px}
+  .nav-btn.active{border-left:none}
+  .content{padding:20px}
+  .formula-grid,.sincos-grid{grid-template-columns:1fr}
+  .header{flex-direction:column;align-items:flex-start;gap:6px;padding:20px}
+  .header-sub{margin-left:0;text-align:left}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="header-label">DAB Power Electronics — Supplementary Notes</div>
+    <h1>AC Power Theory — Complete Reference</h1>
+  </div>
+  <div class="header-sub">From instantaneous power to P, Q, S<br>Derived from first principles</div>
+</header>
+
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-section">Sections</div>
+  <button class="nav-btn active" onclick="show(0)"><span class="nb-num">01</span>Instantaneous Power</button>
+  <button class="nav-btn" onclick="show(1)"><span class="nb-num">02</span>The Trig Identity</button>
+  <button class="nav-btn" onclick="show(2)"><span class="nb-num">03</span>Active Power P</button>
+  <button class="nav-btn" onclick="show(3)"><span class="nb-num">04</span>Why Complex Numbers</button>
+  <button class="nav-btn" onclick="show(4)"><span class="nb-num">05</span>S = ½·Ṽ·Ĩ*</button>
+  <button class="nav-btn" onclick="show(5)"><span class="nb-num">06</span>Why Conjugate I*</button>
+  <button class="nav-btn" onclick="show(6)"><span class="nb-num">07</span>P, Q, S, PF Defined</button>
+  <button class="nav-btn" onclick="show(7)"><span class="nb-num">08</span>Sine vs Cosine</button>
+  <button class="nav-btn" onclick="show(8)"><span class="nb-num">09</span>Full DAB Derivation</button>
+  <button class="nav-btn" onclick="show(9)"><span class="nb-num">10</span>Why Half Cycle?</button>
+  <button class="nav-btn" onclick="show(10)"><span class="nb-num">11</span>Worked Example</button>
+  <button class="nav-btn" onclick="show(11)"><span class="nb-num">12</span>DAB Design Insights</button>
+</nav>
+
+<main class="content">
+
+<!-- 01 -->
+<div class="section active">
+  <div class="sec-id">Section 01</div>
+  <div class="sec-title">Instantaneous Power</div>
+  <div class="sec-sub">The starting point — power at any instant is simply voltage times current.</div>
+
+  <div class="slabel">Definition</div>
+  <div class="code-block"><span class="hl">p(t) = v(t) · i(t)</span></div>
+
+  <div class="prose">
+    <p>In AC circuits, voltage and current are sinusoids with amplitude and phase:</p>
+  </div>
+  <div class="code-block">v(t) = <span class="hlg">Vp</span> · cos(ωt + <span class="hla">θ_v</span>)
+i(t) = <span class="hlg">Ip</span> · cos(ωt + <span class="hla">θ_i</span>)</div>
+
+  <div class="slabel" style="margin-top:20px">Variables</div>
+  <table class="tbl">
+    <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Vp, Ip</td><td>Peak (amplitude) values of voltage and current</td></tr>
+      <tr><td>θ_v, θ_i</td><td>Phase angles of voltage and current</td></tr>
+      <tr><td>ω</td><td>Angular frequency = 2π·f [rad/s]</td></tr>
+      <tr><td>t</td><td>Time [s]</td></tr>
+    </tbody>
+  </table>
+
+  <div class="insight">
+    <div class="insight-label">Key point</div>
+    <p>p(t) oscillates continuously — it is positive when energy flows into the load and negative when energy returns to the source. <strong>Average power is what we actually care about</strong> — how much net energy flows per second.</p>
+  </div>
+</div>
+
+<!-- 02 -->
+<div class="section">
+  <div class="sec-id">Section 02</div>
+  <div class="sec-title">The Key Trig Identity</div>
+  <div class="sec-sub">Multiplying v(t)·i(t) splits instantaneous power into two terms — one constant and one oscillating.</div>
+
+  <div class="slabel">Identity</div>
+  <div class="code-block">cos(A) · cos(B) = <span class="hlg">½·cos(A−B)</span>  +  <span class="hlr">½·cos(A+B)</span></div>
+
+  <div class="slabel" style="margin-top:20px">Applying to p(t)</div>
+  <div class="code-block">p(t) = Vp·Ip · cos(ωt+θ_v) · cos(ωt+θ_i)
+
+     = <span class="hlg">½·Vp·Ip·cos(θ_v−θ_i)</span>   +   <span class="hlr">½·Vp·Ip·cos(2ωt+θ_v+θ_i)</span>
+              ↑                                  ↑
+       <span class="hlg">CONSTANT — no time dependence</span>       <span class="hlr">OSCILLATES at 2ω</span>
+       <span class="hlg">→ becomes Active Power P</span>             <span class="hlr">→ averages to ZERO</span></div>
+
+  <div class="insight">
+    <div class="insight-label">Where does the ½ come from?</div>
+    <p>The <strong>½ is not a convention</strong> — it is a direct mathematical result of the cos·cos identity. It cannot be removed or changed. This is also why RMS values are defined as Vp/√2 — to absorb this ½ so that the S = V·I* formula works without the ½ factor.</p>
+  </div>
+
+  <div class="warn">
+    <div class="warn-label">Why the 2ω term vanishes</div>
+    <p>cos(2ωt + constant) is a sinusoid — its average over any full cycle is exactly zero. Positive and negative halves cancel perfectly. Only the DC term ½·Vp·Ip·cos(θ_v−θ_i) survives averaging.</p>
+  </div>
+</div>
+
+<!-- 03 -->
+<div class="section">
+  <div class="sec-id">Section 03</div>
+  <div class="sec-title">Active Power P</div>
+  <div class="sec-sub">The time-averaged power — the only part that does real work.</div>
+
+  <div class="slabel">Formula</div>
+  <div class="code-block"><span class="hlg">P = ½ · Vp · Ip · cos(θ_v − θ_i)</span>     [Watts, W]</div>
+
+  <div class="slabel" style="margin-top:20px">How the angle controls P</div>
+  <table class="tbl">
+    <thead><tr><th>Phase difference (θ_v − θ_i)</th><th>cos value</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>0°</td><td>cos(0°) = 1</td><td>Maximum P — voltage and current perfectly in phase</td></tr>
+      <tr><td>45°</td><td>cos(45°) = 0.707</td><td>70.7% of maximum — DAB slide operating point</td></tr>
+      <tr><td>90°</td><td>cos(90°) = 0</td><td>Zero active power — purely reactive</td></tr>
+      <tr><td>180°</td><td>cos(180°) = −1</td><td>Maximum negative P — power flows in reverse</td></tr>
+    </tbody>
+  </table>
+
+  <div class="insight">
+    <div class="insight-label">Physical meaning</div>
+    <p>Active power P is what your electricity meter measures. It is what <strong>charges batteries, runs motors, heats resistors</strong>. It is the net energy transferred per second from source to load. P can be positive (forward), negative (reverse), or zero.</p>
+  </div>
+</div>
+
+<!-- 04 -->
+<div class="section">
+  <div class="sec-id">Section 04</div>
+  <div class="sec-title">Why Complex Numbers — Phasors</div>
+  <div class="sec-sub">Time-domain calculations with cos and sin are messy. Phasors represent sinusoids as complex numbers — making multiplication, division, and angle tracking trivial.</div>
+
+  <div class="slabel">Euler's Formula — the bridge</div>
+  <div class="code-block"><span class="hl">e^(iθ) = cos(θ) + i·sin(θ)</span>
+
+Therefore:
+  cos(θ) = Re[e^(iθ)]    <span class="dim">← real part</span>
+  sin(θ) = Im[e^(iθ)]    <span class="dim">← imaginary part</span></div>
+
+  <div class="slabel" style="margin-top:20px">Converting a sinusoid to a phasor</div>
+  <div class="code-block">Time domain:   v(t) = Vp · cos(ωt + θ_v)
+
+Phasor form:   <span class="hlg">Ṽ = Vp · e^(iθ_v)</span>
+
+<span class="dim">The e^(iωt) factor is dropped — it is understood to be there.
+We only track amplitude Vp and phase angle θ_v.</span></div>
+
+  <div class="slabel" style="margin-top:20px">Why this helps</div>
+  <div class="steps">
+    <div class="step">
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <div class="step-title">Multiplication becomes addition of angles</div>
+        <div class="step-desc">Instead of expanding cos(A)·cos(B) with trig identities, multiplying phasors just adds exponents: <code>e^(iα) · e^(iβ) = e^(i(α+β))</code></div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <div class="step-title">Division becomes subtraction of angles</div>
+        <div class="step-desc">Dividing phasors: <code>e^(iα) / e^(iβ) = e^(i(α−β))</code>. This is exactly how impedance (Z = V/I) works in the frequency domain.</div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <div class="step-title">Impedance of an inductor becomes simple</div>
+        <div class="step-desc">From V = L·di/dt — if i = I·e^(iωt) then di/dt = iω·I·e^(iωt), so <code>Z_L = V/I = iωL</code>. A single complex number replaces differential equations.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 05 -->
+<div class="section">
+  <div class="sec-id">Section 05</div>
+  <div class="sec-title">Complex Power S = ½·Ṽ·Ĩ*</div>
+  <div class="sec-sub">The complete derivation of complex power from phasor definitions.</div>
+
+  <div class="slabel">Define phasors</div>
+  <div class="code-block">Ṽ  = Vp · e^(iθ_v)     <span class="dim">← voltage phasor (peak)</span>
+Ĩ  = Ip · e^(iθ_i)     <span class="dim">← current phasor (peak)</span>
+<span class="hl">Ĩ* = Ip · e^(−iθ_i)</span>    <span class="dim">← complex conjugate: flip sign of angle</span></div>
+
+  <div class="slabel" style="margin-top:20px">Compute ½·Ṽ·Ĩ*</div>
+  <div class="code-block">½·Ṽ·Ĩ* = ½ · Vp·e^(iθ_v) · Ip·e^(−iθ_i)
+
+        = ½ · Vp·Ip · e^(<span class="hl">i(θ_v − θ_i)</span>)     <span class="dim">← angles subtract</span>
+
+        = ½ · Vp·Ip · [<span class="hlg">cos(θ_v−θ_i)</span>  +  i·<span class="hla">sin(θ_v−θ_i)</span>]
+                          ↑                        ↑
+                     <span class="hlg">Real part = P</span>         <span class="hla">Imaginary part = Q</span></div>
+
+  <div class="slabel" style="margin-top:20px">Result</div>
+  <div class="code-block"><span class="hl">S = ½·Ṽ·Ĩ* = P + jQ</span>     [Volt-Ampere, VA]
+
+  P = Re[S] = ½·Vp·Ip·cos(θ_v−θ_i)   <span class="hlg">← Active power [W]</span>
+  Q = Im[S] = ½·Vp·Ip·sin(θ_v−θ_i)   <span class="hla">← Reactive power [VAR]</span></div>
+
+  <div class="insight">
+    <div class="insight-label">Connection to section 02</div>
+    <p>The result Re[S] = ½·Vp·Ip·cos(θ_v−θ_i) is <strong>exactly the same P</strong> we derived from the trig identity in Section 02. The complex power formula is just a more elegant way to arrive at the same answer — it packages P and Q together in one calculation.</p>
+  </div>
+</div>
+
+<!-- 06 -->
+<div class="section">
+  <div class="sec-id">Section 06</div>
+  <div class="sec-title">Why Conjugate I* and Not I?</div>
+  <div class="sec-sub">This is the most commonly misunderstood step. The conjugate is not arbitrary — it is essential for angle subtraction.</div>
+
+  <div class="slabel">What happens without conjugate — WRONG</div>
+  <div class="code-block"><span class="hlr">½·Ṽ·Ĩ</span> = ½ · Vp·e^(iθ_v) · Ip·e^(<span class="hlr">+</span>iθ_i)
+
+        = ½·Vp·Ip · e^(i(<span class="hlr">θ_v + θ_i</span>))    <span class="hlr">← angles ADD — WRONG</span>
+
+Re[...] = ½·Vp·Ip·cos(<span class="hlr">θ_v + θ_i</span>)         <span class="hlr">← not the power angle!</span></div>
+
+  <div class="slabel" style="margin-top:20px">What happens with conjugate — CORRECT</div>
+  <div class="code-block"><span class="hlg">½·Ṽ·Ĩ*</span> = ½ · Vp·e^(iθ_v) · Ip·e^(<span class="hlg">−</span>iθ_i)
+
+         = ½·Vp·Ip · e^(i(<span class="hlg">θ_v − θ_i</span>))   <span class="hlg">← angles SUBTRACT — CORRECT</span>
+
+Re[...] = ½·Vp·Ip·cos(<span class="hlg">θ_v − θ_i</span>)        <span class="hlg">← true phase difference = power angle ✓</span></div>
+
+  <div class="insight">
+    <div class="insight-label">Why subtraction is what we need</div>
+    <p>Power depends on the <strong>difference</strong> in phase between voltage and current — how much they are out of step with each other. If θ_v = θ_i (same phase), P is maximum. The conjugate flips the sign of θ_i so that when we multiply, the exponents subtract instead of add — giving us the angle difference that determines real power.</p>
+  </div>
+
+  <div class="warn">
+    <div class="warn-label">RMS convention — no ½ needed</div>
+    <p>If you use RMS values (Vrms = Vp/√2, Irms = Ip/√2) then S = Vrms·Irms* with no ½ factor. The ½ is already absorbed into the RMS definition. Both conventions give the same result.</p>
+  </div>
+</div>
+
+<!-- 07 -->
+<div class="section">
+  <div class="sec-id">Section 07</div>
+  <div class="sec-title">P, Q, S and PF — Defined</div>
+  <div class="sec-sub">The four power quantities every power electronics engineer must know.</div>
+
+  <div class="formula-grid">
+    <div class="formula-card fc-p">
+      <div class="fc-label">P — Active Power [W]</div>
+      <div class="fc-formula">P = Re[S] = ½·Vp·Ip·cos(θ_v−θ_i)</div>
+      <div class="fc-desc">Does real work. Charges batteries, runs motors, heats resistors. What your electricity meter measures. Can be positive or negative.</div>
+    </div>
+    <div class="formula-card fc-q">
+      <div class="fc-label">Q — Reactive Power [VAR]</div>
+      <div class="fc-formula">Q = Im[S] = ½·Vp·Ip·sin(θ_v−θ_i)</div>
+      <div class="fc-desc">Oscillates between source and inductor/capacitor. Does no net work but causes circulating current and conduction losses.</div>
+    </div>
+    <div class="formula-card fc-s">
+      <div class="fc-label">S — Apparent Power [VA]</div>
+      <div class="fc-formula">|S| = √(P² + Q²) = ½·Vp·Ip</div>
+      <div class="fc-desc">Total burden on the source — what sizes your cables, switches, and transformer. Always ≥ P.</div>
+    </div>
+    <div class="formula-card fc-pf">
+      <div class="fc-label">PF — Power Factor</div>
+      <div class="fc-formula">PF = P / |S| = cos(θ_v − θ_i)</div>
+      <div class="fc-desc">Ratio of useful to total power. PF=1 is ideal. In DAB, PF drops when V₁/n ≠ V₂ because Q grows relative to P.</div>
+    </div>
+  </div>
+
+  <div class="slabel">In the DAB specifically</div>
+  <table class="tbl">
+    <thead><tr><th>Quantity</th><th>DAB Formula</th><th>Unit</th></tr></thead>
+    <tbody>
+      <tr><td>P</td><td>V₁·V₂·sin(φ) / (ω·L)</td><td>W</td></tr>
+      <tr><td>Q</td><td>(V₁² − V₁·V₂·cos(φ)) / (ω·L)</td><td>VAR</td></tr>
+      <tr><td>|S|</td><td>√(P² + Q²)</td><td>VA</td></tr>
+      <tr><td>PF</td><td>P / |S|</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 08 -->
+<div class="section">
+  <div class="sec-id">Section 08</div>
+  <div class="sec-title">Sine vs Cosine — When Each Appears and Why</div>
+  <div class="sec-sub">This is the source of most confusion. The roles of sin and cos appear to swap in the DAB — here is the complete explanation.</div>
+
+  <div class="sincos-grid">
+    <div class="sincos-card cos">
+      <div class="sincos-label">cosine → Real part → P (general AC)</div>
+      <div class="sincos-item">Re[e^(iφ)] = cos(φ)</div>
+      <div class="sincos-item">cos(0°)=1 → max power when in phase</div>
+      <div class="sincos-item">cos(90°)=0 → zero power when 90° apart</div>
+      <div class="sincos-item">General formula: P = ½·Vp·Ip·cos(θ_v−θ_i)</div>
+    </div>
+    <div class="sincos-card sin">
+      <div class="sincos-label">sine → Imaginary part → Q (general AC)</div>
+      <div class="sincos-item">Im[e^(iφ)] = sin(φ)</div>
+      <div class="sincos-item">sin(0°)=0 → no reactive power when in phase</div>
+      <div class="sincos-item">sin(90°)=1 → max reactive power at 90°</div>
+      <div class="sincos-item">General formula: Q = ½·Vp·Ip·sin(θ_v−θ_i)</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">Why DAB seems backwards — the 90° rotation from 1/(iωL)</div>
+    <p>In a general resistive circuit, cos→P and sin→Q. But the DAB has a purely <strong>inductive</strong> impedance: Z = iωL. Dividing by i is the same as multiplying by −i, which <strong>rotates everything by −90°</strong>. This rotation swaps the roles of sin and cos in the final result:</p>
+  </div>
+
+  <div class="code-block">General circuit (resistive reference):
+  P uses <span class="hlg">cos(φ)</span>,   Q uses <span class="hla">sin(φ)</span>
+
+DAB circuit — divide by iωL rotates by −90°:
+  IL = (V₁ − V₂·e^(iφ)) / (<span class="hl">i·ω·L</span>)
+                              ↑
+                    this 1/i = −i rotates by −90°
+
+Result after rotation:
+  P = V₁·V₂·<span class="hla">sin(φ)</span> / (ω·L)      <span class="dim">← sin came from imaginary, now in real part</span>
+  Q = (V₁²−V₁·V₂·<span class="hlg">cos(φ)</span>) / (ω·L)  <span class="dim">← cos came from real, now in imaginary part</span></div>
+
+  <div class="slabel" style="margin-top:20px">Complete summary table</div>
+  <table class="tbl">
+    <thead><tr><th>Context</th><th>P formula</th><th>Q formula</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>General AC (any circuit)</td><td>½·Vp·Ip·cos(θ)</td><td>½·Vp·Ip·sin(θ)</td><td>Direct from trig identity — cos in real part</td></tr>
+      <tr><td>DAB (inductive Z = iωL)</td><td>V₁·V₂·sin(φ)/(ωL)</td><td>(V₁²−V₁·V₂·cos(φ))/(ωL)</td><td>90° rotation from 1/(iωL) swaps sin and cos</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 09 -->
+<div class="section">
+  <div class="sec-id">Section 09</div>
+  <div class="sec-title">Full DAB Derivation — Step by Step</div>
+  <div class="sec-sub">From the circuit phasor model to the final P and Q formulas, every algebraic step shown.</div>
+
+  <div class="slabel">Setup — FHA phasor model</div>
+  <div class="code-block">Two H-bridges → two sinusoidal voltage sources:
+
+  Ṽ₁ = V₁               <span class="dim">← reference, angle = 0</span>
+  Ṽ₂ = V₂·e^(iφ)        <span class="dim">← lags by φ in this convention</span>
+
+Inductor impedance:
+  Z_L = i·ω·L</div>
+
+  <div class="steps" style="margin-top:16px">
+    <div class="step">
+      <span class="step-num">1</span>
+      <div class="step-body">
+        <div class="step-title">Current phasor — Ohm's law</div>
+        <div class="step-desc">
+          <div class="code-block" style="margin:8px 0">ĨL = (Ṽ₁ − Ṽ₂) / Z_L
+    = (V₁ − V₂·e^(iφ)) / (i·ω·L)</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <div class="step-body">
+        <div class="step-title">Take the complex conjugate ĨL*</div>
+        <div class="step-desc">
+          <div class="code-block" style="margin:8px 0">ĨL* = (V₁ − V₂·e^(−iφ)) / (−i·ω·L)
+
+Replace 1/(−i) = i:
+
+ĨL* = i·(V₁ − V₂·e^(−iφ)) / (ω·L)</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <div class="step-body">
+        <div class="step-title">Expand e^(−iφ) using Euler</div>
+        <div class="step-desc">
+          <div class="code-block" style="margin:8px 0">e^(−iφ) = cos(φ) − i·sin(φ)
+
+V₁ − V₂·e^(−iφ) = <span class="hlg">(V₁ − V₂·cosφ)</span>  +  i·<span class="hla">V₂·sinφ</span>
+                     ↑ real part              ↑ imaginary part</div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">4</span>
+      <div class="step-body">
+        <div class="step-title">Multiply by i — this causes the sin/cos swap</div>
+        <div class="step-desc">
+          <div class="code-block" style="margin:8px 0">i · [(V₁−V₂cosφ) + i·V₂sinφ]
+= i·(V₁−V₂cosφ) + i²·V₂sinφ
+= i·(V₁−V₂cosφ) <span class="hlr">− V₂sinφ</span>      <span class="dim">(i² = −1)</span>
+
+Collecting:
+  Real part:      <span class="hlr">−V₂·sin(φ)</span>
+  Imaginary part: <span class="hlg">(V₁ − V₂·cos(φ))</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">5</span>
+      <div class="step-body">
+        <div class="step-title">Multiply by V₁/(ωL) to get S = ½·Ṽ₁·ĨL*</div>
+        <div class="step-desc">
+          <div class="code-block" style="margin:8px 0">S = (V₁/ωL) · [<span class="hlr">−V₂sinφ</span>  +  i·<span class="hlg">(V₁−V₂cosφ)</span>]
+
+Separating (and flipping sign convention for φ as lag):
+
+<span class="hlg">P = Re[S] = V₁·V₂·sin(φ) / (ω·L)          ✓</span>
+<span class="hla">Q = Im[S] = (V₁² − V₁·V₂·cos(φ)) / (ω·L)  ✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 -->
+<div class="section">
+  <div class="sec-id">Section 10</div>
+  <div class="sec-title">Why Average Over Half Cycle?</div>
+  <div class="sec-sub">The integration limits in the slide run from 0 to 1/(2Fsw), multiplied by 2Fsw. Two independent reasons justify this.</div>
+
+  <div class="slabel">The formula from the slide</div>
+  <div class="code-block">P = <span class="hl">2·Fsw</span> · ∫₀^<span class="hl">(1/2Fsw)</span> p(t) dt
+
+  = (1 / half-period) · ∫ p(t) dt    <span class="dim">← standard time-average formula</span></div>
+
+  <div class="steps" style="margin-top:20px">
+    <div class="step">
+      <span class="step-num">R1</span>
+      <div class="step-body">
+        <div class="step-title">Reason 1 — Half-wave symmetry</div>
+        <div class="step-desc">DAB waveforms are perfectly half-wave symmetric. The negative half cycle is an exact mirror of the positive half cycle — same shape, opposite sign. Therefore the average over one half cycle equals the average over a full cycle. Integrating over half a period and multiplying by 2Fsw gives the same result as integrating over a full period and multiplying by Fsw. It is a valid mathematical shortcut.</div>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">R2</span>
+      <div class="step-body">
+        <div class="step-title">Reason 2 — The switching sequence repeats every half period</div>
+        <div class="step-desc">In the DAB, one complete energy transfer event happens in T/2. Q1/Q4 conduct during the first half cycle — energy flows forward. Q2/Q3 conduct in the second half — exact mirror image. The half period already contains all the information about power transfer. There is nothing new in the second half that the first does not already tell you.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">The 2·Fsw factor explained</div>
+    <p>2·Fsw = 1/(T/2) = the reciprocal of the integration interval. This is exactly the <strong>time-average operator</strong>: average = (1/interval) × integral over that interval. So the formula is simply computing a time average — the half-cycle is just the chosen interval, justified by symmetry.</p>
+  </div>
+</div>
+
+<!-- 11 -->
+<div class="section">
+  <div class="sec-id">Section 11</div>
+  <div class="sec-title">Worked Example — Slide Values</div>
+  <div class="sec-sub">V₁=100V, V₂=150V, L=10µH, f=100kHz, φ=45°. Verifying all four power quantities.</div>
+
+  <div class="slabel">Step 1 — Compute ω·L</div>
+  <div class="code-block">ω = 2π × f = 2π × 100,000 = 628,318 rad/s
+
+ω·L = 628,318 × 10×10⁻⁶ = <span class="hl">6.283 Ω</span></div>
+
+  <div class="slabel" style="margin-top:20px">Step 2 — Results</div>
+  <div class="example">
+    <div class="example-header">Calculated power quantities</div>
+    <div class="example-row highlight">
+      <span class="ek">P (active power)</span>
+      <span class="ev">100×150×sin(45°) / 6.283 = 1,688 W ✓</span>
+    </div>
+    <div class="example-row">
+      <span class="ek">Q (reactive power)</span>
+      <span class="ev">(100² − 100×150×cos45°) / 6.283 = −96.6 VAR</span>
+    </div>
+    <div class="example-row">
+      <span class="ek">|S| (apparent power)</span>
+      <span class="ev">√(1688² + 96.6²) = 1,691 VA</span>
+    </div>
+    <div class="example-row">
+      <span class="ek">PF (power factor)</span>
+      <span class="ev">1688 / 1691 = 0.998 (excellent)</span>
+    </div>
+    <div class="example-row">
+      <span class="ek">Why Q is negative?</span>
+      <span class="ev">V₂ &gt; V₁ — secondary supplies reactive power back to primary</span>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">Why PF is so high at φ=45°</div>
+    <p>At φ=45° with these values, Q is very small (−96.6 VAR) compared to P (1,688 W). This means almost all the current through the inductor is doing useful work. The DAB operates efficiently here because the voltage ratio V₂/V₁ = 1.5 partially compensates — the secondary's higher voltage contributes reactive power back, nearly cancelling the primary's reactive demand.</p>
+  </div>
+</div>
+
+<!-- 12 -->
+<div class="section">
+  <div class="sec-id">Section 12</div>
+  <div class="sec-title">DAB Design Insights</div>
+  <div class="sec-sub">How each parameter affects active and reactive power — the practical engineering conclusions.</div>
+
+  <div class="slabel">Effect of phase angle φ</div>
+  <table class="tbl">
+    <thead><tr><th>φ</th><th>P</th><th>Q</th><th>Practical meaning</th></tr></thead>
+    <tbody>
+      <tr><td>0°</td><td>0</td><td>(V₁²−V₁V₂)/ωL</td><td>No power transfer, only reactive circulating current — worst efficiency</td></tr>
+      <tr><td>45°</td><td>V₁V₂×0.707/ωL</td><td>small (slide case)</td><td>Good balance — high P, low Q, excellent PF</td></tr>
+      <tr><td>90°</td><td>V₁V₂/ωL (max)</td><td>V₁²/ωL (large)</td><td>Maximum active power, but significant reactive current</td></tr>
+      <tr><td>−φ</td><td>negative P</td><td>same magnitude</td><td>Power reverses direction — V2G, battery discharge to grid</td></tr>
+    </tbody>
+  </table>
+
+  <div class="slabel" style="margin-top:20px">Effect of other parameters</div>
+  <table class="tbl">
+    <thead><tr><th>Parameter change</th><th>Effect on P</th><th>Effect on Q</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td>Increase L</td><td>Decreases</td><td>Decreases</td><td>Less power for same φ — need larger φ, more reactive current</td></tr>
+      <tr><td>Increase f (ω)</td><td>Decreases</td><td>Decreases</td><td>Same as larger L — tradeoff with switching losses</td></tr>
+      <tr><td>V₁/n = V₂ (matched)</td><td>Maximized</td><td>Minimized</td><td>Best efficiency operating point — design target</td></tr>
+      <tr><td>V₁/n ≠ V₂ (mismatched)</td><td>Reduced</td><td>Grows significantly</td><td>PF drops, circulating current increases, efficiency falls</td></tr>
+    </tbody>
+  </table>
+
+  <div class="insight">
+    <div class="insight-label">The fundamental DAB design goal</div>
+    <p>Maximize the <strong>P/Q ratio</strong> — maximize useful power relative to circulating reactive current. This is achieved by: (1) operating at matched voltage ratio V₁/n ≈ V₂, (2) choosing L small enough that rated power is reached at moderate φ (&lt;60°), and (3) using advanced modulation (EPS, TPS) at light load to reduce reactive current when φ is small.</p>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function show(idx){
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{
+    b.classList.toggle('active', i===idx);
+  });
+  document.querySelectorAll('.section').forEach((s,i)=>{
+    s.classList.toggle('active', i===idx);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
