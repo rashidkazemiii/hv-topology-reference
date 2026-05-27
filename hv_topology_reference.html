@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HV Power Supply Topology Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f7;
+    --bg2: #ffffff;
+    --bg3: #f2f1ed;
+    --bg4: #e6e5df;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.12);
+    --text: #1a1a18;
+    --text2: #5c5c56;
+    --text3: #9a9a92;
+    --accent: #1a56db;
+    --accent2: #1044b2;
+    --accent-dim: rgba(26,86,219,0.08);
+    --accent-dim2: rgba(26,86,219,0.04);
+    --green: #0d7a4e;
+    --green-dim: rgba(13,122,78,0.08);
+    --amber: #92560a;
+    --amber-dim: rgba(146,86,10,0.08);
+    --red: #c0392b;
+    --red-dim: rgba(192,57,43,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .header-sub {
+    font-size: 15px;
+    color: var(--text2);
+    margin-left: auto;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 81px);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 81px;
+    height: calc(100vh - 81px);
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 0 16px 8px;
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .nav-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--text2);
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  .nav-btn:hover { background: var(--bg3); color: var(--text); }
+  .nav-btn.active {
+    background: var(--accent-dim2);
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+  .nav-btn .nb-id {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text3);
+    display: block;
+    margin-bottom: 1px;
+  }
+  .nav-btn.active .nb-id { color: var(--accent2); }
+
+  /* ── Content ── */
+  .content {
+    padding: 32px 48px 60px;
+    max-width: 860px;
+    background: var(--bg);
+  }
+
+  .topo-card { display: none; }
+  .topo-card.active { display: block; }
+
+  /* Card header */
+  .card-header { margin-bottom: 28px; }
+  .card-id {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .card-subtitle {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 15px;
+    font-family: var(--mono);
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .tag-g { color: var(--green); border-color: rgba(13,122,78,0.22); background: var(--green-dim); }
+  .tag-a { color: var(--amber); border-color: rgba(146,86,10,0.22); background: var(--amber-dim); }
+  .tag-r { color: var(--red); border-color: rgba(192,57,43,0.22); background: var(--red-dim); }
+  .tag-b { color: var(--accent); border-color: rgba(26,86,219,0.22); background: var(--accent-dim); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  /* Specs grid */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .spec-cell {
+    background: var(--bg2);
+    padding: 12px 16px;
+  }
+  .spec-k {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .spec-v {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* Explanation */
+  .explanation { margin-bottom: 28px; }
+  .explanation p {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.85;
+    margin-bottom: 14px;
+  }
+  .explanation p:last-child { margin-bottom: 0; }
+  .explanation strong { color: var(--text); font-weight: 500; }
+
+  /* Schematic placeholder */
+  .schematic-block {
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    background: var(--bg2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 32px;
+    margin-bottom: 28px;
+    min-height: 200px;
+    position: relative;
+    overflow: hidden;
+  }
+  .schematic-block img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 6px;
+    display: none;
+  }
+  .schematic-block img.loaded { display: block; }
+  .placeholder-text {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--text3);
+    text-align: center;
+  }
+  .placeholder-icon {
+    width: 48px;
+    height: 48px;
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .add-img-btn {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(79,143,255,0.25);
+    border-radius: 4px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 4px;
+  }
+  .add-img-btn:hover { background: rgba(79,143,255,0.2); }
+  .img-input { display: none; }
+
+  /* Operating intervals */
+  .intervals { margin-bottom: 28px; }
+  .interval {
+    border-left: 2px solid var(--bg4);
+    padding: 0 0 20px 18px;
+    position: relative;
+  }
+  .interval:last-child { padding-bottom: 0; }
+  .interval::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bg4);
+    border: 2px solid var(--bg3);
+  }
+  .interval.i0 { border-left-color: var(--accent); }
+  .interval.i0::before { background: var(--accent); }
+  .interval.i1 { border-left-color: var(--green); }
+  .interval.i1::before { background: var(--green); }
+  .interval.i2 { border-left-color: var(--amber); }
+  .interval.i2::before { background: var(--amber); }
+  .interval.i3 { border-left-color: var(--red); }
+  .interval.i3::before { background: var(--red); }
+  .interval-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  .interval-desc {
+    font-size: 15px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* Pros / Cons */
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .pros, .cons {
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .pros { border: 1px solid rgba(13,122,78,0.18); background: rgba(13,122,78,0.05); }
+  .cons { border: 1px solid rgba(192,57,43,0.18); background: rgba(192,57,43,0.05); }
+  .pc-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .pros .pc-label { color: var(--green); }
+  .cons .pc-label { color: var(--red); }
+  .pc-list { list-style: none; }
+  .pc-list li {
+    font-size: 15px;
+    padding: 4px 0;
+    line-height: 1.5;
+    display: flex;
+    gap: 8px;
+  }
+  .pros .pc-list li { color: #0a6040; }
+  .cons .pc-list li { color: #a0311f; }
+  .pc-list li::before { flex-shrink: 0; font-weight: 500; }
+  .pros .pc-list li::before { content: '+'; color: var(--green); }
+  .cons .pc-list li::before { content: '−'; color: var(--red); }
+
+  /* Applications */
+  .apps { display: flex; flex-wrap: wrap; gap: 6px; }
+  .app-tag {
+    font-size: 15px;
+    font-family: var(--mono);
+    padding: 4px 12px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text2);
+    background: var(--bg2);
+  }
+
+  /* References */
+  .refs { display: flex; flex-direction: column; gap: 8px; }
+  .ref {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--bg2);
+    text-decoration: none; transition: border-color 0.15s, background 0.15s;
+  }
+  .ref:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .ref-num { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 500; min-width: 22px; padding-top: 1px; }
+  .ref-body { flex: 1; }
+  .ref-title { font-size: 15px; color: var(--text); font-weight: 500; line-height: 1.4; margin-bottom: 3px; }
+  .ref-meta { font-size: 13px; color: var(--text3); font-family: var(--mono); }
+  .ref-icon { font-size: 15px; color: var(--text3); padding-top: 2px; flex-shrink: 0; }
+  .ref:hover .ref-icon { color: var(--accent); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+
+  /* Power theory summary box — DAB only */
+  .power-theory { margin-bottom: 28px; }
+  .pt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .pt-card {
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    border: 1px solid var(--border2);
+  }
+  .pt-card.active-p  { background: rgba(13,122,78,0.05);  border-color: rgba(13,122,78,0.2); }
+  .pt-card.reactive-q{ background: rgba(245,166,35,0.06); border-color: rgba(146,86,10,0.2); }
+  .pt-card.apparent-s{ background: rgba(26,86,219,0.05);  border-color: rgba(26,86,219,0.2); }
+  .pt-card.pf-card   { background: rgba(192,57,43,0.05);  border-color: rgba(192,57,43,0.2); }
+  .pt-card-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .pt-card.active-p  .pt-card-label { color: var(--green); }
+  .pt-card.reactive-q .pt-card-label { color: var(--amber); }
+  .pt-card.apparent-s .pt-card-label { color: var(--accent); }
+  .pt-card.pf-card   .pt-card-label { color: var(--red); }
+  .pt-formula {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .pt-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .pt-derivation {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .pt-derivation h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .pt-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .pt-step:last-child { margin-bottom: 0; }
+  .pt-step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .pt-step-text {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.65;
+  }
+  .pt-step-text code {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg3);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .pt-example {
+    background: var(--accent-dim);
+    border: 1px solid rgba(26,86,219,0.15);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .pt-example h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .pt-example-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(26,86,219,0.08);
+    font-size: 14px;
+  }
+  .pt-example-row:last-child { border-bottom: none; }
+  .pt-example-row span:first-child { color: var(--text2); font-family: var(--mono); font-size: 12px; }
+  .pt-example-row span:last-child  { color: var(--text);  font-weight: 500; }
+  .pt-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  .pt-table th {
+    text-align: left; padding: 7px 10px;
+    background: var(--bg3);
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase;
+    border-bottom: 1px solid var(--border2);
+  }
+  .pt-table td {
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    color: var(--text2); vertical-align: top; line-height: 1.5;
+  }
+  .pt-table td:first-child { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 500; }
+  .pt-table tr:last-child td { border-bottom: none; }
+
+  /* Animation */
+  .topo-card.active { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; display: flex; flex-wrap: wrap; padding: 12px; gap: 4px; border-right: none; border-bottom: 1px solid var(--border); }
+    .sidebar-section { display: none; }
+    .nav-btn { width: auto; padding: 6px 12px; border-left: none; border-radius: 4px; font-size: 15px; }
+    .nav-btn.active { border-left: none; border-radius: 4px; }
+    .content { padding: 20px; }
+    .specs-grid { grid-template-columns: 1fr 1fr; }
+    .pros-cons { grid-template-columns: 1fr; }
+    .header { flex-direction: column; align-items: flex-start; gap: 6px; padding: 20px; }
+    .header-sub { margin-left: 0; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="header-label">Power Electronics Reference</div>
+    <h1>HV Power Supply Topologies</h1>
+  </div>
+  <div class="header-sub">10 isolated &amp; non-isolated topologies<br>Click a topology to read the full explanation</div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">Topologies</div>
+  </nav>
+  <main class="content" id="content"></main>
+</div>
+
+<script>
+const topos = [
+  {
+    id:"DAB", name:"Dual Active Bridge",
+    sub:"The dominant bidirectional isolated DC-DC topology in modern power electronics — used everywhere from EV chargers to solid-state transformers.",
+    tags:[{l:"Bidirectional",c:"g"},{l:"ZVS / ZCS",c:"g"},{l:"Galvanic isolation",c:"b"},{l:"Wide voltage range",c:"b"},{l:"8 active switches",c:"a"}],
+    specs:[{k:"Typical power",v:"1 kW – 1 MW"},{k:"Switching freq.",v:"10 kHz – 500 kHz"},{k:"Efficiency",v:"96 – 99%"},{k:"Control variable",v:"Phase-shift angle φ"},{k:"Switch count",v:"8 MOSFETs / IGBTs"},{k:"Isolation",v:"Yes — HF transformer"}],
+    how:[
+      "The DAB consists of two full H-bridges (four switches each) connected back-to-back through a high-frequency transformer. A series inductor — either the transformer leakage inductance or an external component — is the key energy-transfer element.",
+      "Each bridge generates a high-frequency square wave voltage at its AC terminals. The primary bridge produces <strong>Vpri</strong> and the secondary bridge produces <strong>Vsec</strong>. These two square waves are phase-shifted relative to each other by an angle <strong>φ (phi)</strong>.",
+      "When φ > 0, Vpri leads Vsec: current flows from primary to secondary (forward power). When φ < 0, Vsec leads Vpri: power reverses. The power equation is: <strong>P = (Vin × Vout × φ × (π − |φ|)) / (2π² × fs × L)</strong>, where L is the series inductance and fs is switching frequency. Power is a nearly sinusoidal function of φ.",
+      "ZVS (Zero Voltage Switching) is naturally achieved for the leading bridge across the full power range because the inductor current is still flowing when the next switch turns on — the body diode conducts first, clamping voltage to zero before the switch fires. The lagging bridge achieves ZVS only above a minimum power threshold.",
+      "At very light loads, the reactive current (circulating even with no power transfer) becomes significant relative to the active current. This is the main efficiency penalty of the DAB at partial load, and has driven research into triple-phase-shift (TPS) and extended-phase-shift (EPS) modulation strategies."
+    ],
+    phases:[
+      {t:"Interval 1 — energy transfer positive",d:"Primary bridge outputs +Vin, secondary outputs +Vout. Net voltage across inductor = Vin/n − Vout. Inductor current ramps up. Energy flows from primary to secondary through the transformer."},
+      {t:"Interval 2 — phase-shift gap",d:"Primary switches to −Vin while secondary holds +Vout. Inductor now sees −Vin/n − Vout. Current ramps down steeply, reversing sign during this sub-interval."},
+      {t:"Interval 3 — energy transfer negative half",d:"Both bridges in negative polarity. Current path reverses but energy continues to flow across the transformer boundary to the output capacitor."},
+      {t:"Interval 4 — dead time / ZVS transition",d:"Switch dead-times allow inductor current to charge and discharge switch output capacitances (Coss), enabling zero-voltage turn-on of the next switch pair. Duration is typically 50–200 ns."}
+    ],
+    pros:["True bidirectional power flow","Natural ZVS for the leading H-bridge","Simple control: one parameter (φ)","Excellent for battery storage and V2G","Very high power density achievable"],
+    cons:["Heavy reactive current at light load","Optimally efficient only at one voltage ratio","ZVS lost on lagging leg at low power","8 gate drivers required","Transformer leakage must be precisely controlled"],
+    apps:["EV on-board chargers","V2G bidirectional systems","Battery energy storage (BESS)","Solid-state transformers","DC microgrids","Aerospace isolated DC-DC"]
+  },
+  {
+    id:"LLC", name:"LLC / LLC DCX",
+    sub:"The king of efficiency for unidirectional isolated conversion — dominant in server PSUs, EV charger secondary stages, and any design demanding >98% efficiency.",
+    tags:[{l:"ZVS primary switches",c:"g"},{l:"ZCS secondary diodes",c:"g"},{l:"Galvanic isolation",c:"b"},{l:"Unidirectional",c:"a"},{l:"Frequency-controlled",c:"b"}],
+    specs:[{k:"Typical power",v:"100 W – 20 kW"},{k:"Switching freq.",v:"50 kHz – 3 MHz"},{k:"Efficiency",v:"97 – 99.5%"},{k:"Control variable",v:"Switching frequency fs"},{k:"Resonant elements",v:"Lr, Cr, Lm"},{k:"Isolation",v:"Yes — HF transformer"}],
+    how:[
+      "The LLC converter has three resonant elements: a <strong>series resonant inductor Lr</strong>, a <strong>series resonant capacitor Cr</strong>, and the <strong>transformer magnetizing inductance Lm</strong> in parallel with the secondary reflected onto the primary. These form two characteristic resonant frequencies: <strong>fr1 = 1/(2π√(Lr·Cr))</strong> and <strong>fr2 = 1/(2π√((Lr+Lm)·Cr))</strong>, where fr2 < fr1.",
+      "The converter is driven by a half-bridge or full-bridge generating a square wave. As switching frequency fs varies, the resonant tank responds differently. At <strong>fs = fr1 (series resonance)</strong>: Lm is clamped by the reflected output and does not participate; only Lr and Cr resonate. Tank impedance is minimum, voltage gain equals the turns ratio n. This is <strong>DCX mode</strong> — a lossless DC transformer at peak efficiency.",
+      "When <strong>fs > fr1</strong>: the tank is inductive, current lags voltage. MOSFETs achieve ZVS because inductive current is negative when the switch turns on, pre-charging the body diode. Output voltage is below the fr1 gain.",
+      "When <strong>fs is between fr2 and fr1</strong>: Lm begins to participate in resonance. Voltage gain rises above unity. ZVS is maintained as long as sufficient inductive reactive current flows. This region allows the LLC to boost — useful for low-line hold-up.",
+      "Secondary rectifier diodes turn off naturally when the sinusoidal current reaches zero — this is <strong>Zero Current Switching (ZCS)</strong>. No reverse recovery losses. In <strong>DCX mode</strong>, the LLC runs open-loop at fr1 with fixed frequency and fixed duty cycle, acting as a DC transformer. A separate upstream regulator (DAB or boost) maintains the input voltage at the exact value the LLC needs."
+    ],
+    phases:[
+      {t:"Phase A — resonant half-cycle (Q1 on)",d:"Q1 conducts. Resonant current flows sinusoidally through Lr and Cr. Lm is clamped to n×Vout so it does not participate. Secondary diode D1 conducts. Energy transfers from primary tank to output."},
+      {t:"Phase B — dead time (Q1 off, Q2 off)",d:"Both switches off. Inductive current (still flowing) charges Q1's Coss and discharges Q2's Coss. Q2's drain falls toward zero — ZVS condition. Dead time must be long enough for full resonant transition."},
+      {t:"Phase C — resonant half-cycle (Q2 on)",d:"Q2 conducts. Current flows in reverse through the resonant tank. Secondary diode D2 conducts. At end of interval, secondary current reaches zero naturally — ZCS on diodes, eliminating reverse recovery."},
+      {t:"Phase D — Lm freewheeling (below fr1)",d:"If fs < fr1: secondary diodes stop conducting before Q2 turns off. Lm now resonates freely with Lr and Cr together (lower fr2), giving higher voltage gain. This extends the operating range below input nominal."}
+    ],
+    pros:["Highest efficiency of any isolated topology","ZVS on all primary switches","ZCS on secondary — zero reverse recovery","Very low EMI due to sinusoidal currents","Transformer leakage can serve as Lr"],
+    cons:["Unidirectional only (standard implementation)","Gain non-linearly dependent on frequency","Wide frequency swing at light load","Poor hold-up time behavior","Difficult to design for very wide input range"],
+    apps:["Server and telecom PSUs (48V bus)","EV charger secondary DC-DC stage","LCD/OLED TV and monitor power","Laptop and GaN USB-C adapters","LED drivers (high-end)","High-density industrial DC-DC modules"]
+  },
+  {
+    id:"ISOP", name:"ISOP LLC",
+    sub:"Input-Series Output-Parallel — a modular architecture that enables standard low-voltage SiC/Si switches to process multi-kilovolt inputs.",
+    tags:[{l:"Multi-kV input",c:"b"},{l:"Modular redundancy",c:"g"},{l:"Low-Vds devices usable",c:"g"},{l:"Voltage balancing required",c:"a"},{l:"Complex inter-module control",c:"r"}],
+    specs:[{k:"Input voltage",v:"1 kV – 100 kV"},{k:"Module count",v:"N series × M parallel"},{k:"Each module sees",v:"Vin / N voltage"},{k:"Balancing method",v:"Automatic or active DSP"},{k:"Key advantage",v:"Standard 600V / 1200V FETs"},{k:"Isolation",v:"Yes — per module transformer"}],
+    how:[
+      "ISOP stands for <strong>Input-Series, Output-Parallel</strong>. The core problem it solves: very high input voltages (10 kV for MVDC, 50 kV for traction grids) are incompatible with standard silicon or SiC MOSFETs, which are available up to ~3.3 kV. Instead of one converter with exotic ultra-high-voltage switches, ISOP splits the work across N identical modules.",
+      "<strong>Input side (Series):</strong> All N module inputs are series-connected across the HV bus. If Vin = 10 kV and N = 20, each module sees only 500 V — within a standard 650 V MOSFET's rating. Each module has its own input capacitor and complete isolated converter (typically LLC for efficiency).",
+      "<strong>Output side (Parallel):</strong> All N module outputs are connected in parallel onto a common output bus. Since each module is galvanically isolated via its own transformer, parallel connection is valid without circulating current issues. Output currents simply add: N × Imodule = Iout.",
+      "<strong>Voltage balancing</strong> is the central engineering challenge. Ideally, series connection distributes voltage equally. In practice, component tolerances cause imbalances. Two correction mechanisms exist: (1) <strong>Automatic balancing</strong> — the LLC resonant gain of a module seeing excess voltage drops slightly, reducing its power intake and allowing others to catch up. (2) <strong>Active balancing</strong> — each module's DSP controller measures its input capacitor voltage and adjusts switching frequency to force equal sharing. This requires inter-module communication (CAN bus or SPI daisy-chain).",
+      "Output current sharing is inherently automatic for matched modules. Parallel voltage sources naturally equalize, and identical output impedances ensure equal current distribution without additional control."
+    ],
+    phases:[
+      {t:"Normal operation — all balanced",d:"All N modules see Vin/N. Each operates at identical resonant frequency. Output currents sum at the common bus. Zero circulating current. Efficiency is the LLC module efficiency (97–99%)."},
+      {t:"Perturbation — one module sees excess voltage",d:"Component mismatch causes module k to see more than Vin/N. Its LLC gain falls slightly at the same frequency. Power through module k decreases, reducing its input capacitor discharge rate."},
+      {t:"Re-balancing — series redistribution",d:"Since module k draws less power, its input capacitor charges relative to the others. The series chain redistributes: other modules' voltages drop slightly; module k's rises until a new equilibrium is reached."},
+      {t:"Active control layer",d:"Each module controller compares its input voltage to Vin/N target. Modules above target increase fs (reduce gain); modules below target decrease fs. Master controller synchronizes via inter-module bus."}
+    ],
+    pros:["Enables standard low-voltage SiC at MV input","Fully modular — add modules for more power","N+1 redundancy: one module fails, rest continue","Each module is a simple well-proven LLC","Good thermal distribution across modules"],
+    cons:["Voltage balancing demands careful control design","N separate transformers increase size and cost","Inter-module communication adds hardware","Series input chain: one module fault affects all","Tight module parameter matching needed"],
+    apps:["Solid-state transformers for MV distribution","MVDC offshore wind converters","High-energy physics pulsed power supplies","Railway traction auxiliary supplies","Plasma generation and RF amplifiers","X-ray generator HV power supplies"]
+  },
+  {
+    id:"PSFB", name:"Phase-Shifted Full Bridge",
+    sub:"The battle-tested workhorse of high-power isolated DC-DC — proven in millions of server PSUs, welders, and industrial supplies.",
+    tags:[{l:"ZVS leading leg",c:"g"},{l:"High power",c:"g"},{l:"Galvanic isolation",c:"b"},{l:"Mature topology",c:"b"},{l:"ZVS lost at light load",c:"a"}],
+    specs:[{k:"Typical power",v:"500 W – 100 kW"},{k:"Switching freq.",v:"50 – 200 kHz"},{k:"Efficiency",v:"94 – 97%"},{k:"Control variable",v:"Phase-shift D (0 to 1)"},{k:"Switch count",v:"4 primary + rectifier"},{k:"Isolation",v:"Yes — HF transformer"}],
+    how:[
+      "The PSFB is a full H-bridge with two legs: the <strong>leading leg (Q1/Q2)</strong> and the <strong>lagging leg (Q3/Q4)</strong>. Each leg switches at a fixed 50% duty cycle. Power control comes from varying the phase shift between the two legs, which determines how long the transformer sees ±Vin versus zero volts.",
+      "<strong>Leading leg ZVS</strong> is easily achieved at all load levels. When the leading leg transitions, the output filter inductor current — which is large and continuous — provides the energy to resonantly charge and discharge the switch node capacitances during the dead time. This current is always available regardless of load.",
+      "<strong>Lagging leg ZVS</strong> is more challenging. During the freewheeling interval (when both legs output the same polarity, primary voltage = 0), the primary current is clamped to zero by the output rectifier. The only energy available to achieve ZVS on the lagging leg comes from the transformer leakage inductance alone. At light load, leakage energy is insufficient — the leg switches hard. This hard-switching at light load is the classic PSFB limitation.",
+      "<strong>Effective duty cycle</strong> is reduced by the leakage inductance: D_eff = D_control − 2×Lk×Iout/(Vin×Ts). This 'duty cycle loss' means the transformer must be designed with a larger turns ratio than a simple calculation suggests, and the output filter inductor must be larger to handle the ripple during the freewheeling gap.",
+      "The output LC filter is a full two-element filter (unlike resonant converters which have only a small output capacitor). The inductor must be sized to store energy across the freewheeling interval, making it physically larger than the equivalent LLC capacitor filter. This is a key size and cost disadvantage of PSFB versus LLC at the same power level."
+    ],
+    phases:[
+      {t:"Interval 1 — power transfer (Q1, Q4 on)",d:"Leading leg top (Q1) and lagging leg bottom (Q4) conduct simultaneously. Primary voltage = +Vin. Transformer secondary delivers power through the rectifier to the output LC filter. Filter inductor current ramps up."},
+      {t:"Interval 2 — Q4 turns off, lagging transition",d:"Q4 opens. Primary current (from transformer leakage inductance) resonantly charges Q4's Coss and discharges Q3's Coss. If sufficient energy is stored in leakage, Q3's drain reaches zero — ZVS for Q3."},
+      {t:"Interval 3 — freewheeling (Q1, Q3 on)",d:"Both top switches conduct. Primary voltage = 0. Secondary rectifier diodes both conduct, clamping secondary to zero. Output filter inductor freewheels — output current continues but no energy transfers from the source."},
+      {t:"Interval 4 — Q1 turns off, leading transition",d:"Q1 opens. Output filter inductor current (reflected through transformer) aids the leading leg transition. Large reflected current easily achieves ZVS for Q2. Negative half-cycle begins symmetrically."}
+    ],
+    pros:["Very mature — decades of industrial validation","ZVS on the leading leg at all load levels","Handles high power without series/parallel tricks","Current-mode control is simple and reliable","Standard wound magnetics — well-understood design"],
+    cons:["ZVS on lagging leg requires minimum load current","Duty cycle loss forces larger transformer turns ratio","Large output filter inductor needed","Secondary rectifier has hard commutation spikes","Not naturally bidirectional (needs extra switches)"],
+    apps:["Telecom rectifiers (48V, −48V outputs)","Industrial welding and plasma cutting supplies","Server PSUs (older generation before LLC)","Medical imaging HV power supplies","Railway auxiliary converters","Military and defence DC-DC modules"]
+  },
+  {
+    id:"SAB", name:"Stacked Active Bridge",
+    sub:"A modular multilevel approach to bidirectional isolated conversion at ultra-high voltages — the power electronics answer to MV and HV DC grids.",
+    tags:[{l:"Ultra-high voltage input",c:"r"},{l:"Bidirectional",c:"g"},{l:"Modular cells",c:"g"},{l:"MV grid compatible",c:"b"},{l:"Inter-cell synchronization",c:"a"}],
+    specs:[{k:"Input voltage",v:"10 kV – 100+ kV"},{k:"Cell switch voltage",v:"Vin / N per cell"},{k:"Architecture",v:"Series H-bridge cells"},{k:"Control",v:"Phase shift per cell"},{k:"Relation to MMC",v:"HF-isolated variant"},{k:"Isolation",v:"Yes — per cell transformer"}],
+    how:[
+      "The Stacked Active Bridge is a natural extension of the DAB for ultra-high-voltage applications. Instead of one DAB with exotic high-voltage switches, N H-bridge cells are <strong>stacked in series</strong> on the high-voltage side. Each cell operates as an independent DAB with its own transformer and secondary bridge.",
+      "<strong>High-voltage side:</strong> N series-connected H-bridge cells share the full HVDC or MVAC link voltage. For 50 kV with N = 20 cells, each cell sees only 2.5 kV — compatible with standard 3.3 kV SiC MOSFETs. Each cell has its own floating gate driver power supply and isolated communication link.",
+      "<strong>Each cell is a complete DAB:</strong> H-bridge → series inductor → HF transformer → secondary H-bridge. Each cell can transfer bidirectional power independently, and its phase shift φ can be individually controlled. This gives the system full per-cell voltage control — not just global phase shift.",
+      "<strong>Output connection:</strong> secondary bridges are typically paralleled onto a common LVDC bus (e.g. 700 V). Since all cells are galvanically isolated via their individual transformers, parallel connection is valid. Output currents simply add. For higher output voltage, secondaries can be series-connected (ISOS configuration).",
+      "The SAB differs fundamentally from simple ISOP-LLC in that each cell has an <strong>active secondary bridge</strong> (not diode rectifier). This enables: bidirectional flow per cell, reactive power compensation on the MV side, and fine-grained per-cell power control for robust voltage balancing. It can be understood as an HF-isolated modular multilevel converter (MMC), with transformers replacing the capacitor submodule concept of conventional MMCs."
+    ],
+    phases:[
+      {t:"Startup — capacitor precharge",d:"Cell input capacitors must be precharged in a controlled sequence to prevent inrush. A precharge resistor or DSP-controlled soft-start algorithm charges each cell's capacitor while gradually enabling the series chain."},
+      {t:"Normal operation — all cells balanced",d:"All N cells phase-shift their primary square waves by φ relative to their respective secondaries. Equal power flows through each cell. Secondary bridges rectify synchronously. Output current is N × Icell."},
+      {t:"Balancing event — cell voltage deviation",d:"Cell k shows a voltage deviation due to capacitor mismatch. Its controller adjusts φk independently, changing power flow to restore its input capacitor voltage. Other cells compensate via their own PI controllers."},
+      {t:"Bidirectional reversal",d:"All cells simultaneously invert their phase-shift sign (φ → −φ). Power flows from output to input (e.g. grid-to-storage). Transition completes within 1–2 switching cycles. No mode change is required — the circuit is symmetric."}
+    ],
+    pros:["Handles MV/HV without series-connected switches","Full bidirectional flow per cell","Galvanic isolation in every cell","Fault tolerant — bypass failed cells via bypass switches","Reactive power and harmonic compensation capability"],
+    cons:["Enormous complexity — N complete converter systems","Per-cell isolated gate drivers and communication","Balancing control is demanding — N coupled control loops","High component count increases failure probability","Cost and volume are substantial"],
+    apps:["Solid-state transformers for distribution grids","MVDC offshore wind turbine collection systems","HVDC taps for rail electrification","High-capacity fast charging plazas from MV grid","Particle accelerator pulsed power supplies"]
+  },
+  {
+    id:"DAB+LLC", name:"DAB + LLC Hybrid",
+    sub:"Two-stage cascade combining DAB regulation flexibility with LLC resonant efficiency — achieving what neither topology accomplishes alone.",
+    tags:[{l:"Bidirectional (DAB stage)",c:"g"},{l:"Peak efficiency (LLC stage)",c:"g"},{l:"Wide input range",c:"g"},{l:"Two transformers",c:"a"},{l:"Two control loops",c:"a"}],
+    specs:[{k:"Stage 1",v:"DAB — regulation"},{k:"Stage 2",v:"LLC in DCX mode"},{k:"LLC gain",v:"Fixed = n (turns ratio)"},{k:"DAB control",v:"Phase shift φ"},{k:"Peak efficiency",v:"97 – 99%"},{k:"Isolation",v:"Both stages isolated"}],
+    how:[
+      "The fundamental motivation: the LLC achieves extraordinary efficiency (>99% at its resonant point) but only at one fixed voltage ratio and in one direction. The DAB handles wide voltage ranges and bidirectionality but carries higher reactive currents. Cascading them extracts the best of each while hiding each other's weaknesses.",
+      "<strong>Stage 1 — DAB as voltage regulator:</strong> The DAB accepts a wide-range input (e.g. 200–800 V battery) and converts it to a tightly regulated intermediate DC bus voltage. By adjusting phase shift φ continuously, the DAB maintains the intermediate bus at exactly the value the LLC needs to operate at series resonance. The DAB handles all regulation and bidirectionality. Its efficiency is moderate (~95%) but it only sees a fraction of total losses because its main function is voltage transformation, not power processing efficiency.",
+      "<strong>Stage 2 — LLC as DC transformer (DCX):</strong> With the intermediate bus held constant, the LLC stage is locked at its series resonant frequency fr1. No frequency modulation. No regulation. The LLC is a fixed-ratio DC transformer: gain = turns ratio n, ZVS on primary MOSFETs is perfect, ZCS on secondary diodes is guaranteed, reactive circulating current is minimized. Efficiency at this single operating point routinely exceeds 99%.",
+      "<strong>System efficiency:</strong> overall efficiency = η_DAB × η_LLC ≈ 0.95 × 0.99 ≈ 94% at worst — but this calculation is misleading because the DAB only processes the voltage difference. If the input varies ±20% around nominal, the DAB processes only ~20% of total power (the rest passes through at fixed ratio). True cascade efficiency can exceed 98% for the common operating range.",
+      "For bidirectional operation, the LLC secondary active bridges switch to inverter mode and the primary becomes a synchronous rectifier. The resonant tank continues to operate — current simply reverses. The DAB upstream reverses its phase shift. No mode switching is required."
+    ],
+    phases:[
+      {t:"DAB stage — wide-input tracking",d:"DAB adjusts phase angle φ continuously as Vin varies from 200–800 V. Goal: maintain Vbus = n × Vout (LLC's target input). DAB efficiency ~95%, acceptable since it handles the regulation burden so the LLC does not have to."},
+      {t:"Intermediate bus — decoupling layer",d:"A film or electrolytic capacitor bank on the intermediate bus decouples the two stages. The LLC sees a clean, stable DC input regardless of input transients, disturbances, or battery voltage sag."},
+      {t:"LLC DCX stage — fixed resonance",d:"LLC runs at exactly fr1 with 50% duty cycle. Resonant current is a clean sinusoid. ZVS on primary MOSFETs, ZCS on secondary diodes. Conduction loss only — no switching loss. Efficiency >99% at this point."},
+      {t:"Reverse power flow",d:"Secondary synchronous rectifiers switch to active inverter mode. LLC resonant tank continues to operate with reversed current direction. DAB phase shifts to φ < 0. Power flows from output to input for V2G or battery charging."}
+    ],
+    pros:["Combines wide-range regulation with peak efficiency","LLC always operates at its resonant sweet spot","DAB absorbs all transients — LLC sees clean stable bus","Total system efficiency can exceed 98%","Stages optimized independently — design is modular"],
+    cons:["Two transformers, two inductor sets — large and expensive","More switches and gate drivers","Intermediate bus capacitor adds volume and failure point","Two control loops must be coordinated","Higher cost than single-stage approaches"],
+    apps:["High-efficiency EV on-board chargers","V2G bidirectional charging systems","Datacenter high-density DC-DC (48V → PoL)","Battery management system interfaces","Renewable energy DC-DC conversion stages"]
+  },
+  {
+    id:"SST+DAB", name:"SST + DAB",
+    sub:"The Solid-State Transformer — replacing the distribution grid's iron-core transformer with three stages of power electronics and a DAB isolation link.",
+    tags:[{l:"MV AC grid interface",c:"r"},{l:"Bidirectional AC + DC ports",c:"g"},{l:"Smart grid features",c:"g"},{l:"Galvanic isolation",c:"b"},{l:"Very high complexity",c:"r"}],
+    specs:[{k:"MV input",v:"6 kV – 35 kV AC"},{k:"LV AC output",v:"230 V / 400 V"},{k:"LVDC port",v:"400 V / 700 V DC"},{k:"DAB frequency",v:"10 – 100 kHz"},{k:"Isolation",v:"HF transformer in DAB"},{k:"Size vs. iron transformer",v:"10 – 20× smaller"}],
+    how:[
+      "A conventional distribution transformer does one job passively: step down AC voltage at 50/60 Hz through a large iron core. It cannot control power flow, correct power factor, filter harmonics, offer a DC port, or respond actively to grid disturbances. The <strong>Solid-State Transformer (SST)</strong> replaces it entirely with three fully controllable power electronic stages.",
+      "<strong>Stage 1 — MV AC/DC Active Front End (AFE):</strong> Medium-voltage AC (e.g. 10 kV, 50 Hz) is rectified to a medium-voltage DC bus using a cascaded H-bridge multilevel converter or an ISOP-type modular rectifier. Each H-bridge cell handles Vin/N, so standard SiC IGBTs or MOSFETs are used. This stage provides unity power factor, active harmonic filtering, and reactive power (VAR) compensation — functions a passive transformer cannot perform.",
+      "<strong>Stage 2 — DAB isolation link:</strong> The MVDC bus feeds an array of DAB converters (or a single high-power DAB with SiC devices) operating at 10–100 kHz. These provide the galvanic isolation that replaces the iron core's isolation function — but at high frequency, so the transformer is orders of magnitude smaller and lighter. The DAB regulates the LVDC bus voltage and responds to power flow commands in microseconds.",
+      "<strong>Stage 3 — LV DC/AC inverter:</strong> The LVDC bus (typically 700 V) feeds a standard grid-tied inverter producing clean 230/400 V AC at 50/60 Hz. This stage handles islanding detection, enables micro-grid operation, integrates local PV and storage, and provides voltage and frequency support services.",
+      "<strong>LVDC port:</strong> The intermediate LVDC bus is directly accessible as a DC output for EV charging, battery storage, or DC-coupled photovoltaics. This port is impossible in a conventional transformer and is one of the SST's most commercially valuable features. The entire system is digitally controlled by DSP/FPGA, enabling millisecond-level response to grid events, real-time power quality correction, and remote monitoring via smart grid protocols."
+    ],
+    phases:[
+      {t:"MV AC rectification — cascaded H-bridge AFE",d:"MV AC passes through N series H-bridge cells. Phase-shifted PWM carriers across all cells produce near-sinusoidal grid current. Unity power factor achieved. MVDC bus maintained at Vin_dc = N × Vcell."},
+      {t:"MVDC bus — intermediate energy storage",d:"Film capacitors (not electrolytic — too high voltage) buffer the MVDC bus. Bus voltage is regulated by the AFE outer control loop. Capacitance is sized for ride-through and transient response, not 50/60 Hz energy storage."},
+      {t:"DAB stage — HF isolation and step-down",d:"DAB adjusts phase angle to regulate LVDC bus at 700 V. HF transformer provides galvanic isolation. Bidirectional — power flows toward grid during V2G or when local generation exceeds local load."},
+      {t:"LV inverter — grid-quality output",d:"700 V DC feeds H-bridge or three-phase inverter. Space-vector PWM at 20+ kHz. LCL output filter suppresses switching harmonics. Grid synchronization via PLL. Islanding detection for micro-grid mode transition."}
+    ],
+    pros:["Active PFC and reactive power on MV side","Full bidirectional power and reactive power control","LVDC port for EV, storage, and PV integration","10–20× smaller than equivalent iron transformer","Millisecond fault response — protects downstream loads"],
+    cons:["3–5 times more complex than any individual topology","Cost is 5–10× higher than conventional transformer today","Long-term reliability in field still being established","Thermal management at MV voltage levels is demanding","Regulatory and grid codes still catching up with technology"],
+    apps:["Smart grid distribution substations","EV charging plazas connected to MV grid","Industrial microgrids with embedded generation","Railway trackside power for 25 kV AC systems","Datacenter power from medium-voltage grid"]
+  },
+  {
+    id:"Direct", name:"Direct Conversion",
+    sub:"Eliminating the intermediate DC bus entirely — one power conversion step from mains AC to isolated DC output, and no electrolytic capacitors.",
+    tags:[{l:"Single power conversion",c:"g"},{l:"No electrolytic capacitors",c:"g"},{l:"Long lifetime",c:"g"},{l:"100/120 Hz output ripple",c:"a"},{l:"Limited power range",c:"a"}],
+    specs:[{k:"Input",v:"90–265 V AC (universal)"},{k:"Output",v:"Isolated DC"},{k:"Intermediate bus",v:"None — single stage"},{k:"Lifetime advantage",v:"No electrolytic capacitor"},{k:"Dominant ripple",v:"100 / 120 Hz"},{k:"Typical power",v:"< 500 W"}],
+    how:[
+      "Conventional AC-DC supplies have two stages: (1) diode bridge + bulk electrolytic capacitor converting AC to flat DC, then (2) a DC-DC converter to the output. The electrolytic capacitor is the life-limiting component — it degrades with heat and humidity, typically failing after 5–10 years in real conditions. <strong>Direct conversion eliminates this capacitor entirely.</strong>",
+      "The AC mains voltage is rectified but <strong>not filtered</strong> — the output of the diode bridge is a pulsating DC voltage that swings from 0 to 325 V (for 230 V AC) at 100/120 Hz (twice mains frequency). A resonant converter (typically LLC or LCC) is operated directly from this pulsating input.",
+      "<strong>How the resonant stage handles pulsating input:</strong> an LLC converter with rapid frequency modulation can regulate its output even as the input swings continuously. The switching frequency varies quickly to track the instantaneous input voltage, maintaining approximately constant output voltage. Near the zero-crossings of the AC waveform, the input voltage falls below the minimum sustainable level, and the converter momentarily stops switching. This produces a 100/120 Hz ripple component on the output.",
+      "<strong>Output ripple management:</strong> a small film or ceramic capacitor (not electrolytic) filters high-frequency switching ripple but allows the 100/120 Hz component to pass through. In LED lighting, this appears as visible flicker if the ripple depth exceeds ~20%. Well-designed direct-conversion LED drivers limit ripple to <5% by careful resonant tank design and sometimes a small auxiliary capacitor. In HV supplies for magnetrons, plasma, or ultrasound, the 100 Hz ripple is either acceptable or beneficial.",
+      "The <strong>bridgeless PFC variant</strong> goes further: a bridgeless PFC cell simultaneously achieves near-unity power factor, steps up the voltage, and feeds the resonant stage — all sharing one or two magnetic structures. Called an integrated single-stage PFC-LLC, it achieves the lowest component count of any PFC-isolated converter."
+    ],
+    phases:[
+      {t:"Line rectification — no bulk storage",d:"Mains AC passes through a diode bridge (or bridgeless topology). Output is pulsating DC: Vrect = |Vin·sin(2π·50t)|, varying from 0 to 325 V at 100 Hz. No capacitor stores energy between pulses."},
+      {t:"Resonant stage — frequency tracks input",d:"The LLC runs at a frequency fs that varies rapidly to compensate for Vrect variation. Near input voltage peak, fs rises (lower gain). Near zero-crossing, fs drops (higher gain). Control loop bandwidth must be fast (>1 kHz)."},
+      {t:"Near zero-crossing — converter pauses",d:"When Vrect falls below minimum operating threshold, converter suspends switching for a brief interval (0–3 ms per half-cycle). Output is sustained only by the small output film capacitor. This creates the 100 Hz ripple dip."},
+      {t:"Output — small film capacitor filter",d:"A film or C0G ceramic capacitor filters switching-frequency ripple. The 100/120 Hz component passes through — this is the fundamental design trade-off: no electrolytic capacitor = 20+ year lifetime, but 100 Hz ripple must be tolerated."}
+    ],
+    pros:["No electrolytic capacitor — 20+ year operating lifetime","Single stage = higher efficiency than two-stage","Compact — no bulk capacitor volume","Lower component count for LED and lamp supplies","Tolerates universal AC input range (90–265 V)"],
+    cons:["100/120 Hz output ripple (causes LED flicker if >20%)","Practical power limit ~500 W due to ripple management","Complex control — frequency must vary rapidly over AC cycle","Poor dynamic response due to minimal energy storage","Resonant tank must be redesigned for each Vin/Vout spec"],
+    apps:["LED street and industrial lighting drivers","Microwave oven magnetron power supplies","Industrial plasma generator supplies","Ultraviolet lamp ballasts","Long-life instrument and sensor power supplies"]
+  },
+  {
+    id:"IBC", name:"Interleaved Boost Converter",
+    sub:"Multiple synchronized boost phases with staggered switching — the standard architecture for high-power PFC front-ends and high-current DC-DC stages.",
+    tags:[{l:"Input ripple cancellation",c:"g"},{l:"Reduced inductor size",c:"g"},{l:"Non-isolated",c:"a"},{l:"PFC front-end",c:"b"},{l:"Current sharing required",c:"a"}],
+    specs:[{k:"Phases",v:"2 – 8 typical"},{k:"Ripple frequency",v:"N × fsw effective"},{k:"Ripple reduction",v:"~1/N amplitude"},{k:"Switch count",v:"N MOSFETs + N diodes"},{k:"Inductors",v:"N (smaller than single)"},{k:"Isolation",v:"No — non-isolated"}],
+    how:[
+      "The interleaved boost converter runs <strong>N identical boost phases simultaneously</strong>, each at the same switching frequency fs, but with gate pulses staggered by <strong>360°/N</strong> in time. For N=2, the shift is 180°; for N=4, it is 90°. This staggering is the key to ripple cancellation.",
+      "<strong>Why ripple cancels:</strong> each boost phase draws a triangular inductor current from the input, with identical shape but shifted in time. When N currents with 360°/N offset are summed at the input node, their ripple components partially cancel. The dominant ripple frequency seen by the input source is <strong>N×fs</strong> (N times the switching frequency), and the ripple amplitude is reduced — ideally to zero at D=1/N or D=(N-1)/N for any N.",
+      "<strong>Quantitative example:</strong> a single boost at D=0.5 has peak-to-peak input ripple of ΔIL = Vin×D/(L×fs). A 2-phase interleaved boost at D=0.5 has theoretically zero ripple (perfect cancellation). At D≠0.5, cancellation is partial but always better than single-phase. A 4-phase IBC achieves near-zero ripple at D=0.25, 0.5, and 0.75.",
+      "Each <strong>inductor can be smaller</strong> than a single-phase equivalent because the ripple each inductor carries is the same as single-phase (ΔIL = Vin×D/(L×fs)), but the reduced input/output ripple means the filter capacitors can be much smaller. Total magnetic volume is significantly less.",
+      "In <strong>PFC applications</strong> (AC-DC front end), the IBC operates in CCM with average-current-mode control. Each phase current reference is shaped as |sin(ωt)| tracking the rectified mains voltage. Current sharing between phases is enforced by per-phase average current controllers that each measure their own inductor current and compare to the shared sinusoidal reference. <strong>Phase shedding</strong> at light load improves efficiency by turning off phases when full ripple-cancellation benefit is not needed."
+    ],
+    phases:[
+      {t:"Phase 1 ON — energy storage (0 to D·T)",d:"Phase 1 MOSFET conducts. L1 stores energy from Vin. Current ramps up at slope Vin/L1. Phase 1 diode D1 is reverse biased. Output capacitor supplies load. Phases 2…N continue their own independent staggered sequences."},
+      {t:"Phase 1 OFF — energy delivery (D·T to T)",d:"Q1 turns off. L1 current freewheels through D1 to the output, ramping down at (Vout−Vin)/L1. Meanwhile phase 2 (at 180° shift) has just turned on. Input current from source = sum of all phase currents — ripple cancels."},
+      {t:"Input current summation — ripple cancellation",d:"Input source sees ΣiL_k(t). Due to 360°/N time staggering, positive-going ramp of phase k coincides with negative-going ramp of phase k+1. Ripple frequency = N·fs, amplitude ~1/N of single-phase. Input EMI filter can be much smaller."},
+      {t:"Output current — reduced high-frequency ripple",d:"All N phase diodes share the output capacitor. Output ripple is also at N·fs. The output capacitor can be dramatically smaller than a single-phase equivalent — crucial for power density in server PSU and VRM designs."}
+    ],
+    pros:["Input and output ripple reduced by factor ~N","Smaller per-phase inductors vs single-phase equivalent","Phase shedding improves light-load efficiency","Excellent thermal distribution across N switches","Standard boost cell — well-understood, simple to protect"],
+    cons:["N inductors, N gate drivers, N current sensors","Current sharing control adds complexity and sensors","Non-isolated — needs separate isolation stage for galvanic isolation","EMI at N·fs can be harder to filter with narrow-band filters","Tight matching of phase timing and duty cycle needed"],
+    apps:["AC-DC PFC front-ends for server and telecom PSUs","EV on-board charger PFC first stage","Voltage regulator modules (VRM) for CPUs and GPUs","High-current DC-DC for battery formation equipment","Solar inverter input boost stage"]
+  },
+  {
+    id:"Planar LLC", name:"Planar LLC",
+    sub:"An LLC converter with PCB-trace windings on flat ferrite cores — the architecture of choice for sub-5 mm height, MHz-frequency, and precise parasitic control.",
+    tags:[{l:"Profile < 5 mm",c:"g"},{l:"PCB integrated magnetics",c:"g"},{l:"ZVS + ZCS",c:"g"},{l:"MHz switching",c:"b"},{l:"High-frequency core losses",c:"a"}],
+    specs:[{k:"Profile height",v:"< 5 mm total"},{k:"Switching freq.",v:"500 kHz – 3 MHz"},{k:"Core type",v:"EI, ER, EQ planar ferrite"},{k:"Windings",v:"PCB copper trace layers"},{k:"Parasitic control",v:"Photolithographic precision"},{k:"Isolation",v:"Yes — PCB dielectric + core"}],
+    how:[
+      "The Planar LLC is <strong>electrically identical</strong> to a standard LLC resonant converter — same resonant tank (Lr, Cr, Lm), same half-bridge or full-bridge topology, same ZVS on primary switches and ZCS on secondary diodes. The difference is entirely in the magnetic construction.",
+      "<strong>Conventional wound magnetics</strong> use round copper wire wound onto a bobbin fitting into a ferrite EE, ETD, or PQ core. The result is a tall cylindrical assembly typically 20–50 mm high. Parasitic capacitances between winding layers depend on winding tension and layer positioning — impossible to control precisely, and they vary unit to unit. Thermal contact with a heatsink is poor because only the bottom of the core touches the PCB.",
+      "<strong>Planar transformer construction:</strong> windings are implemented as flat copper traces on PCB layers. A flat 'planar' ferrite core (EI, ER, or EQ geometry) sandwiches the PCB windings between its two halves. The resulting assembly is typically <strong>3–6 mm tall</strong> — a 5–10× height reduction versus wound equivalent. The core area is wide and flat, providing the same flux cross-section in far less height.",
+      "<strong>PCB winding advantages:</strong> (1) <strong>Repeatability</strong> — every winding is photolithographically identical. Lr and Lm are defined by trace geometry and core gap, not winding craftsmanship. Zero unit-to-unit variation. (2) <strong>Thermal</strong> — the wide flat core presses directly against a heatsink or PCB thermal plane. Heat path is short and efficient. Thermal vias in the PCB conduct heat from winding copper directly to the ground plane below. (3) <strong>Interleaving</strong> — primary and secondary layers are interleaved (P-S-P-S) to minimize proximity effect AC resistance and cancel magnetic field between windings.",
+      "<strong>Leakage engineering for Lr:</strong> in standard LLC, Lr is an external inductor. In planar design, Lr can be engineered into the transformer itself by: inserting a non-magnetic PCB spacer layer between primary and secondary windings (which increases leakage flux), misaligning the winding windows, or designing a partially-coupled structure. This eliminates the external Lr component entirely, further reducing height. High-frequency operation above 1 MHz is practical because PCB traces — being very thin (35–105 µm copper) — have inherently low AC resistance due to the skin effect depth at MHz frequencies."
+    ],
+    phases:[
+      {t:"Resonant half-cycle — primary switch on",d:"Identical to standard LLC. Resonant current flows sinusoidally through Lr (now the engineered PCB leakage inductance) and Cr. Lm clamped to n×Vout. Secondary PCB trace windings conduct through the synchronous rectifier or diode."},
+      {t:"Dead time — ZVS transition at MHz",d:"Primary switch turns off. Inductive current charges/discharges MOSFET output capacitances resonantly. ZVS achieved for the next switch. At MHz frequencies, dead times are 5–30 ns — precision gate timing from GaN drivers is essential."},
+      {t:"Second resonant half-cycle — complementary switch",d:"Opposite switch conducts. Current reverses through primary and secondary PCB traces. Interleaved layer stack ensures primary and secondary amp-turns partially cancel, reducing core flux density and core losses."},
+      {t:"Continuous thermal transfer to heatsink",d:"Not a switching interval but a continuous process. The flat core's bottom face conducts heat via thin thermal pad to the PCB copper plane or directly bonded heatsink. Wide thermal contact area keeps core temperature low — enabling higher flux density and smaller core at same efficiency."}
+    ],
+    pros:["Profile <5 mm — fits ultra-slim enclosures and wearables","Highly repeatable Lr, Lm — no winding skill variation","Excellent thermal path to PCB ground or heatsink","Operates at 1–3 MHz — further size reduction of Cr, Lr","Lr can be integrated — no external inductor component"],
+    cons:["PCB tooling cost for multilayer high-copper designs","Winding resistance higher than litz wire at frequencies <200 kHz","Core gap grinding requires precision and adds cost","Electromagnetic simulation needed for parasitic design","Design changes require new PCB revision — less flexible than wound"],
+    apps:["GaN-based laptop and phone USB-C adapters","Medical devices with strict height and isolation budgets","Aerospace and defence compact DC-DC modules","Industrial sensors and instruments","High-density datacenter power modules","Robotics and servo drive auxiliary supplies"]
+  }
+];
+
+
+const refs = [
+  [ // DAB
+    {t:"Dual Active Bridge Converter — Original Concept", authors:"R. De Doncker, D. Divan, M. Kheraluwala", venue:"IEEE Trans. Industry Applications, 1991", url:"https://ieeexplore.ieee.org/document/68228"},
+    {t:"Introduction to the Dual Active Bridge Converter", authors:"PowerSimTof (comprehensive tutorial slides)", venue:"powersimtof.com, Dec 2024", url:"http://powersimtof.com/Downloads/PPTs/Introduction%20to%20the%20DAB.pdf"},
+    {t:"DAB Modulation Techniques — imperix", authors:"imperix application note", venue:"imperix.com, 2024", url:"https://imperix.com/doc/implementation/dual-active-bridge-control"},
+    {t:"Efficiency and Cost Optimization of DAB for 350 kW DC Fast Chargers", authors:"arXiv preprint", venue:"arXiv, 2024", url:"https://arxiv.org/pdf/2404.14557"},
+    {t:"Output Voltage Control of DAB Converters (open access)", authors:"Tian et al.", venue:"PeerJ Computer Science, 2024", url:"https://pmc.ncbi.nlm.nih.gov/articles/PMC11232625/"}
+  ],
+  [ // LLC
+    {t:"Theoretical Analysis and Optimal Design of LLC Resonant Converter", authors:"Bo Yang et al.", venue:"IEEE PESC, 2007", url:"https://ieeexplore.ieee.org/document/4417639/"},
+    {t:"A Complete Step-by-Step Optimal Design for LLC Resonant Converter", authors:"Fang et al.", venue:"IEEE Trans. Power Electronics, 2021", url:"https://ieeexplore.ieee.org/document/9162487/"},
+    {t:"Step-by-Step Design of LLC for EV Fast Charging", authors:"IEEE Conference Publication", venue:"IEEE IECON, 2024", url:"https://ieeexplore.ieee.org/document/10625506/"},
+    {t:"Analysis and Design of LLC with Integrated Transformer", authors:"Bo Yang et al.", venue:"IEEE APEC, 2002", url:"https://ieeexplore.ieee.org/document/4195939/"}
+  ],
+  [ // ISOP
+    {t:"PSFB with ISOP for 800V EV On-Board Charger", authors:"IEEE Transactions on Power Electronics", venue:"IEEE Trans. Power Electron., 2023", url:"https://ieeexplore.ieee.org/document/10185952/"},
+    {t:"Solid-State Transformers: Part II — Modularity and Applications (ISOP coverage)", authors:"MDPI Technologies, 2025", venue:"MDPI Technologies, 2025", url:"https://www.mdpi.com/2227-7080/13/2/50"},
+    {t:"DAB-based ISOP Application Note — imperix TN151", authors:"imperix", venue:"imperix.com", url:"https://imperix.com/doc/implementation/dual-active-bridge-control"}
+  ],
+  [ // PSFB
+    {t:"Design of a 50 kW PSFB Converter for Fast Charging", authors:"IEEE Conference Publication", venue:"IEEE APEC, 2018", url:"https://ieeexplore.ieee.org/document/8330881/"},
+    {t:"Improved PSFB with Wide-Range ZVS and Reduced Filter", authors:"IEEE Transactions on Power Electronics", venue:"IEEE Trans. Power Electron., 2017", url:"https://ieeexplore.ieee.org/document/8012500/"},
+    {t:"Reconfigurable PSFB for Wide Voltage Range EV Charging", authors:"IEEE Transactions on Power Electronics", venue:"IEEE Trans. Power Electron., 2022", url:"https://ieeexplore.ieee.org/document/9779139/"},
+    {t:"1000W GaN PSFB Reference Design Application Note", authors:"Infineon Technologies", venue:"Infineon App Note, 2020", url:"https://www.infineon.com/dgdl/Infineon-ReferenceDesign_REF_XDP_1000W_GAN_PSFB-ApplicationNotes-v01_00-EN.pdf?fileId=5546d462766cbe86017684fe578d548f"}
+  ],
+  [ // SAB
+    {t:"Solid-State Transformers: Part I — Stages and Topologies (SAB/MAB)", authors:"MDPI Technologies, 2025", venue:"MDPI Technologies, 2025", url:"https://www.mdpi.com/2227-7080/13/2/74"},
+    {t:"Solid-State Transformers: Part II — Modularity and Applications", authors:"MDPI Technologies, 2025", venue:"MDPI Technologies, 2025", url:"https://www.mdpi.com/2227-7080/13/2/50"},
+    {t:"State of the Art of SST — Advanced Topologies and Progress", authors:"IEEE Transactions on Power Electronics", venue:"IEEE Trans. Power Electron., 2020", url:"https://ieeexplore.ieee.org/document/8962031/"}
+  ],
+  [ // DAB+LLC
+    {t:"Design Considerations for Level-2 PEV Charger: IBC PFC + LLC", authors:"IEEE Conference Publication", venue:"IEEE ECCE, 2013", url:"https://ieeexplore.ieee.org/document/6574508/"},
+    {t:"A Complete Step-by-Step Optimal Design for LLC Resonant Converter", authors:"Fang et al.", venue:"IEEE Trans. Power Electron., 2021", url:"https://ieeexplore.ieee.org/document/9162487/"},
+    {t:"Dual Active Bridge Converter and Its Control — ScienceDirect chapter", authors:"ScienceDirect Book Chapter", venue:"ScienceDirect, 2024", url:"https://www.sciencedirect.com/science/article/abs/pii/B9780323856225000122"}
+  ],
+  [ // SST+DAB
+    {t:"SST: A Critical Review of Projects with Relevant Prototypes", authors:"Electronics MDPI, 2023", venue:"MDPI Electronics, 2023", url:"https://www.mdpi.com/2079-9292/12/4/931"},
+    {t:"State of the Art of Solid-State Transformers: Topologies and Control", authors:"IEEE Trans. Power Electronics, 2020", venue:"IEEE Trans. Power Electron., 2020", url:"https://ieeexplore.ieee.org/document/8962031/"},
+    {t:"Design of 10 kVA SST-based Substation with DAB", authors:"IEEE Conference Publication", venue:"IEEE IECON, 2016", url:"https://ieeexplore.ieee.org/document/7753914/"},
+    {t:"SST Part I — Stages of Conversion and Topologies", authors:"MDPI Technologies, 2025", venue:"MDPI Technologies, 2025", url:"https://www.mdpi.com/2227-7080/13/2/74"}
+  ],
+  [ // Direct Conversion
+    {t:"A Single-Stage Interleaved LLC PFC Converter", authors:"IEEE Conference Publication", venue:"IEEE APEC, 2017", url:"https://ieeexplore.ieee.org/document/7854785/"},
+    {t:"Design of an LLC Resonant Converter for EDM Applications", authors:"IEEE Conference Publication", venue:"IEEE APEC, 2017", url:"https://ieeexplore.ieee.org/abstract/document/7846035"},
+    {t:"LLC Resonant Converter — Theoretical Analysis and Design", authors:"Bo Yang et al.", venue:"IEEE PESC, 2007", url:"https://ieeexplore.ieee.org/document/4417639/"}
+  ],
+  [ // IBC
+    {t:"Design Considerations for Level-2 PEV Charger: Interleaved Boost PFC + LLC", authors:"IEEE ECCE, 2013", venue:"IEEE ECCE, 2013", url:"https://ieeexplore.ieee.org/document/6574508/"},
+    {t:"Design and Simulation of Interleaved Boost PFC with PR Controller", authors:"IEEE Conference Publication", venue:"IEEE PEDES, 2023", url:"https://ieeexplore.ieee.org/document/10370282/"},
+    {t:"Interleaved-Boost-Input Type Isolated Full Bridge PFC Converter", authors:"IEEE Conference Publication", venue:"IEEE PESC, 2005", url:"https://ieeexplore.ieee.org/document/1619676/"},
+    {t:"Design and Analysis of Interleaved Step-Up DC-DC Converter (open access)", authors:"PMC / NCBI, 2024", venue:"PMC Open Access, 2024", url:"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11193754/"}
+  ],
+  [ // Planar LLC
+    {t:"Design of Planar Transformer in LLC for Micro-Grid Applications", authors:"IEEE APEC, 2014", venue:"IEEE APEC, 2014", url:"https://ieeexplore.ieee.org/abstract/document/6878679/"},
+    {t:"Design & Implementation of Planar Transformer with Fractional Turns for LLC", authors:"Liu et al.", venue:"IEEE Trans. Power Electron., 2020", url:"https://ieeexplore.ieee.org/document/9230883/"},
+    {t:"Planar Transformer Design for LLC with Variable Input & Wide Output", authors:"IEEE Conference Publication", venue:"IEEE PCIM, 2025", url:"https://ieeexplore.ieee.org/document/11117420/"},
+    {t:"Analysis & Design of Integrated Magnetics Planar Transformer for LLC", authors:"IEEE Trans. Power Electron., 2022", venue:"IEEE Trans. Power Electron., 2022", url:"https://ieeexplore.ieee.org/document/9599678/"},
+    {t:"Optimum Design of Planar Transformer for LLC using Metaheuristic Method", authors:"IEEE APEC, 2019", venue:"IEEE APEC, 2019", url:"https://ieeexplore.ieee.org/document/8927114/"}
+  ]
+];
+
+const sidebar = document.getElementById('sidebar');
+const content = document.getElementById('content');
+
+const colors = {g:'tag-g', a:'tag-a', r:'tag-r', b:'tag-b'};
+
+topos.forEach((t, idx) => {
+  const btn = document.createElement('button');
+  btn.className = 'nav-btn' + (idx===0?' active':'');
+  btn.id = 'nb-'+idx;
+  btn.innerHTML = `<span class="nb-id">${t.id}</span>${t.name}`;
+  btn.onclick = () => show(idx);
+  sidebar.appendChild(btn);
+
+  const card = document.createElement('div');
+  card.className = 'topo-card' + (idx===0?' active':'');
+  card.id = 'card-'+idx;
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-id">${t.id}</div>
+      <div class="card-title">${t.name}</div>
+      <div class="card-subtitle">${t.sub}</div>
+      <div class="tags">${t.tags.map(tg=>`<span class="tag ${colors[tg.c]}">${tg.l}</span>`).join('')}</div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="section-label">Specifications</div>
+    <div class="specs-grid">${t.specs.map(s=>`<div class="spec-cell"><div class="spec-k">${s.k}</div><div class="spec-v">${s.v}</div></div>`).join('')}</div>
+
+    <div class="section-label">Schematic</div>
+    <div class="schematic-block" id="sch-${idx}">
+      <div class="placeholder-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3)"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      </div>
+      <div class="placeholder-text">Schematic image for ${t.name}<br>will appear here</div>
+      <label class="add-img-btn" for="img-${idx}">+ Add schematic image</label>
+      <input class="img-input" type="file" id="img-${idx}" accept="image/*" onchange="loadImg(this, ${idx})">
+    </div>
+
+    <div class="section-label">How it works</div>
+    <div class="explanation">${t.how.map(p=>`<p>${p}</p>`).join('')}</div>
+
+    <div class="section-label">Operating intervals</div>
+    <div class="intervals">${t.phases.map((ph,i)=>`
+      <div class="interval i${i}">
+        <div class="interval-title">${ph.t}</div>
+        <div class="interval-desc">${ph.d}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="section-label">Advantages &amp; disadvantages</div>
+    <div class="pros-cons">
+      <div class="pros">
+        <div class="pc-label">Advantages</div>
+        <ul class="pc-list">${t.pros.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+      <div class="cons">
+        <div class="pc-label">Disadvantages</div>
+        <ul class="pc-list">${t.cons.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+    </div>
+
+    <div class="section-label">Typical applications</div>
+    <div class="apps">${t.apps.map(a=>`<span class="app-tag">${a}</span>`).join('')}</div>
+
+    ${idx===0 ? `
+    <div class="divider"></div>
+    <div class="section-label">Power Theory — Active, Reactive &amp; Apparent Power</div>
+    <div class="power-theory">
+
+      <div class="pt-grid">
+        <div class="pt-card active-p">
+          <div class="pt-card-label">P — Active Power [W]</div>
+          <div class="pt-formula">P = V₁·V₂·sin(φ) / (ω·L)</div>
+          <div class="pt-desc">Power that does real work. Flows from source to load. Controlled by the phase angle φ. Maximum at φ = 90°. Sign of φ sets direction.</div>
+        </div>
+        <div class="pt-card reactive-q">
+          <div class="pt-card-label">Q — Reactive Power [VAR]</div>
+          <div class="pt-formula">Q = (V₁² − V₁·V₂·cos(φ)) / (ω·L)</div>
+          <div class="pt-desc">Power that oscillates in the inductor. Does no useful work but causes circulating current and conduction losses — main cause of DAB light-load inefficiency.</div>
+        </div>
+        <div class="pt-card apparent-s">
+          <div class="pt-card-label">S — Apparent Power [VA]</div>
+          <div class="pt-formula">S = P + jQ = ½·Ṽ₁·ĨL*</div>
+          <div class="pt-desc">Total burden seen by the source. Combines active and reactive. |S| = √(P²+Q²). This is what sizes your switches and transformer.</div>
+        </div>
+        <div class="pt-card pf-card">
+          <div class="pt-card-label">PF — Power Factor</div>
+          <div class="pt-formula">PF = P / |S| = cos(θ)</div>
+          <div class="pt-desc">Ratio of useful to total power. PF = 1 is ideal. In the DAB, PF drops when V₁/n ≠ V₂ because reactive current grows relative to active current.</div>
+        </div>
+      </div>
+
+      <div class="pt-derivation">
+        <h4>Where S = ½·Ṽ·ĨL* comes from — step by step</h4>
+        <div class="pt-step">
+          <span class="pt-step-num">1</span>
+          <span class="pt-step-text">Start from the definition: <code>p(t) = v(t) · i(t)</code>. In the DAB, v(t) = V₁·cos(ωt) and i(t) = IL·cos(ωt − θ).</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">2</span>
+          <span class="pt-step-text">Apply the trig identity <code>cos(A)·cos(B) = ½cos(A−B) + ½cos(A+B)</code>. This splits p(t) into two terms: a constant DC term and a term oscillating at 2ω.</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">3</span>
+          <span class="pt-step-text">Average over one cycle. The 2ω term averages to zero. Only the DC term survives: <code>P = ½·V_p·I_p·cos(θ_v − θ_i)</code>. The ½ is a direct result of the trig identity — not a convention.</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">4</span>
+          <span class="pt-step-text">Write in phasor form: <code>Ṽ = V_p·e^(iθ_v)</code>, <code>Ĩ = I_p·e^(iθ_i)</code>. Then <code>½·Ṽ·Ĩ* = ½·V_p·I_p·e^(i(θ_v−θ_i))</code>. The conjugate I* is essential — it subtracts the angles so Re[...] gives cos(θ_v−θ_i), the correct power angle.</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">5</span>
+          <span class="pt-step-text">The full complex power <code>S = ½·Ṽ·Ĩ* = P + jQ</code>. Taking Re[S] gives active power P. Taking Im[S] gives reactive power Q. If using RMS values the ½ disappears: <code>S = V_rms · I_rms*</code>.</span>
+        </div>
+      </div>
+
+      <div class="pt-derivation">
+        <h4>Getting P and Q from the DAB current phasor</h4>
+        <div class="pt-step">
+          <span class="pt-step-num">1</span>
+          <span class="pt-step-text">Circuit model: two sinusoidal sources V₁ and V₂ connected through inductor L. Inductor impedance: <code>Z_L = i·ω·L</code> (from V = L·di/dt → in frequency domain V = iωL·I).</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">2</span>
+          <span class="pt-step-text">Current phasor by Ohm's law: <code>ĨL = (V₁ − V₂·e^(iφ)) / (i·ω·L)</code>. V₁ is reference (angle 0), V₂ lags by φ so it carries e^(iφ) in this convention.</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">3</span>
+          <span class="pt-step-text">Conjugate: <code>ĨL* = (V₁ − V₂·e^(−iφ)) / (−i·ω·L)</code>. Replace 1/(−i) = i, giving <code>ĨL* = i·(V₁ − V₂·e^(−iφ)) / (ω·L)</code>.</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">4</span>
+          <span class="pt-step-text">Expand e^(−iφ) = cos(φ) − i·sin(φ), so V₁ − V₂·e^(−iφ) = (V₁ − V₂cosφ) + i·V₂sinφ. Multiply by i: <code>i·(V₁−V₂cosφ) − V₂sinφ</code>.</span>
+        </div>
+        <div class="pt-step">
+          <span class="pt-step-num">5</span>
+          <span class="pt-step-text">Multiply by V₁/(ωL) and separate: <code>Re[S] = −V₁·V₂·sinφ/(ωL)</code> and <code>Im[S] = V₁·(V₁−V₂cosφ)/(ωL)</code>. Adjusting sign convention (φ defined as lag): <code>P = V₁·V₂·sinφ/(ωL)</code> and <code>Q = (V₁²−V₁·V₂·cosφ)/(ωL)</code>.</span>
+        </div>
+      </div>
+
+      <div class="pt-example">
+        <h4>Worked example — slide values</h4>
+        <div class="pt-example-row"><span>V₁ = 100 V, V₂ = 150 V, L = 10 µH, f = 100 kHz, φ = 45°</span><span></span></div>
+        <div class="pt-example-row"><span>ω·L</span><span>2π × 100,000 × 10×10⁻⁶ = 6.283 Ω</span></div>
+        <div class="pt-example-row"><span>P (active)</span><span>100×150×sin45° / 6.283 = 1,688 W ✓</span></div>
+        <div class="pt-example-row"><span>Q (reactive)</span><span>(100² − 100×150×cos45°) / 6.283 = −96.6 VAR</span></div>
+        <div class="pt-example-row"><span>|S| (apparent)</span><span>√(1688² + 96.6²) = 1,691 VA</span></div>
+        <div class="pt-example-row"><span>PF</span><span>1688 / 1691 = 0.998 (excellent at φ=45°)</span></div>
+        <div class="pt-example-row"><span>Q negative?</span><span>Yes — V₂ &gt; V₁ so secondary supplies reactive power back to primary</span></div>
+      </div>
+
+      <table class="pt-table" style="margin-top:14px">
+        <thead><tr><th>φ</th><th>P</th><th>Q</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>0°</td><td>0</td><td>(V₁²−V₁V₂)/ωL</td><td>No power transfer, only reactive circulating current</td></tr>
+          <tr><td>45°</td><td>V₁V₂·0.707/ωL</td><td>moderate</td><td>Good balance — slide operating point</td></tr>
+          <tr><td>90°</td><td>V₁V₂/ωL (max)</td><td>V₁²/ωL</td><td>Maximum active power, significant reactive current</td></tr>
+          <tr><td>−φ</td><td>negative</td><td>same</td><td>Power reverses direction (V2G, discharge)</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+    ` : ''}
+
+    <div class="divider"></div>
+    <div class="section-label">Further reading</div>
+    <div class="refs">${(refs[idx]||[]).map((r,i)=>`
+      <a class="ref" href="${r.url}" target="_blank" rel="noopener">
+        <span class="ref-num">[${i+1}]</span>
+        <span class="ref-body">
+          <span class="ref-title">${r.t}</span>
+          <span class="ref-meta">${r.authors} &mdash; ${r.venue}</span>
+        </span>
+        <span class="ref-icon">&#8599;</span>
+      </a>`).join('')}
+    </div>
+  `;
+  content.appendChild(card);
+});
+
+function show(idx) {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.topo-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById('nb-'+idx).classList.add('active');
+  document.getElementById('card-'+idx).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function loadImg(input, idx) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const block = document.getElementById('sch-'+idx);
+    block.innerHTML = `<img src="${e.target.result}" class="loaded" alt="Schematic for topology ${idx}">
+      <label class="add-img-btn" for="img2-${idx}" style="margin-top:12px">Replace image</label>
+      <input class="img-input" type="file" id="img2-${idx}" accept="image/*" onchange="loadImg(this, ${idx})">`;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>
