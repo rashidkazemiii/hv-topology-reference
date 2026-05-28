@@ -1022,6 +1022,16 @@ const content = document.getElementById('content');
 
 const colors = {g:'tag-g', a:'tag-a', r:'tag-r', b:'tag-b'};
 
+// ── AI Power Tab ──────────────────────────────────────────────────────────────
+(()=>{
+  const aiBtn = document.createElement('button');
+  aiBtn.className = 'nav-btn active';
+  aiBtn.id = 'nb-ai';
+  aiBtn.innerHTML = '<span class="nb-id">AI</span>380V → 48V';
+  aiBtn.onclick = () => showAI();
+  sidebar.appendChild(aiBtn);
+})();
+
 topos.forEach((t, idx) => {
   const btn = document.createElement('button');
   btn.className = 'nav-btn' + (idx===0?' active':'');
@@ -1096,6 +1106,152 @@ topos.forEach((t, idx) => {
   content.appendChild(card);
 });
 
+
+// ── AI Power Card ─────────────────────────────────────────────────────────────
+(()=>{
+  const aiCard = document.createElement('div');
+  aiCard.className = 'topo-card active';
+  aiCard.id = 'card-ai';
+  aiCard.innerHTML = `
+    <div class="card-header">
+      <div class="card-id">AI POWER</div>
+      <div class="card-title">380V → 48V in AI Data Centers</div>
+      <div class="card-subtitle">Why LLC DCX dominates this conversion stage — the operating conditions align perfectly with the topology's strongest point.</div>
+      <div class="tags">
+        <span class="tag tg">LLC DCX dominant</span>
+        <span class="tag tb">OCP Open Rack V3</span>
+        <span class="tag tg">98–99% efficiency</span>
+        <span class="tag tb">Fixed ratio 8:1</span>
+        <span class="tag ta">Bidirectional: DAB or PSFB</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="section-label">Why This Stage Exists</div>
+    <div class="explanation">
+      <p>The 380V DC building bus must be stepped down to the 48V rack bus that feeds GPU loads. This conversion has four characteristics that make LLC DCX the perfect fit:</p>
+    </div>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Input</div><div class="v">380V DC — tightly regulated ±5%</div></div>
+      <div class="kv"><div class="k">Output</div><div class="v">48V DC — fixed standard voltage</div></div>
+      <div class="kv"><div class="k">Turns ratio</div><div class="v">380/48 ≈ 8:1 — perfect DCX condition</div></div>
+      <div class="kv"><div class="k">Direction</div><div class="v">Unidirectional — source to rack only</div></div>
+      <div class="kv"><div class="k">Duty cycle</div><div class="v">24/7 full load — efficiency is everything</div></div>
+      <div class="kv"><div class="k">Efficiency saving</div><div class="v">0.1% at 1 MW = ~$8,000/year electricity</div></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">The Dominant Topology — LLC DCX</div>
+    <div class="explanation">
+      <p>The LLC is locked at its series resonant frequency <strong>fr1 = 1/(2π√(Lr·Cr))</strong>. At this exact point: voltage gain = turns ratio n = 8, ZVS on all primary MOSFETs, ZCS on all secondary rectifiers, minimum reactive current, and efficiency above 98.5%. No control loop is needed — the upstream 380V bus regulator holds the input constant and the LLC converts at fixed ratio.</p>
+      <p>The primary current at the DCX point is a <strong>pure sinusoid</strong> — the best possible RMS-to-peak ratio (1/√2 = 0.707). This gives minimum copper loss, minimum core loss, minimum EMI, and the smallest possible transformer for a given power rating. Compare to a DAB which carries trapezoidal current — higher RMS for same peak, more loss, larger magnetics.</p>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Physical Implementation</div>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">Switching frequency</div><div class="v">300 kHz – 1 MHz</div></div>
+      <div class="kv"><div class="k">Transformer</div><div class="v">Planar PCB windings on flat ferrite core</div></div>
+      <div class="kv"><div class="k">Profile height</div><div class="v">5–15 mm (fits in 1U rack)</div></div>
+      <div class="kv"><div class="k">Primary switches</div><div class="v">Full-bridge — 4 GaN or SiC MOSFETs</div></div>
+      <div class="kv"><div class="k">Secondary</div><div class="v">Synchronous rectifiers — SR replaces diodes</div></div>
+      <div class="kv"><div class="k">SR advantage</div><div class="v">Diode 0.7V drop = 1.5% loss at 48V — eliminated</div></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Who Makes These Converters</div>
+    <div class="explanation">
+      <p><strong>Vicor — VIA (Vicor Integrated Adapter):</strong> 380V→48V, up to 1500W per module, 98%+ efficiency, small brick format. Used directly by hyperscale data centers.</p>
+      <p><strong>Delta Electronics — DPS series:</strong> 380V→48V, 1kW–6kW. Used in their server rack PSU systems.</p>
+      <p><strong>Murata:</strong> High-density 380V→48V modules with planar transformer construction.</p>
+      <p><strong>Bel Power Solutions:</strong> Open Rack V3 compliant, 380V→48V for OCP racks.</p>
+      <p><strong>Infineon — reference designs:</strong> CoolSiC MOSFET based LLC, 1 MHz switching, planar magnetics. Reference design for custom PSU makers.</p>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Alternative Topologies — When LLC Is Not Used</div>
+    <div class="phases">
+      <div class="phase">
+        <div class="pt">PSFB — when some bidirectional flow is needed</div>
+        <div class="pd">Some rack designs integrate battery backup at the 48V bus. The PSU must push power back from batteries to the 380V bus during outages. LLC is unidirectional — PSFB or DAB replaces it. Approximately 15–20% of new AI rack designs (2023–2025) use bidirectional topology here.</div>
+      </div>
+      <div class="phase">
+        <div class="pt">DAB — next-generation fully bidirectional designs</div>
+        <div class="pd">The trend toward eliminating separate UPS hardware pushes toward DAB. It converts 380V→48V normally and pushes 48V battery→380V bus during outages, responding in microseconds. Companies like Eaton, Vertiv, and Delta are shipping rack power systems with DAB at this stage for premium AI installations (2024 onwards).</div>
+      </div>
+      <div class="phase">
+        <div class="pt">DAB + LLC — highest efficiency premium designs</div>
+        <div class="pd">For the most efficiency-critical installations: 380V DC → [DAB regulates] → 200V intermediate → [LLC DCX, n≈4] → 48V DC. The DAB handles any input variation and bidirectional flow. The LLC always runs at fr1. Efficiency reaches 99%+ at nominal. At 10 MW rack cluster scale, 0.5% efficiency improvement saves ~$400,000/year.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">OCP Open Rack V3 Standard</div>
+    <div class="explanation">
+      <p>The Open Compute Project — used by Meta, Microsoft, Google — has defined the Open Rack V3 standard specifying: 48V DC rack bus, 380V DC building bus, PSU interface 380V→48V, efficiency &gt;97% at 50% load and &gt;96% at 10% load, power levels of 3kW, 6kW, 12kW, and 25kW modules.</p>
+      <p>These efficiency requirements at all load levels — including light load — essentially mandate LLC DCX or DAB+LLC. LLC efficiency drops at light load (frequency must vary far from fr1). DAB+LLC maintains efficiency because the LLC stays at fr1 and the DAB handles light load variation. The next-generation OCP PSU specification is expected to mandate DAB+LLC for the highest efficiency tier.</p>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Market Topology Distribution (Qualitative, 2024)</div>
+    <div class="explanation">
+      <p>No formal market share study breaking down topology percentages has been published. Based on OCP qualification data, Vicor/Delta/Murata product lines, and IEEE survey papers from 2020–2024, LLC DCX is the predominant topology for unidirectional 380V→48V conversion. DAB and DAB+LLC are gaining share as bidirectional power flow requirements increase.</p>
+    </div>
+    <div class="kv-grid">
+      <div class="kv"><div class="k">LLC DCX (unidirectional)</div><div class="v">Dominant — OCP recommended, 98%+ eff.</div></div>
+      <div class="kv"><div class="k">DAB (bidirectional)</div><div class="v">Growing — integrated UPS trend</div></div>
+      <div class="kv"><div class="k">PSFB (semi-bidirectional)</div><div class="v">Niche — legacy designs</div></div>
+      <div class="kv"><div class="k">DAB + LLC (premium)</div><div class="v">Emerging — highest efficiency tier</div></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Key References</div>
+    <div class="refs">
+      <a class="ref" href="https://www.opencompute.org/documents/power-architecture-evolution-in-data-centers-pdf" target="_blank" rel="noopener">
+        <span class="ref-num">[1]</span>
+        <span class="ref-body">
+          <span class="ref-title">Power Architecture Evolution in Data Centers — Built and tested 3kW 400V-48V LLC DCX prototype, ZVS+ZCS confirmed at 650kHz</span>
+          <span class="ref-meta">Renesas + Open Compute Project &mdash; OCP White Paper, September 2025</span>
+        </span>
+        <span class="ref-icon">&#8599;</span>
+      </a>
+      <a class="ref" href="https://www.researchgate.net/publication/368518607_Design_of_988_Efficient_400V-48V_LLC_Converter_with_Optimized_Matrix_Transformer_and_Matrix_Inductor" target="_blank" rel="noopener">
+        <span class="ref-num">[2]</span>
+        <span class="ref-body">
+          <span class="ref-title">Design of 98.8% Efficient 400V-48V LLC Converter with Optimized Matrix Transformer and Matrix Inductor</span>
+          <span class="ref-meta">Nabih et al. (Virginia Tech CPES) &mdash; IEEE Trans. Power Electronics, Vol. 38, No. 6, June 2023</span>
+        </span>
+        <span class="ref-icon">&#8599;</span>
+      </a>
+      <a class="ref" href="https://cpes.vt.edu/library/viewnugget/989" target="_blank" rel="noopener">
+        <span class="ref-num">[3]</span>
+        <span class="ref-body">
+          <span class="ref-title">High Power Density 1MHz 3kW 400V-48V LLC Converter for Datacenters — 700W/in³, 11mm profile</span>
+          <span class="ref-meta">Nabih et al. (Virginia Tech CPES) &mdash; CPES Research Nugget</span>
+        </span>
+        <span class="ref-icon">&#8599;</span>
+      </a>
+      <a class="ref" href="https://cpes.vt.edu/research/showcase/1040" target="_blank" rel="noopener">
+        <span class="ref-num">[4]</span>
+        <span class="ref-body">
+          <span class="ref-title">High-Efficiency High-Density 6kW 400V/48V Power Supply for Data Centers — 99% efficiency target, 900W/in³</span>
+          <span class="ref-meta">Virginia Tech CPES &mdash; Research Showcase</span>
+        </span>
+        <span class="ref-icon">&#8599;</span>
+      </a>
+      <a class="ref" href="https://vtechworks.lib.vt.edu/bitstream/handle/10919/30990/Thesis_YaLiu_ETD_Final.pdf" target="_blank" rel="noopener">
+        <span class="ref-num">[5]</span>
+        <span class="ref-body">
+          <span class="ref-title">High Efficiency Optimization of LLC Resonant Converter for Wide Load Range — Complete 400V→48V design guide from first principles</span>
+          <span class="ref-meta">Ya Liu &mdash; Virginia Tech Master's Thesis (free PDF)</span>
+        </span>
+        <span class="ref-icon">&#8599;</span>
+      </a>
+    </div>
+  `;
+  content.appendChild(aiCard);
+})();
+
 // Comparison card
 (()=>{
   const compBtn = document.createElement('button');
@@ -1134,6 +1290,13 @@ function show(idx) {
   document.querySelectorAll('.topo-card').forEach(c=>c.classList.remove('active'));
   document.getElementById('nb-'+idx).classList.add('active');
   document.getElementById('card-'+idx).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function showAI() {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.topo-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById('nb-ai').classList.add('active');
+  document.getElementById('card-ai').classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
