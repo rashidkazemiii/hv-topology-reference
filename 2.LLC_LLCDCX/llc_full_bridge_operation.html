@@ -624,7 +624,10 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     switch (code) {
       case 'S14': case 'S23':
         return { head: 'Power transfer', cond: dn(I, 's'), v: vin,
-          txt: `${dn(I, 's')} are on and carry i<sub>r</sub>. v<sub>ab</sub> = ${vin} drives the resonant tank.` };
+          txt: `${dn(I, 's')} are on and carry the tank current i<sub>r</sub>. ` + (inc === 'P'
+            ? 'S1 ties node a to the + rail and S4 ties node b to the − rail, so v<sub>ab</sub> = v<sub>a</sub> − v<sub>b</sub> = V<sub>in</sub> − 0 = +V<sub>in</sub>.'
+            : 'S2 ties node a to the − rail and S3 ties node b to the + rail, so v<sub>ab</sub> = v<sub>a</sub> − v<sub>b</sub> = 0 − V<sub>in</sub> = −V<sub>in</sub>.') +
+            ' This square-wave voltage drives the resonant tank.' };
       case 'D14': case 'D23':
         return { head: 'ZVS window', cond: dn(Id, 'd'), v: vin,
           txt: `${dn(I, 'g')} are gated on, but i<sub>r</sub> still flows against them, through their body diodes ${dn(Id, 'd')}, back into V<sub>in</sub>. The switches sit at 0 V while their gate turns on, so there is no turn-on loss.` };
