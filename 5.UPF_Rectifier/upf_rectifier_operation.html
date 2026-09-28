@@ -1,0 +1,810 @@
+<title>Dornbirn UPF Rectifier</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root {
+  --bg: #faf9f7;
+  --panel: #ffffff;
+  --panel2: #f2f1ed;
+  --border: rgba(0,0,0,0.09);
+  --text: #1a1a18;
+  --text2: #5c5c56;
+  --text3: #8c8c84;
+  --wire: #3a3a36;
+  --grid: rgba(0,0,0,0.08);
+  --pri: #1a56db;
+  --pri-dim: rgba(26,86,219,0.16);
+  --sec: #0d7a4e;
+  --sec-dim: rgba(13,122,78,0.16);
+  --diode: #b76e0a;
+  --diode-dim: rgba(183,110,10,0.18);
+  --mag: #8a3ffc;
+  --mag-dim: rgba(138,63,252,0.14);
+  --cursor: #c0392b;
+  --band: rgba(26,86,219,0.07);
+  --dcm: rgba(183,110,10,0.10);
+  --ok: #0d7a4e;
+  --ok-dim: rgba(13,122,78,0.10);
+  --bad: #c0392b;
+  --bad-dim: rgba(192,57,43,0.10);
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+    --border: rgba(255,255,255,0.10);
+    --text: #ecebe6; --text2: #a9a8a0; --text3: #7d7c75;
+    --wire: #b9b8b0; --grid: rgba(255,255,255,0.08);
+    --pri: #7aa2ff; --pri-dim: rgba(122,162,255,0.20);
+    --sec: #45c790; --sec-dim: rgba(69,199,144,0.20);
+    --diode: #f0a646; --diode-dim: rgba(240,166,70,0.22);
+    --mag: #b58cff; --mag-dim: rgba(181,140,255,0.18);
+    --cursor: #ff6b5b; --band: rgba(122,162,255,0.09); --dcm: rgba(240,166,70,0.10);
+    --ok: #45c790; --ok-dim: rgba(69,199,144,0.12);
+    --bad: #ff6b5b; --bad-dim: rgba(255,107,91,0.12);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+  --border: rgba(255,255,255,0.10);
+  --text: #ecebe6; --text2: #a9a8a0; --text3: #7d7c75;
+  --wire: #b9b8b0; --grid: rgba(255,255,255,0.08);
+  --pri: #7aa2ff; --pri-dim: rgba(122,162,255,0.20);
+  --sec: #45c790; --sec-dim: rgba(69,199,144,0.20);
+  --diode: #f0a646; --diode-dim: rgba(240,166,70,0.22);
+  --mag: #b58cff; --mag-dim: rgba(181,140,255,0.18);
+  --cursor: #ff6b5b; --band: rgba(122,162,255,0.09); --dcm: rgba(240,166,70,0.10);
+  --ok: #45c790; --ok-dim: rgba(69,199,144,0.12);
+  --bad: #ff6b5b; --bad-dim: rgba(255,107,91,0.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 var(--sans); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 22px; }
+header { display: grid; gap: 8px; max-width: 76ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+h1 { margin: 0; font-size: clamp(24px, 3.4vw, 32px); line-height: 1.2; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 18px; font-weight: 600; text-wrap: balance; }
+h3 { margin: 0; font-size: 16px; font-weight: 600; text-wrap: balance; }
+p { margin: 0; }
+.lede { color: var(--text2); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.formula { font-family: var(--mono); font-size: 13.5px; background: var(--panel2); border-radius: 6px; padding: 8px 12px; max-width: 100%; overflow-x: auto; }
+.formula small { color: var(--text3); font-size: 12px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+.scroll { overflow-x: auto; }
+.schem svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.wave svg, .mains svg { display: block; width: 100%; min-width: 620px; height: auto; touch-action: pan-y; cursor: ew-resize; }
+.schem, .wave, .mains { padding: 10px; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; padding: 14px 16px; }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; }
+button { font: 500 13px/1 var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+button:hover { border-color: var(--pri); }
+button:focus-visible, input:focus-visible, tr:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
+button.primary { background: var(--pri); color: #fff; border-color: transparent; min-width: 76px; }
+:root[data-theme="dark"] button.primary { color: #0e1320; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.primary { color: #0e1320; } }
+.slider { display: grid; gap: 4px; min-width: 170px; flex: 1 1 170px; }
+.slider label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); gap: 8px; }
+.slider output { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--pri); }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text2); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; }
+.chip { font: 500 12px/1 var(--mono); padding: 6px 8px; border-radius: 999px; background: var(--panel2); color: var(--text2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.chip.ok { background: var(--ok-dim); color: var(--ok); }
+.chip.bad { background: var(--bad-dim); color: var(--bad); }
+.chip.warn { background: var(--diode-dim); color: var(--diode); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--text2); padding: 2px 6px 6px; }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+
+.card { padding: 18px 18px 16px; display: grid; gap: 14px; }
+.iv-head { display: grid; gap: 6px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font: 600 12.5px/1 var(--mono); color: var(--pri); background: var(--pri-dim); padding: 6px 8px; border-radius: 5px; }
+.tag.alt { color: var(--text2); background: var(--panel2); }
+.card dl { margin: 0; display: grid; gap: 12px; }
+.card dt { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
+.card dd { margin: 0; font-size: 14.5px; }
+.dn { font-family: var(--mono); font-weight: 600; }
+.dn.s { color: var(--sec); }
+.dn.d { color: var(--diode); }
+.dn.g { color: var(--text); }
+.note { font-size: 13.5px; color: var(--text2); border-top: 1px solid var(--border); padding-top: 12px; }
+
+.tbl { padding: 6px 0; }
+table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--panel2); }
+tbody tr.cur { background: var(--band); }
+td.mono { font-family: var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.section { display: grid; gap: 10px; }
+.section > p { max-width: 76ch; color: var(--text2); }
+.mains-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 16px 0; }
+.mains-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--text2); padding: 0 16px 12px; }
+.mains-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.conds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .conds { grid-template-columns: 1fr; } }
+.cond { padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.cond p { font-size: 14px; color: var(--text2); }
+.cond .formula { justify-self: start; }
+
+svg text { font-family: var(--mono); fill: var(--text2); font-size: 13px; }
+svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
+.wire { stroke: var(--wire); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.node { fill: var(--wire); }
+.dev path { stroke: var(--wire); stroke-width: 1.6; fill: none; stroke-linejoin: round; }
+.dev .fillme { fill: var(--wire); stroke: none; }
+.dev .halo { fill: transparent; stroke: none; }
+.dev.gated text { fill: var(--text); font-weight: 600; }
+.dev.gated .gate { stroke: var(--text); stroke-width: 2.4; }
+.dev.on path { stroke: var(--sec); stroke-width: 2.4; }
+.dev.on .fillme { fill: var(--sec); }
+.dev.on .halo { fill: var(--sec-dim); }
+.dev.on text { fill: var(--sec); }
+.dev.diode.on path { stroke: var(--diode); }
+.dev.diode.on .fillme { fill: var(--diode); }
+.dev.diode.on .halo { fill: var(--diode-dim); }
+.dev.diode.on text { fill: var(--diode); font-weight: 600; }
+.dev.bridge.on path { stroke: var(--pri); }
+.dev.bridge.on .fillme { fill: var(--pri); }
+.dev.bridge.on .halo { fill: var(--pri-dim); }
+.dev.bridge.on text { fill: var(--pri); font-weight: 600; }
+.flow-band { fill: none; stroke-width: 9; stroke-linejoin: round; opacity: 0.22; }
+.flow-dash { fill: none; stroke-width: 2.6; stroke-dasharray: 7 9; stroke-linejoin: round; animation: flow 0.7s linear infinite; }
+.flow-pri { stroke: var(--pri); }
+.flow-sec { stroke: var(--sec); }
+@keyframes flow { to { stroke-dashoffset: -16; } }
+@media (prefers-reduced-motion: reduce) { .flow-dash { animation: none; } }
+.paused .flow-dash { animation-play-state: paused; }
+
+.w-axis { stroke: var(--grid); stroke-width: 1; }
+.w-zero { stroke: var(--text2); stroke-width: 1.2; }
+.w-zlbl { font-size: 16px; fill: var(--text2); }
+.w-ev { stroke: var(--text3); stroke-width: 1; stroke-dasharray: 3 4; }
+.w-trace { fill: none; stroke: var(--text); stroke-width: 1.8; stroke-linejoin: round; }
+.w-s1 { stroke: var(--sec); }
+.w-s2 { stroke: var(--mag); }
+.w-vx { stroke: var(--pri); }
+.w-v2 { stroke: var(--mag); stroke-dasharray: 6 4; }
+.w-i1 { stroke: var(--pri); stroke-width: 2.2; }
+.w-i2 { stroke: var(--sec); stroke-width: 2.2; }
+.w-band { fill: var(--band); }
+.w-dcm { fill: var(--dcm); }
+.w-cursor { stroke: var(--cursor); stroke-width: 1.4; }
+.w-dot { fill: var(--cursor); }
+.w-row { font-size: 19px; fill: var(--text); font-weight: 500; }
+.w-small { font-size: 16px; fill: var(--text3); }
+.w-tlabel { font-size: 18px; fill: var(--text2); }
+.w-lvl { font-size: 15px; fill: var(--text3); }
+.m-ideal { fill: none; stroke: var(--text2); stroke-width: 1.6; stroke-dasharray: 6 5; }
+.m-iin { fill: none; stroke: var(--pri); stroke-width: 2.6; }
+.m-fwd { fill: none; stroke: var(--sec); stroke-width: 1.5; }
+.m-rev { fill: none; stroke: var(--diode); stroke-width: 1.5; }
+.m-mark { stroke: var(--cursor); stroke-width: 1.6; }
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Paper · ECCE 2024 · Afzali Arani, Ramezan Ghanbari, Seyringer, Klien, Saccavini, Linder</div>
+    <h1>A rectifier with inherent unity power factor</h1>
+    <p class="lede">A diode bridge D1–D4 feeds two stacked bulk capacitors, Cb1 and Cb2. A half bridge S1–S2 runs at a fixed 50% duty. The two sides are tied together only by a coupled inductor: winding L1 sits in the AC line, and winding L2 sits between the capacitor midpoint and the half-bridge node. There is no current loop and no current sensing. Each switching period, the input current i<sub>1</sub> swings positive and then briefly negative. The paper calls this the <b>inherent reverse current mode (IRCM)</b>. That reverse part exactly cancels the error of the forward part, so the local average of i<sub>1</sub> is V<sub>in</sub>/R<sub>in</sub>: the converter looks like a resistor to the grid.</p>
+    <div class="facts">
+      <div class="formula">I<sub>in</sub> = V<sub>in</sub> / R<sub>in</sub></div>
+      <div class="formula">R<sub>in</sub> = 8·f<sub>s</sub>·√(L1·L2)·(1 − k²)/k</div>
+      <div class="formula">nk = M / L2 <small>(n = √(L1/L2))</small></div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="scroll schem" id="schemWrap">
+      <svg id="schem" viewBox="0 0 1000 455" role="img" aria-label="Rectifier schematic with conducting devices and current paths highlighted"></svg>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--pri)"></i><span>Input current i<sub>1</sub> / bridge diode conducting</span></span>
+      <span><i class="sw" style="background:var(--sec)"></i><span>L2 current i<sub>2</sub> / MOSFET channel conducting</span></span>
+      <span><i class="sw" style="background:var(--diode)"></i><span>Body diode conducting (dead time)</span></span>
+      <span><span><b style="color:var(--text)">Bold label</b> = gate on</span></span>
+    </div>
+  </section>
+
+  <section class="panel controls" aria-label="Playback and operating point">
+    <div class="btns">
+      <button id="prev" type="button" aria-label="Previous interval">◀ Prev</button>
+      <button id="play" type="button" class="primary">Pause</button>
+      <button id="next" type="button" aria-label="Next interval">Next ▶</button>
+    </div>
+    <div class="slider">
+      <label for="th"><span>Mains angle θ (which switching period)</span> <output id="thOut">45°</output></label>
+      <input id="th" type="range" min="0" max="359" step="1" value="45">
+    </div>
+    <div class="slider">
+      <label for="nk"><span>nk = M/L2</span> <output id="nkOut">4.00</output></label>
+      <input id="nk" type="range" min="2.05" max="5" step="0.05" value="4">
+    </div>
+    <div class="slider">
+      <label for="vc"><span>V<sub>C</sub> per capacitor</span> <output id="vcOut">170 V</output></label>
+      <input id="vc" type="range" min="165" max="300" step="5" value="170">
+    </div>
+    <div class="slider">
+      <label for="spd"><span>Speed</span> <output id="spdOut">1×</output></label>
+      <input id="spd" type="range" min="0.25" max="3" step="0.25" value="1">
+    </div>
+    <label class="check" for="sweep"><input id="sweep" type="checkbox"> Step θ by 15° every switching period</label>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <div class="split">
+    <section class="panel">
+      <div class="scroll wave">
+        <svg id="wave" viewBox="0 0 1000 560" role="img" aria-label="Gate signals, Vx and V2, input current i1 and L2 current i2 over one switching period"></svg>
+      </div>
+    </section>
+    <section class="panel card" id="card" aria-live="polite"></section>
+  </div>
+
+  <section class="section">
+    <h2>Every interval in this switching period</h2>
+    <div class="panel scroll tbl">
+      <table>
+        <thead><tr><th>Interval</th><th>Input bridge</th><th>Half bridge</th><th>V<sub>x</sub> / V<sub>2</sub></th><th>What happens</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Over the whole mains period</h2>
+    <p>Each point below is the local average of i<sub>1</sub> over one switching period, from the same interval equations. The forward part (i<sub>1</sub> in the same direction as v<sub>in</sub>) alone is not sinusoidal. The reverse part of IRCM fills in exactly the difference. Where IRCM is lost (shaded, DCM), the reverse part drops to zero and the current bends away from the sine. Click or drag to pick the switching period shown above.</p>
+    <div class="panel">
+      <div class="mains-head">
+        <div class="btns">
+          <button type="button" data-nk="4" data-vc="270">Fig. 4: nk = 4, V<sub>C</sub> = 270 V</button>
+          <button type="button" data-nk="4" data-vc="170">Fig. 5: nk = 4, V<sub>C</sub> = 170 V</button>
+          <button type="button" data-nk="2.4" data-vc="200">Prototype: nk = 2.4, V<sub>C</sub> = 200 V</button>
+        </div>
+      </div>
+      <div class="scroll mains">
+        <svg id="mains" viewBox="0 0 1000 330" role="img" aria-label="Input current over one mains period compared with an ideal sine"></svg>
+      </div>
+      <div class="mains-legend">
+        <span><i class="sw" style="background:var(--pri)"></i><span>i<sub>in</sub> (local average of i<sub>1</sub>)</span></span>
+        <span><i class="sw" style="background:var(--text2)"></i><span>ideal v<sub>in</sub>/R<sub>in</sub></span></span>
+        <span><i class="sw" style="background:var(--sec)"></i><span>forward part</span></span>
+        <span><i class="sw" style="background:var(--diode)"></i><span>reverse part (IRCM)</span></span>
+        <span><i class="sw" style="background:var(--dcm);height:10px"></i><span>DCM region</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The three design conditions</h2>
+    <div class="conds">
+      <div class="panel cond">
+        <h3>No CCM</h3>
+        <div class="formula">|v<sub>in</sub>|/2 ≤ V<sub>C</sub></div>
+        <p>From flux balance, t<sub>α</sub> − t<sub>β</sub> = T·v<sub>in</sub>/(4V<sub>C</sub>). Interval 3 must fit in half a period, so the bulk stack 2V<sub>C</sub> only has to sit just above the mains peak (≈ 325 V for 230 V<sub>rms</sub>).</p>
+      </div>
+      <div class="panel cond">
+        <h3>IRCM, so unity PF</h3>
+        <div class="formula">|v<sub>in</sub>|/(nk − 2) ≤ V<sub>C</sub></div>
+        <p>This keeps the reverse current I<sub>β</sub> alive. Where it fails the converter drops into DCM and the input current is only the forward part. With nk = 4 it reduces to the no-CCM condition, so V<sub>C</sub> ≥ V<sub>m</sub>/2 gives UPF over the whole cycle.</p>
+      </div>
+      <div class="panel cond">
+        <h3>No zero-crossing distortion</h3>
+        <div class="formula">nk &gt; 2</div>
+        <p>At v<sub>in</sub> = 0 the reverse slope is V<sub>C</sub>(2L2 − M)/det, which is negative only if M &gt; 2L2. Then the bridge diodes keep conducting through the zero crossing, and the usual PFC dead zone around the zero crossing disappears.</p>
+      </div>
+    </div>
+    <p>Model settings: V<sub>in</sub> = 230 V<sub>rms</sub> (V<sub>m</sub> = 325 V), f<sub>L</sub> = 50 Hz, f<sub>s</sub> = 100 kHz, P = 70 W as in the paper's Figs. 4–6, and coupling k = 0.9 (the paper leaves k free). L1, L2 and M follow from R<sub>in</sub> = V<sub>m</sub>²/2P and the chosen nk. i<sub>2</sub> is shifted so its local average is zero, which is the paper's charge-balance condition for Cb1 and Cb2. The waveforms neglect the dead time, as the paper does. The schematic shows it as a short body-diode interval at each switch transition.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  // ---------- converter model (paper eqs. 3–7, with the local average of i2 set to zero) ----------
+  const BASE = { k: 0.9, fs: 100e3, P: 70, Vm: 230 * Math.SQRT2, fL: 50 };
+  function design(nk, Vc) {
+    const p = { ...BASE, nk, Vc };
+    const Rin = p.Vm * p.Vm / (2 * p.P);
+    const L2 = Rin * p.k * p.k / (8 * p.fs * nk * (1 - p.k * p.k));
+    const n = nk / p.k, L1 = n * n * L2, M = nk * L2;
+    const det = L1 * L2 - M * M;
+    return { ...p, Rin, L1, L2, M, n, det, G11: L2 / det, G12: -M / det, G22: L1 / det, T: 1 / p.fs };
+  }
+  // one switching period for vin >= 0, starting at t0 (S2 turns off, S1 turns on)
+  function cyclePos(d, vin) {
+    const { G11, G12, G22, Vc, T, L2 } = d;
+    const h = T / 2;
+    const s1 = (V1, V2) => G11 * V1 + G12 * V2;
+    const s2 = (V1, V2) => G12 * V1 + G22 * V2;
+    const a1 = s1(vin + 2 * Vc, -Vc), a2 = s1(vin - 2 * Vc, -Vc);
+    const a3 = s1(vin - 2 * Vc, Vc), a4 = s1(vin + 2 * Vc, Vc);
+    const p = a2 / a1, q = a4 / a3;
+    let Ia = h * (a2 + p * a4) / (1 - p * q);
+    let Ib = h * (a4 + q * a2) / (1 - p * q);
+    let tb = -Ib / a1, ta = -Ia / a3, mode = 'IRCM';
+    if (!(a4 < 0) || Ib > 0 || tb < 0) { mode = 'DCM'; Ib = 0; tb = 0; Ia = a2 * h; ta = -Ia / a3; }
+    if (ta > h) mode = 'CCM';
+    const iv = [];
+    if (tb > 0) iv.push({ j: 1, a: 0, b: tb, Vx: -2 * Vc, V2: -Vc, i1s: Ib, s1: a1 });
+    iv.push({ j: 2, a: tb, b: h, Vx: 2 * Vc, V2: -Vc, i1s: 0, s1: a2 });
+    iv.push({ j: 3, a: h, b: h + Math.min(ta, h), Vx: 2 * Vc, V2: Vc, i1s: Ia, s1: a3 });
+    if (mode === 'IRCM') iv.push({ j: 4, a: h + ta, b: T, Vx: -2 * Vc, V2: Vc, i1s: 0, s1: a4 });
+    else if (h + ta < T - 1e-12) iv.push({ j: 0, a: h + ta, b: T, Vx: 0, V2: Vc, i1s: 0, s1: 0 });
+    let i2 = 0;
+    iv.forEach((v) => {
+      v.s2 = v.j === 0 ? v.V2 / L2 : s2(vin - v.Vx, v.V2);
+      v.i2s = i2; i2 += v.s2 * (v.b - v.a);
+    });
+    let area = 0;
+    iv.forEach((v) => { const dt = v.b - v.a; area += v.i2s * dt + 0.5 * v.s2 * dt * dt; });
+    iv.forEach((v) => { v.i2s -= area / T; });
+    let fwd = 0, rev = 0;
+    iv.forEach((v) => { const dt = v.b - v.a, m = (v.i1s + 0.5 * v.s1 * dt) * dt; if (v.j === 2 || v.j === 3) fwd += m; else rev += m; });
+    return { mode, Ia, Ib, ta, tb, iv, Iin: (fwd + rev) / T, fwd: fwd / T, rev: rev / T };
+  }
+  // any sign of vin: the negative half is the positive solution shifted by T/2 with all signs flipped
+  function cycle(d, vin) {
+    const c = cyclePos(d, Math.abs(vin));
+    c.neg = vin < 0;
+    c.vin = vin;
+    if (c.neg) {
+      const T = d.T, h = T / 2;
+      c.iv = c.iv.map((v) => {
+        let a = v.a - h, b = v.b - h;
+        if (a < -1e-15) { a += T; b += T; }
+        return { ...v, a, b, Vx: -v.Vx, V2: -v.V2, i1s: -v.i1s, s1: -v.s1, i2s: -v.i2s, s2: -v.s2 };
+      }).sort((x, y) => x.a - y.a);
+      c.Iin = -c.Iin; c.fwd = -c.fwd; c.rev = -c.rev;
+    }
+    return c;
+  }
+  function mainsSweep(d) {
+    const N = 360, pts = [];
+    for (let j = 0; j <= N; j++) {
+      const th = 2 * Math.PI * j / N, v = d.Vm * Math.sin(th);
+      const c = cycle(d, v);
+      pts.push({ th, v, Iin: c.Iin, fwd: c.fwd, rev: c.rev, mode: c.mode, ideal: v / d.Rin });
+    }
+    const I = pts.slice(0, N).map((p) => p.Iin);
+    const H = (h) => { let a = 0, b = 0; I.forEach((x, j) => { a += x * Math.cos(h * 2 * Math.PI * j / N); b += x * Math.sin(h * 2 * Math.PI * j / N); }); return Math.hypot(a, b) * 2 / N; };
+    const h1 = H(1); let hs = 0; for (let h = 2; h <= 40; h++) hs += H(h) ** 2;
+    const P = pts.slice(0, N).reduce((s, p) => s + p.v * p.Iin, 0) / N;
+    const Irms = Math.sqrt(I.reduce((s, x) => s + x * x, 0) / N);
+    return { pts, thd: Math.sqrt(hs) / h1, pf: P / (d.Vm / Math.SQRT2 * Irms), P };
+  }
+
+  // ---------- state ----------
+  const st = {
+    nk: 4, Vc: 170, th: 45, t: 0, speed: 1, sweep: false, ivIdx: -1,
+    playing: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  };
+  const $ = (s) => document.querySelector(s);
+  let D, C, MS;
+  const TD = 0.03;   // dead time shown in the schematic, fraction of T
+
+  function evalAt(t) {
+    const iv = C.iv;
+    let k = iv.findIndex((v) => t < v.b);
+    if (k < 0) k = iv.length - 1;
+    const v = iv[k], dt = t - v.a;
+    return { k, v, i1: v.i1s + v.s1 * dt, i2: v.i2s + v.s2 * dt, Vx: v.Vx, V2: v.V2 };
+  }
+
+  // ---------- schematic ----------
+  const TOP = 50, BOT = 410, XS = 60, YT = 180, YB = 280, XP = 300, XN = 390, XC = 530, XH = 820, XL = 950, YM = 230;
+  const H = 45, OFF = 18;
+  const POS = { 1: [XH, 130], 2: [XH, 330] };
+  function branchPts(p, w, down) {
+    const [x, yc] = POS[p];
+    const bx = x + (w === 'T' ? -OFF : OFF);
+    const pts = [[x, yc - H], [bx, yc - H], [bx, yc + H], [x, yc + H]];
+    return down ? pts : pts.reverse();
+  }
+  function bridgeDiode(id, x, yc) {
+    return `<g class="dev bridge" id="${id}"><title>Bridge diode ${id}</title>
+      <rect class="halo" x="${x - 14}" y="${yc - 30}" width="28" height="60" rx="6"/>
+      <polygon class="fillme" points="${x - 10},${yc + 9} ${x + 10},${yc + 9} ${x},${yc - 9}"/>
+      <path d="M${x - 10},${yc - 9} H${x + 10}"/>
+      <text x="${x + 16}" y="${yc + 4.5}">${id}</text></g>`;
+  }
+  function mosfet(p) {
+    const [x, yc] = POS[p];
+    const xt = x - OFF, xd = x + OFF;
+    return `
+      <g class="dev" id="S${p}"><title>MOSFET S${p}</title>
+        <rect class="halo" x="${xt - 32}" y="${yc - 30}" width="44" height="60" rx="6"/>
+        <path d="M${xt},${yc - H} V${yc - 16} M${xt},${yc + 16} V${yc + H} M${xt - 9},${yc - 16} V${yc + 16} M${xt - 9},${yc - 16} H${xt} M${xt - 9},${yc + 16} H${xt}"/>
+        <path class="gate" d="M${xt - 15},${yc - 12} V${yc + 12} M${xt - 15},${yc} H${xt - 26}"/>
+        <polygon class="fillme" points="${xt - 9},${yc + 16} ${xt - 2},${yc + 12} ${xt - 2},${yc + 20}"/>
+        <text x="${xt - 30}" y="${yc + 4.5}" text-anchor="end">S${p}</text>
+      </g>
+      <g class="dev diode" id="B${p}"><title>Body diode of S${p}</title>
+        <rect class="halo" x="${xd - 14}" y="${yc - 30}" width="28" height="60" rx="6"/>
+        <path d="M${xd},${yc - H} V${yc + H}"/>
+        <polygon class="fillme" points="${xd - 8},${yc + 7} ${xd + 8},${yc + 7} ${xd},${yc - 7}"/>
+        <path d="M${xd - 8},${yc - 7} H${xd + 8}"/>
+      </g>`;
+  }
+  function drawSchematic() {
+    const coil = Array.from({ length: 4 }, () => 'a10,10 0 0 1 20,0').join(' ');
+    const wires = [
+      `M${XS},${YT} V${YM - 20} M${XS},${YM + 20} V${YB}`,
+      `M${XS},${YT} H130 ${coil} H${XP}`,
+      `M${XS},${YB} H${XP - 6} a6,6 0 0 1 12,0 H${XN}`,
+      `M${XP},${TOP} V${BOT} M${XN},${TOP} V${BOT}`,
+      `M${XP},${TOP} H${XL} M${XP},${BOT} H${XL}`,
+      `M${XC},${TOP} V124 M${XC},136 V324 M${XC},336 V${BOT}`,
+      `M${XC},${YM} H620 ${coil} H${XH}`,
+      `M${XH},${TOP} V${130 - H} M${XH},${130 + H} V${330 - H} M${XH},${330 + H} V${BOT}`,
+      [130, 330].map((yc) => `M${XH - OFF},${yc - H} H${XH + OFF} M${XH - OFF},${yc + H} H${XH + OFF}`).join(' '),
+      `M${XL},${TOP} V190 M${XL},270 V${BOT}`,
+    ].join(' ');
+    $('#schem').innerHTML = `
+      <path class="wire" d="${wires}"/>
+      <circle class="wire" cx="${XS}" cy="${YM}" r="20"/>
+      <path class="wire" d="M${XS - 11},${YM} c4,-10 7,-10 11,0 s7,10 11,0"/>
+      <path class="wire" style="stroke-width:3" d="M${XC - 18},124 H${XC + 18} M${XC - 18},136 H${XC + 18} M${XC - 18},324 H${XC + 18} M${XC - 18},336 H${XC + 18}"/>
+      <rect class="wire" x="${XL - 8}" y="190" width="16" height="80" rx="1"/>
+      <circle class="node" cx="138" cy="${YT + 14}" r="3"/>
+      <circle class="node" cx="628" cy="${YM + 14}" r="3"/>
+      ${[[XP, YT], [XN, YB], [XP, TOP], [XN, TOP], [XP, BOT], [XN, BOT], [XC, TOP], [XC, BOT], [XC, YM], [XH, YM], [XH, TOP], [XH, BOT]]
+        .map(([x, y]) => `<circle class="node" cx="${x}" cy="${y}" r="3.4"/>`).join('')}
+      <text class="lbl-big" x="${XS - 28}" y="${YM + 5}" text-anchor="end">v<tspan font-size="11" dy="3">in</tspan></text>
+      <text class="lbl-big" x="170" y="${YT - 20}" text-anchor="middle">L1</text>
+      <text class="lbl-big" x="660" y="${YM - 20}" text-anchor="middle">L2</text>
+      <text x="660" y="${YM + 34}" text-anchor="middle">coupled with L1 (M)</text>
+      <text class="lbl-big" x="${XC + 26}" y="136">Cb1</text>
+      <text x="${XC + 26}" y="156">+V<tspan font-size="10" dy="3">C</tspan></text>
+      <text class="lbl-big" x="${XC + 26}" y="336">Cb2</text>
+      <text x="${XC + 26}" y="356">+V<tspan font-size="10" dy="3">C</tspan></text>
+      <text class="lbl-big" x="${XL - 14}" y="235" text-anchor="end">Load</text>
+      <text x="${XL - 14}" y="255" text-anchor="end">2V<tspan font-size="10" dy="3">C</tspan></text>
+      <text x="${(XP + XN) / 2}" y="${YM + 5}" text-anchor="middle" style="fill:var(--text)">V<tspan font-size="10" dy="3">x</tspan></text>
+      <text x="${XH + 12}" y="${YM - 8}">sw</text>
+      <text x="${XC - 10}" y="${YM - 8}" text-anchor="end">mid</text>
+      <g>
+        <polyline id="aBand" class="flow-band flow-pri"/><polyline id="bBand" class="flow-band flow-sec"/>
+        <polyline id="aDash" class="flow-dash flow-pri"/><polyline id="bDash" class="flow-dash flow-sec"/>
+      </g>
+      ${bridgeDiode('D1', XP, 115)}${bridgeDiode('D3', XP, 345)}${bridgeDiode('D2', XN, 115)}${bridgeDiode('D4', XN, 345)}
+      ${mosfet(1)}${mosfet(2)}
+      <text id="i1Lbl" x="170" y="${YT + 36}" text-anchor="middle" class="lbl-big" style="font-size:14px;fill:var(--pri)"></text>
+      <text id="i2Lbl" x="660" y="${YM + 56}" text-anchor="middle" class="lbl-big" style="font-size:14px;fill:var(--sec)"></text>
+      <text id="vxLbl" x="${(XP + XN) / 2}" y="440" text-anchor="middle"></text>
+      <text id="v2Lbl" x="660" y="440" text-anchor="middle"></text>
+      <text id="vinLbl" x="${XS + 10}" y="440" text-anchor="middle"></text>`;
+  }
+  const ptsStr = (pts) => pts.map((p) => p.join(',')).join(' ');
+  const setPts = (ids, pts) => ids.forEach((q) => $(q).setAttribute('points', pts ? ptsStr(pts) : ''));
+  function switchState(t, i2) {
+    const T = D.T, h = T / 2, first = t < h;
+    const th = first ? t : t - h;
+    const inc = first ? 1 : 2, out = first ? 2 : 1;
+    if (th < TD * T) {
+      const zvs = first ? i2 > 0 : i2 < 0;
+      return { gate: 0, dev: zvs ? inc : out, w: 'D', zvs };
+    }
+    return { gate: inc, dev: inc, w: 'T', zvs: true };
+  }
+  function updateSchematic(e, t) {
+    document.querySelectorAll('#schem .dev').forEach((g) => g.classList.remove('on', 'gated'));
+    const small = 1e-3;
+    // input loop
+    if (Math.abs(e.i1) > small) {
+      const pos = e.i1 > 0;
+      (pos ? ['D1', 'D4'] : ['D2', 'D3']).forEach((id) => $('#' + id).classList.add('on'));
+      const pts = pos
+        ? [[XS, YT], [XP, YT], [XP, TOP], [XC, TOP], [XC, BOT], [XN, BOT], [XN, YB], [XS, YB], [XS, YT]]
+        : [[XS, YB], [XN, YB], [XN, TOP], [XC, TOP], [XC, BOT], [XP, BOT], [XP, YT], [XS, YT], [XS, YB]];
+      setPts(['#aBand', '#aDash'], pts);
+    } else setPts(['#aBand', '#aDash'], null);
+    // half-bridge loop
+    const sw = switchState(t, e.i2);
+    if (sw.gate) $('#S' + sw.gate).classList.add('gated');
+    $('#' + (sw.w === 'T' ? 'S' : 'B') + sw.dev).classList.add('on');
+    let pts = sw.dev === 1
+      ? [[XC, YM], [XH, YM], ...branchPts(1, sw.w, false), [XH, TOP], [XC, TOP], [XC, YM]]
+      : [[XC, YM], [XH, YM], ...branchPts(2, sw.w, true), [XH, BOT], [XC, BOT], [XC, YM]];
+    if (e.i2 < 0) pts = pts.reverse();
+    setPts(['#bBand', '#bDash'], Math.abs(e.i2) > small ? pts : null);
+    const f = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2) + ' A';
+    $('#i1Lbl').textContent = Math.abs(e.i1) > small ? `i1 = ${f(e.i1)} ${e.i1 > 0 ? '→' : '←'}` : 'i1 = 0 (DCM)';
+    $('#i2Lbl').textContent = `i2 = ${f(e.i2)} ${e.i2 > 0 ? '→' : '←'}`;
+    $('#vxLbl').textContent = e.Vx ? `Vx = ${e.Vx > 0 ? '+' : '−'}2Vc` : 'Vx floating';
+    $('#v2Lbl').textContent = `V2 = ${e.V2 > 0 ? '+' : '−'}Vc (${sw.gate ? 'S' + sw.gate + ' on' : 'dead time'})`;
+    $('#vinLbl').textContent = `vin = ${C.vin.toFixed(0)} V`;
+  }
+
+  // ---------- switching-period waveforms ----------
+  const WX0 = 110, WX1 = 980;
+  const tx = (t) => WX0 + (WX1 - WX0) * t / D.T;
+  const R = { g1: [34, 58], g2: [90, 114], v: 205, i1: 345, i2: 472, vAmp: 46, iAmp: 60 };
+  let SC;
+  function drawWave() {
+    const T = D.T, h = T / 2, iv = C.iv;
+    const m1 = Math.max(1e-6, ...iv.flatMap((v) => [Math.abs(v.i1s), Math.abs(v.i1s + v.s1 * (v.b - v.a))]));
+    const m2 = Math.max(1e-6, ...iv.flatMap((v) => [Math.abs(v.i2s), Math.abs(v.i2s + v.s2 * (v.b - v.a))]));
+    SC = { m1, m2 };
+    const y1 = (i) => R.i1 - i / m1 * R.iAmp, y2 = (i) => R.i2 - i / m2 * R.iAmp;
+    const vy = (v) => R.v - v / (2 * D.Vc) * R.vAmp;
+    const pl = (fa, fb) => 'M' + iv.map((v) => `${tx(v.a)},${fa(v)} L${tx(v.b)},${fb(v)}`).join(' L');
+    const i1p = pl((v) => y1(v.i1s), (v) => y1(v.i1s + v.s1 * (v.b - v.a)));
+    const i2p = pl((v) => y2(v.i2s), (v) => y2(v.i2s + v.s2 * (v.b - v.a)));
+    const vxp = pl((v) => vy(v.Vx), (v) => vy(v.Vx));
+    const v2p = pl((v) => vy(v.V2), (v) => vy(v.V2));
+    const g1 = `M${tx(0)},${R.g1[0]} H${tx(h)} V${R.g1[1]} H${tx(T)}`;
+    const g2 = `M${tx(0)},${R.g2[1]} H${tx(h)} V${R.g2[0]} H${tx(T)}`;
+    const evs = [...iv.map((v) => v.a), T];
+    let lastX = -1e9;
+    const labels = evs.map((t, k) => {
+      const x = tx(t);
+      const show = x - lastX >= 24 || k === evs.length - 1;
+      if (show) lastX = x;
+      return `<line class="w-ev" x1="${x}" y1="22" x2="${x}" y2="${R.i2 + R.iAmp + 6}"/>` +
+        (show ? `<text class="w-tlabel" x="${x}" y="550" text-anchor="middle">t${k}</text>` : '');
+    }).join('');
+    const rowLbl = (y, main, sub, color) => `<text class="w-row" x="8" y="${y + 6}"${color ? ` style="fill:${color}"` : ''}>${main}</text>` + (sub ? `<text class="w-small" x="8" y="${y + 26}">${sub}</text>` : '');
+    const zero = (y) => `<line class="w-zero" x1="${WX0}" y1="${y}" x2="${WX1}" y2="${y}"/><text class="w-zlbl" x="${WX0 - 6}" y="${y + 5}" text-anchor="end">0</text>`;
+    const lvl = [2, 1, -1, -2].map((m) => `<line class="w-axis" x1="${WX0}" y1="${vy(m * D.Vc)}" x2="${WX1}" y2="${vy(m * D.Vc)}"/>`).join('');
+    $('#wave').innerHTML = `
+      <rect id="wBand" class="w-band" x="0" y="22" width="0" height="${R.i2 + R.iAmp - 16}"/>
+      ${lvl}${zero(R.v)}${zero(R.i1)}${zero(R.i2)}
+      <text class="w-lvl" x="${WX1}" y="${vy(2 * D.Vc) - 4}" text-anchor="end">±2V_C</text>
+      <text class="w-lvl" x="${WX1}" y="${vy(D.Vc) - 4}" text-anchor="end">±V_C</text>
+      ${labels}
+      ${rowLbl(R.g1[0] + 8, 'S1', '', 'var(--sec)')}
+      ${rowLbl(R.g2[0] + 8, 'S2', '', 'var(--mag)')}
+      ${rowLbl(R.v - 16, 'V_x', '', 'var(--pri)')}
+      <text class="w-row" x="8" y="${R.v + 22}" style="fill:var(--mag)">V_2</text>
+      ${rowLbl(R.i1 - 10, 'i_1', 'input', 'var(--pri)')}
+      ${rowLbl(R.i2 - 10, 'i_2', 'L2', 'var(--sec)')}
+      <path class="w-trace w-s1" d="${g1}"/>
+      <path class="w-trace w-s2" d="${g2}"/>
+      <path class="w-trace w-vx" d="${vxp}"/>
+      <path class="w-trace w-v2" d="${v2p}"/>
+      <path class="w-trace w-i1" d="${i1p}"/>
+      <path class="w-trace w-i2" d="${i2p}"/>
+      <text class="w-lvl" x="${WX0 + 4}" y="${R.i1 - R.iAmp - 6}">${m1.toFixed(2)} A</text>
+      <text class="w-lvl" x="${WX0 + 4}" y="${R.i2 - R.iAmp - 6}">${m2.toFixed(2)} A</text>
+      <line id="wCur" class="w-cursor" x1="0" y1="22" x2="0" y2="${R.i2 + R.iAmp + 6}"/>
+      <circle id="wDot1" class="w-dot" r="4.5" cx="0" cy="0"/>
+      <circle id="wDot2" class="w-dot" r="4.5" cx="0" cy="0"/>`;
+  }
+  function updateWave(t, e) {
+    const x = tx(t);
+    $('#wCur').setAttribute('x1', x); $('#wCur').setAttribute('x2', x);
+    $('#wDot1').setAttribute('cx', x); $('#wDot1').setAttribute('cy', R.i1 - e.i1 / SC.m1 * R.iAmp);
+    $('#wDot2').setAttribute('cx', x); $('#wDot2').setAttribute('cy', R.i2 - e.i2 / SC.m2 * R.iAmp);
+    $('#wBand').setAttribute('x', tx(e.v.a)); $('#wBand').setAttribute('width', Math.max(1, tx(e.v.b) - tx(e.v.a)));
+  }
+
+  // ---------- mains-period plot ----------
+  const MX0 = 70, MX1 = 980, MY = 160, MA = 120;
+  const mx = (th) => MX0 + (MX1 - MX0) * th / (2 * Math.PI);
+  function drawMains() {
+    const P = MS.pts, pk = Math.max(...P.map((p) => Math.max(Math.abs(p.ideal), Math.abs(p.Iin), Math.abs(p.fwd))));
+    const my = (i) => MY - i / pk * MA;
+    const line = (f) => 'M' + P.map((p) => `${mx(p.th).toFixed(1)},${my(f(p)).toFixed(1)}`).join(' L');
+    let dcm = '', s = null;
+    P.forEach((p, j) => {
+      const on = p.mode !== 'IRCM';
+      if (on && s === null) s = p.th;
+      if ((!on || j === P.length - 1) && s !== null) { dcm += `<rect class="w-dcm" x="${mx(s)}" y="${MY - MA - 14}" width="${mx(p.th) - mx(s)}" height="${2 * MA + 28}"/>`; s = null; }
+    });
+    const ticks = [0, 90, 180, 270, 360].map((d) => `<line class="w-ev" x1="${mx(d * Math.PI / 180)}" y1="${MY - MA - 14}" x2="${mx(d * Math.PI / 180)}" y2="${MY + MA + 14}"/><text class="w-tlabel" x="${mx(d * Math.PI / 180)}" y="${MY + MA + 38}" text-anchor="middle">${d}°</text>`).join('');
+    $('#mains').innerHTML = `
+      ${dcm}${ticks}
+      <line class="w-zero" x1="${MX0}" y1="${MY}" x2="${MX1}" y2="${MY}"/>
+      <text class="w-zlbl" x="${MX0 - 6}" y="${MY + 5}" text-anchor="end">0</text>
+      <text class="w-lvl" x="${MX0 - 6}" y="${my(pk) + 5}" text-anchor="end">${pk.toFixed(2)}</text>
+      <text class="w-lvl" x="${MX0 - 6}" y="${my(-pk) + 5}" text-anchor="end">−${pk.toFixed(2)}</text>
+      <text class="w-small" x="${MX0}" y="${MY - MA - 20}">A</text>
+      <path class="m-fwd" d="${line((p) => p.fwd)}"/>
+      <path class="m-rev" d="${line((p) => p.rev)}"/>
+      <path class="m-ideal" d="${line((p) => p.ideal)}"/>
+      <path class="m-iin" d="${line((p) => p.Iin)}"/>
+      <line id="mMark" class="m-mark" x1="0" y1="${MY - MA - 14}" x2="0" y2="${MY + MA + 14}"/>
+      <circle id="mDot" class="w-dot" r="5" cx="0" cy="0"/>`;
+    MS.my = my;
+  }
+  function updateMains() {
+    const th = st.th * Math.PI / 180;
+    $('#mMark').setAttribute('x1', mx(th)); $('#mMark').setAttribute('x2', mx(th));
+    $('#mDot').setAttribute('cx', mx(th)); $('#mDot').setAttribute('cy', MS.my(C.Iin));
+  }
+
+  // ---------- descriptions ----------
+  const dn = (ids, c) => ids.map((id) => `<span class="dn ${c}">${id}</span>`).join(', ');
+  function describe(k) {
+    const v = C.iv[k], T = D.T, h = T / 2;
+    const first = v.a < h - 1e-12;
+    const sw = first ? 'S1' : 'S2';
+    const mid = v.i1s + v.s1 * (v.b - v.a) / 2;
+    const i2m = v.i2s + v.s2 * (v.b - v.a) / 2;
+    const vsign = C.neg ? -1 : 1;
+    const fwd = mid * vsign > 0;
+    const growing = Math.abs(v.i1s + v.s1 * (v.b - v.a)) > Math.abs(v.i1s);
+    let head, phase;
+    if (v.j === 0) { head = 'DCM gap: input current stays at zero'; phase = 'idle'; }
+    else if (fwd && growing) { head = 'Forward current builds up'; phase = 'fwd-up'; }
+    else if (fwd) { head = 'Forward current falls to zero'; phase = 'fwd-down'; }
+    else if (growing) { head = 'Reverse current builds up (IRCM)'; phase = 'rev-up'; }
+    else { head = 'Reverse current returns to zero'; phase = 'rev-down'; }
+    const diodes = v.j === 0 ? [] : (mid > 0 ? ['D1', 'D4'] : ['D2', 'D3']);
+    const vx = v.j === 0 ? 'floating' : (v.Vx > 0 ? '+2V<sub>C</sub>' : '−2V<sub>C</sub>');
+    const vin = Math.abs(C.vin).toFixed(0);
+    let bridgeTxt;
+    if (v.j === 0) bridgeTxt = `All four bridge diodes are off and i<sub>1</sub> = 0. The applied voltage cannot drive a reverse current here because |v<sub>in</sub>| = ${vin} V is above (nk − 2)·V<sub>C</sub> = ${((st.nk - 2) * st.Vc).toFixed(0)} V. This gap is what bends the input current away from a sine.`;
+    else {
+      const v1 = v.Vx > 0 ? `v<sub>in</sub> − 2V<sub>C</sub>` : `v<sub>in</sub> + 2V<sub>C</sub>`;
+      bridgeTxt = `i<sub>1</sub> ${mid > 0 ? '> 0' : '< 0'}, so ${dn(diodes, 'd')} conduct and connect the line to the bulk stack with V<sub>x</sub> = ${vx}. L1 sees V<sub>1</sub> = ${v1}. ` +
+        (phase === 'fwd-up' ? 'Helped by the coupling to L2, i<sub>1</sub> ramps up and charges Cb1 + Cb2 from the line.' :
+         phase === 'fwd-down' ? 'i<sub>1</sub> ramps back down toward zero. When it reaches zero the bridge diodes commutate at zero current.' :
+         phase === 'rev-up' ? 'i<sub>1</sub> now flows against v<sub>in</sub>. This small reverse current is the IRCM part. It keeps the diodes conducting, even near the zero crossing, and corrects the local average exactly to v<sub>in</sub>/R<sub>in</sub>.' :
+         'The reverse current decays back to zero. At zero the other diode pair takes over at zero current.');
+    }
+    const hb = sw === 'S1'
+      ? (i2m > 0 ? `i<sub>2</sub> > 0 flows from the midpoint through L2 and up through ${dn(['S1'], 's')} (source to drain) into the + rail, charging Cb1.` : `i<sub>2</sub> < 0 flows from the + rail down through ${dn(['S1'], 's')} and L2 into the midpoint, discharging Cb1.`)
+      : (i2m > 0 ? `i<sub>2</sub> > 0 flows from the midpoint through L2 and down through ${dn(['S2'], 's')} to the − rail, discharging Cb2.` : `i<sub>2</sub> < 0 flows up through ${dn(['S2'], 's')} (source to drain) and L2 into the midpoint, charging Cb2.`);
+    const hbTxt = `${dn([sw], 'g')} is on, so V<sub>2</sub> = ${sw === 'S1' ? '−' : '+'}V<sub>C</sub>. ${hb}`;
+    const paperJ = v.j === 0 ? 'DCM gap' : (C.neg ? `mirror of j = ${v.j}` : `paper j = ${v.j}`);
+    return { v, head, diodes, vx, sw, hbTxt, bridgeTxt, paperJ, phase };
+  }
+  function transitionNote(k) {
+    const v = C.iv[k], T = D.T, h = T / 2;
+    const parts = [];
+    if (Math.abs(v.a) < 1e-12 || Math.abs(v.a - h) < 1e-12) {
+      const inc = v.a < 1e-12 ? 'S1' : 'S2', out = inc === 'S1' ? 'S2' : 'S1';
+      const i2 = v.i2s, zvs = inc === 'S1' ? i2 > 0 : i2 < 0;
+      parts.push(zvs
+        ? `${dn([out], 'g')} turns off with i<sub>2</sub> = ${i2.toFixed(2)} A. That current swings the switch node and flows in the body diode of ${dn([inc], 'g')}, so ${dn([inc], 'g')} turns on at zero voltage (ZVS). No control is needed: i<sub>2</sub> has zero average, so it is always positive at one edge and negative at the other.`
+        : `${dn([out], 'g')} turns off, but i<sub>2</sub> = ${i2.toFixed(2)} A has the wrong sign, so ${dn([inc], 'g')} turns on hard.`);
+    }
+    if (Math.abs(v.i1s) < 1e-9 && v.j !== 0) parts.push(`i<sub>1</sub> crossed zero, so the bridge diodes commutate at zero current (no reverse recovery).`);
+    if (v.j === 0) parts.push('i<sub>1</sub> reached zero and no diode pair can conduct: the converter is in DCM for the rest of this period.');
+    return parts.length ? `At t${k}: ` + parts.join(' ') : '';
+  }
+  function renderCard(k) {
+    const Dd = describe(k), note = transitionNote(k);
+    $('#card').innerHTML = `
+      <div class="iv-head">
+        <div class="tags"><span class="tag">t${k} → t${k + 1}</span><span class="tag alt">${Dd.paperJ}</span></div>
+        <h3>${Dd.head}</h3>
+      </div>
+      <dl>
+        <div><dt>Input side (L1 + diode bridge)</dt><dd>${Dd.bridgeTxt}</dd></div>
+        <div><dt>Half bridge (L2 + S1/S2)</dt><dd>${Dd.hbTxt}</dd></div>
+      </dl>
+      ${note ? `<p class="note">${note}</p>` : ''}`;
+  }
+  function renderTable() {
+    $('#tbody').innerHTML = C.iv.map((v, k) => {
+      const Dd = describe(k);
+      return `<tr data-k="${k}" tabindex="0">
+        <td class="mono">t${k} → t${k + 1}<br><span style="color:var(--text3)">${Dd.paperJ}</span></td>
+        <td>${Dd.diodes.length ? dn(Dd.diodes, 'd') : 'all off'}</td>
+        <td>${dn([Dd.sw], 's')}</td>
+        <td class="mono">${Dd.vx} / ${v.V2 > 0 ? '+' : '−'}V<sub>C</sub></td>
+        <td>${Dd.head}</td></tr>`;
+    }).join('');
+    document.querySelectorAll('#tbody tr').forEach((tr) => {
+      const go = () => { setPlaying(false); jumpTo(+tr.dataset.k); };
+      tr.addEventListener('click', go);
+      tr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    });
+  }
+  function renderChips() {
+    const ideal = C.vin / D.Rin;
+    const modeCls = C.mode === 'IRCM' ? 'ok' : C.mode === 'DCM' ? 'warn' : 'bad';
+    const i2a = evalAt(0).i2, i2b = evalAt(D.T / 2).i2;
+    const zvs = i2a > 0 && i2b < 0;
+    const allIRCM = MS.pts.every((p) => p.mode === 'IRCM');
+    $('#chips').innerHTML = `
+      <span class="chip">v<sub>in</sub> = ${C.vin.toFixed(0)} V</span>
+      <span class="chip ${modeCls}">This period: ${C.mode}</span>
+      <span class="chip">i<sub>in</sub> = ${C.Iin.toFixed(3)} A · ideal ${ideal.toFixed(3)} A</span>
+      <span class="chip ${zvs ? 'ok' : 'bad'}">S1/S2: ${zvs ? 'ZVS' : 'hard switching'}</span>
+      <span class="chip ${allIRCM ? 'ok' : 'warn'}">Mains: ${allIRCM ? 'IRCM everywhere' : 'partly DCM'}</span>
+      <span class="chip">THD ${(MS.thd * 100).toFixed(1)}% · PF ${MS.pf.toFixed(4)} · P ${MS.P.toFixed(0)} W</span>
+      <span class="chip">R<sub>in</sub> = ${D.Rin.toFixed(0)} Ω · L1 = ${(D.L1 * 1e3).toFixed(1)} mH · L2 = ${(D.L2 * 1e3).toFixed(2)} mH · M = ${(D.M * 1e3).toFixed(2)} mH</span>`;
+  }
+
+  // ---------- control ----------
+  function render(force) {
+    const e = evalAt(st.t);
+    updateSchematic(e, st.t);
+    updateWave(st.t, e);
+    if (force || e.k !== st.ivIdx) {
+      st.ivIdx = e.k;
+      renderCard(e.k);
+      document.querySelectorAll('#tbody tr').forEach((tr) => tr.classList.toggle('cur', +tr.dataset.k === e.k));
+    }
+  }
+  function rebuildCycle() {
+    C = cycle(D, D.Vm * Math.sin(st.th * Math.PI / 180));
+    drawWave(); renderTable(); renderChips(); updateMains(); render(true);
+  }
+  function rebuildAll() {
+    D = design(st.nk, st.Vc);
+    MS = mainsSweep(D);
+    drawMains();
+    rebuildCycle();
+  }
+  function setTheta(th) {
+    st.th = ((Math.round(th) % 360) + 360) % 360;
+    $('#th').value = st.th; $('#thOut').textContent = st.th + '°';
+    rebuildCycle();
+  }
+  function jumpTo(k) {
+    const v = C.iv[(k + C.iv.length) % C.iv.length];
+    st.t = v.a + Math.min(0.02 * D.T, (v.b - v.a) / 3);
+    render(true);
+  }
+  let last = performance.now();
+  function setPlaying(p) {
+    st.playing = p;
+    $('#play').textContent = p ? 'Pause' : 'Play';
+    $('#schemWrap').classList.toggle('paused', !p);
+    if (p) { last = performance.now(); requestAnimationFrame(tick); }
+  }
+  function tick(now) {
+    if (!st.playing) return;
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    st.t += dt * st.speed * D.T / 7;   // one switching period every 7 s at 1×
+    if (st.t >= D.T) {
+      st.t -= D.T;
+      if (st.sweep) setTheta(st.th + 15);
+    }
+    render(false);
+    requestAnimationFrame(tick);
+  }
+
+  $('#play').addEventListener('click', () => setPlaying(!st.playing));
+  $('#next').addEventListener('click', () => { setPlaying(false); jumpTo(st.ivIdx + 1); });
+  $('#prev').addEventListener('click', () => { setPlaying(false); jumpTo(st.ivIdx - 1); });
+  $('#th').addEventListener('input', (e) => setTheta(+e.target.value));
+  $('#nk').addEventListener('input', (e) => { st.nk = +e.target.value; $('#nkOut').textContent = st.nk.toFixed(2); rebuildAll(); });
+  $('#vc').addEventListener('input', (e) => { st.Vc = +e.target.value; $('#vcOut').textContent = st.Vc + ' V'; rebuildAll(); });
+  $('#spd').addEventListener('input', (e) => { st.speed = +e.target.value; $('#spdOut').textContent = st.speed + '×'; });
+  $('#sweep').addEventListener('change', (e) => { st.sweep = e.target.checked; });
+  document.querySelectorAll('.mains-head button').forEach((b) => b.addEventListener('click', () => {
+    st.nk = +b.dataset.nk; st.Vc = +b.dataset.vc;
+    $('#nk').value = st.nk; $('#nkOut').textContent = st.nk.toFixed(2);
+    $('#vc').value = st.Vc; $('#vcOut').textContent = st.Vc + ' V';
+    rebuildAll();
+  }));
+
+  function scrubber(svg, x0, x1, fn) {
+    let drag = false;
+    const go = (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+      const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      fn(Math.max(0, Math.min(0.9999, (p.x - x0) / (x1 - x0))));
+    };
+    svg.addEventListener('pointerdown', (e) => { drag = true; setPlaying(false); svg.setPointerCapture(e.pointerId); go(e); });
+    svg.addEventListener('pointermove', (e) => { if (drag) go(e); });
+    svg.addEventListener('pointerup', () => { drag = false; });
+    svg.addEventListener('pointercancel', () => { drag = false; });
+  }
+  scrubber($('#wave'), WX0, WX1, (f) => { st.t = f * D.T; render(false); });
+  scrubber($('#mains'), MX0, MX1, (f) => setTheta(f * 360));
+
+  drawSchematic();
+  rebuildAll();
+  setPlaying(st.playing);
+})();
+</script>
