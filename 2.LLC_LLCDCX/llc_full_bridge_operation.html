@@ -193,6 +193,9 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 .paused .flow-dash { animation-play-state: paused; }
 
 .w-axis { stroke: var(--grid); stroke-width: 1; }
+.w-zero { stroke: var(--text2); stroke-width: 1.2; }
+.w-zlbl { font-size: 16px; fill: var(--text2); }
+.w-zc { fill: var(--panel); stroke: var(--cursor); stroke-width: 2; }
 .w-ev { stroke: var(--text3); stroke-width: 1; stroke-dasharray: 3 4; }
 .w-trace { fill: none; stroke: var(--text); stroke-width: 1.8; stroke-linejoin: round; }
 .w-pri { stroke: var(--pri); }
@@ -569,6 +572,8 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     const ir = path((s) => R.cur - s.ir / M.maxI * R.iAmp);
     const im = path((s) => R.cur - s.im / M.maxI * R.iAmp);
     const is = path((s) => R.sec - Math.abs(s.isec) / M.maxS * R.sAmp);
+    const zc = [];
+    S.forEach((s, j) => { const n = S[(j + 1) % S.length]; if ((s.ir < 0) !== (n.ir < 0)) zc.push(s.t + (j + 1 < S.length ? (n.t - s.t) : 0) * (s.ir / (s.ir - n.ir))); });
     const evs = [...M.iv.map((v) => v.a), T];
     const minGap = 22;
     let lastX = -1e9;
@@ -583,7 +588,8 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       <rect class="w-dead" x="${tx(0)}" y="22" width="${tx(td) - tx(0)}" height="${R.sec - 14}"/>
       <rect class="w-dead" x="${tx(Th)}" y="22" width="${tx(Th + td) - tx(Th)}" height="${R.sec - 14}"/>
       <rect id="wBand" class="w-band" x="0" y="22" width="0" height="${R.sec - 14}"/>
-      ${[R.vab, R.cur, R.sec].map((y) => `<line class="w-axis" x1="${WX0}" y1="${y}" x2="${WX1}" y2="${y}"/>`).join('')}
+      ${[R.vab, R.cur, R.sec].map((y) => `<line class="${y === R.cur ? 'w-zero' : 'w-axis'}" x1="${WX0}" y1="${y}" x2="${WX1}" y2="${y}"/><text class="w-zlbl" x="${WX0 - 6}" y="${y + 5}" text-anchor="end">0</text>`).join('')}
+      <text class="w-small" x="${WX1}" y="${R.cur - 6}" text-anchor="end">i = 0</text>
       ${labels}
       ${rowLbl(R.g1[0] + 8, 'S1, S4')}
       ${rowLbl(R.g2[0] + 8, 'S2, S3')}
@@ -602,6 +608,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       <path class="w-trace w-ir" d="${ir}"/>
       <path class="w-trace w-sec" d="${is}"/>
       <text class="w-small" x="${tx(td / 2)}" y="18" text-anchor="middle">dead time</text>
+      ${zc.map((t) => `<circle class="w-zc" r="5" cx="${tx(t)}" cy="${R.cur}"><title>i_r = 0</title></circle>`).join('')}
       <line id="wCur" class="w-cursor" x1="0" y1="22" x2="0" y2="${R.sec + 8}"/>
       <circle id="wDot" class="w-dot" r="4.5" cx="0" cy="0"/>`;
   }
