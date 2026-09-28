@@ -1,0 +1,605 @@
+<title>UPF Rectifier THD Formula</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital@0;1&display=swap">
+<style>
+:root {
+  --bg: #faf9f7;
+  --panel: #ffffff;
+  --panel2: #f2f1ed;
+  --border: rgba(0,0,0,0.09);
+  --text: #1a1a18;
+  --text2: #5c5c56;
+  --text3: #8c8c84;
+  --grid: rgba(0,0,0,0.07);
+  --axis: rgba(0,0,0,0.35);
+  --blue: #1a56db;
+  --blue-fill: rgba(26,86,219,0.13);
+  --green: #0d7a4e;
+  --green-fill: rgba(13,122,78,0.16);
+  --amber: #b76e0a;
+  --amber-fill: rgba(183,110,10,0.20);
+  --purple: #8a3ffc;
+  --purple-fill: rgba(138,63,252,0.13);
+  --dcm: rgba(183,110,10,0.08);
+  --ok: #0d7a4e;
+  --ok-dim: rgba(13,122,78,0.10);
+  --warn-dim: rgba(183,110,10,0.12);
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: 'IBM Plex Serif', 'Cambria Math', Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+    --border: rgba(255,255,255,0.10);
+    --text: #ecebe6; --text2: #a9a8a0; --text3: #7d7c75;
+    --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35);
+    --blue: #5b86e6; --blue-fill: rgba(91,134,230,0.18);
+    --green: #2fa574; --green-fill: rgba(47,165,116,0.20);
+    --amber: #c9801f; --amber-fill: rgba(201,128,31,0.24);
+    --purple: #9570e6; --purple-fill: rgba(149,112,230,0.18);
+    --dcm: rgba(201,128,31,0.10);
+    --ok: #2fa574; --ok-dim: rgba(47,165,116,0.14); --warn-dim: rgba(201,128,31,0.16);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+  --border: rgba(255,255,255,0.10);
+  --text: #ecebe6; --text2: #a9a8a0; --text3: #7d7c75;
+  --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35);
+  --blue: #5b86e6; --blue-fill: rgba(91,134,230,0.18);
+  --green: #2fa574; --green-fill: rgba(47,165,116,0.20);
+  --amber: #c9801f; --amber-fill: rgba(201,128,31,0.24);
+  --purple: #9570e6; --purple-fill: rgba(149,112,230,0.18);
+  --dcm: rgba(201,128,31,0.10);
+  --ok: #2fa574; --ok-dim: rgba(47,165,116,0.14); --warn-dim: rgba(201,128,31,0.16);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15.5px/1.65 var(--sans); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 30px; }
+header { display: grid; gap: 10px; max-width: 72ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+h1 { margin: 0; font-size: clamp(25px, 3.6vw, 34px); line-height: 1.2; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 20px; font-weight: 600; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font: 600 13px/1 var(--mono); color: var(--blue); background: var(--blue-fill); padding: 5px 8px; border-radius: 5px; }
+h3 { margin: 0; font-size: 15px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--text2); font-size: 16px; }
+.step { display: grid; gap: 14px; }
+.step > p, .step > ul, .step > ol { max-width: 72ch; }
+.step ul, .step ol { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+.muted { color: var(--text2); }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+.eq { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; padding: 14px 18px; overflow-x: auto; display: grid; gap: 10px; }
+.eq.key { border-left-color: var(--green); background: var(--green-fill); }
+.eq .why { font-size: 13.5px; color: var(--text2); }
+math { font-family: var(--serif); font-size: 1.12em; }
+math[display="block"] { margin: 2px 0; }
+.plan { counter-reset: s; display: grid; gap: 8px; padding: 16px 18px 16px 44px; margin: 0; }
+.plan li { padding-left: 4px; }
+.fig { padding: 12px 12px 10px; display: grid; gap: 8px; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig .scroll { overflow-x: auto; }
+.fig .scroll svg { min-width: 560px; }
+.two .scroll svg { min-width: 0; }
+figcaption { font-size: 13.5px; color: var(--text2); padding: 0 4px; }
+figcaption b { color: var(--text); font-weight: 600; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl { overflow-x: auto; }
+.tbl table { min-width: 560px; }
+
+.controls { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; padding: 12px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.05); }
+.slider { display: grid; gap: 2px; min-width: 190px; flex: 1 1 190px; }
+.slider label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); gap: 8px; }
+.slider output { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--blue); }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; }
+button { font: 500 12.5px/1 var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; cursor: pointer; }
+button:hover { border-color: var(--blue); }
+.result { font: 600 14px/1 var(--mono); padding: 8px 10px; border-radius: 6px; background: var(--ok-dim); color: var(--ok); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.calc { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.calc div { background: var(--panel); padding: 9px 12px; display: grid; gap: 2px; }
+.calc .k { font: 500 12px/1.2 var(--mono); color: var(--text3); }
+.calc .v { font: 600 15px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.calc .hl { background: var(--green-fill); }
+@media (max-width: 760px) { .calc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+svg text { font-family: var(--mono); font-size: 12px; fill: var(--text2); }
+svg .t-strong { fill: var(--text); font-weight: 600; }
+.ax { stroke: var(--axis); stroke-width: 1; }
+.gr { stroke: var(--grid); stroke-width: 1; }
+.ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.dash { stroke-dasharray: 6 5; }
+.tip { pointer-events: none; }
+.tip rect { fill: var(--panel); stroke: var(--border); }
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Companion to “A Rectifier with Inherent Unity Power Factor”, ECCE 2024</div>
+    <h1>Deriving a closed-form THD for the UPF rectifier</h1>
+    <p class="lede">The paper gives exact equations for one switching period and proves the input is resistive in IRCM. It stops there for THD and reports numbers. This page goes from those equations to a closed-form THD in seven steps, with a figure for each step. Move the sliders and every figure and number updates.</p>
+  </header>
+
+  <section class="controls" aria-label="Design point">
+    <div class="slider">
+      <label for="nk"><span>nk = M / L2</span><output id="nkOut">2.40</output></label>
+      <input id="nk" type="range" min="2.05" max="5" step="0.05" value="2.4">
+    </div>
+    <div class="slider">
+      <label for="rho"><span>ρ = V<sub>C</sub> / V<sub>m</sub></span><output id="rhoOut">0.615 (V<sub>C</sub> = 200 V)</output></label>
+      <input id="rho" type="range" min="0.5" max="1" step="0.005" value="0.615">
+    </div>
+    <div class="btns">
+      <button type="button" data-nk="2.4" data-rho="0.615">Prototype</button>
+      <button type="button" data-nk="4" data-rho="0.523">Fig. 5 (UPF)</button>
+      <button type="button" data-nk="2.1" data-rho="0.55">Low nk</button>
+    </div>
+    <span class="result" id="thdTop">THD = 3.28%</span>
+  </section>
+
+  <section class="step">
+    <h2>The plan</h2>
+    <ol class="panel plan">
+      <li>Write the slope of the input current i<sub>1</sub> in each of the paper's four intervals.</li>
+      <li>Find the input voltage at which the reverse current (IRCM) disappears.</li>
+      <li>Below that voltage: use the paper's result, the input is a pure resistor.</li>
+      <li>Above it (DCM): average the triangular i<sub>1</sub> pulse over one switching period to get a new formula.</li>
+      <li>Put both pieces together as the input current over a mains period, i(θ).</li>
+      <li>Write THD with Fourier analysis, using the symmetry of i(θ).</li>
+      <li>Solve the integrals in closed form, then check against brute-force numerics.</li>
+    </ol>
+    <p class="muted">Throughout, voltages are divided by the mains peak V<sub>m</sub> and currents by V<sub>m</sub>/R<sub>in</sub>. So s = v<sub>in</sub>/V<sub>m</sub> = sin θ, ρ = V<sub>C</sub>/V<sub>m</sub>, and the ideal current is simply i = s.</p>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">1</span>Slopes of i<sub>1</sub> in each interval</h2>
+    <p>The paper's equation (3) gives the current slopes from the two winding voltages: di/dt = Γ·V, with Γ the inverse of the inductance matrix. For i<sub>1</sub> only the first row matters:</p>
+    <div class="eq">
+      <math display="block"><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><msub><mi>Γ</mi><mn>11</mn></msub><msub><mi>V</mi><mn>1</mn></msub><mo>+</mo><msub><mi>Γ</mi><mn>12</mn></msub><msub><mi>V</mi><mn>2</mn></msub><mo>,</mo><mspace width="1.2em"/><msub><mi>Γ</mi><mn>11</mn></msub><mo>=</mo><mfrac><msub><mi>L</mi><mn>2</mn></msub><mrow><msub><mi>L</mi><mn>1</mn></msub><msub><mi>L</mi><mn>2</mn></msub><mo>−</mo><msup><mi>M</mi><mn>2</mn></msup></mrow></mfrac><mo>,</mo><mspace width="1.2em"/><mfrac><msub><mi>Γ</mi><mn>12</mn></msub><msub><mi>Γ</mi><mn>11</mn></msub></mfrac><mo>=</mo><mo>−</mo><mfrac><mi>M</mi><msub><mi>L</mi><mn>2</mn></msub></mfrac><mo>=</mo><mo>−</mo><mi>n</mi><mi>k</mi></math>
+      <div class="why">This is where nk enters. With V<sub>1</sub> = v<sub>in</sub> − V<sub>x</sub>, V<sub>x</sub> = ±2V<sub>C</sub> (set by which diode pair conducts) and V<sub>2</sub> = ∓V<sub>C</sub> (set by S1 or S2), each interval has a constant slope:</div>
+    </div>
+    <div class="panel tbl">
+      <table>
+        <thead><tr><th>Interval</th><th>Diodes · switch</th><th>V<sub>x</sub>, V<sub>2</sub></th><th>Slope of i<sub>1</sub> ÷ Γ<sub>11</sub></th></tr></thead>
+        <tbody>
+          <tr><td>j = 1 (reverse → 0)</td><td>D2 D3 · S1</td><td class="num">−2V<sub>C</sub>, −V<sub>C</sub></td><td class="num">a₁ = v + 2V<sub>C</sub> + nk·V<sub>C</sub></td></tr>
+          <tr><td>j = 2 (forward rises)</td><td>D1 D4 · S1</td><td class="num">+2V<sub>C</sub>, −V<sub>C</sub></td><td class="num">a₂ = v − 2V<sub>C</sub> + nk·V<sub>C</sub></td></tr>
+          <tr><td>j = 3 (forward falls)</td><td>D1 D4 · S2</td><td class="num">+2V<sub>C</sub>, +V<sub>C</sub></td><td class="num">a₃ = v − 2V<sub>C</sub> − nk·V<sub>C</sub></td></tr>
+          <tr><td>j = 4 (reverse grows)</td><td>D2 D3 · S2</td><td class="num">−2V<sub>C</sub>, +V<sub>C</sub></td><td class="num">a₄ = v + 2V<sub>C</sub> − nk·V<sub>C</sub></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="panel fig">
+      <div class="two">
+        <div class="scroll"><svg id="figA1" viewBox="0 0 480 250" role="img" aria-label="i1 over one switching period near the zero crossing"></svg></div>
+        <div class="scroll"><svg id="figA2" viewBox="0 0 480 250" role="img" aria-label="i1 over one switching period at the mains peak"></svg></div>
+      </div>
+      <figcaption><b>Figure 1.</b> i<sub>1</sub> over one switching period at two points of the mains cycle, drawn from these slopes. The shaded area divided by T is the local average current. <span style="color:var(--green)">Green</span> is forward charge, <span style="color:var(--amber)">amber</span> is reverse charge (IRCM).</figcaption>
+    </figure>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">2</span>Where the reverse current dies</h2>
+    <p>At the end of interval 3, i<sub>1</sub> reaches zero. For it to continue into negative values, the diodes D2 D3 must take over, and then the slope is a₄. A negative current can only grow if a₄ is negative. If a₄ ≥ 0, no diode pair can carry current and i<sub>1</sub> stays at zero: that is DCM.</p>
+    <div class="eq">
+      <math display="block"><msub><mi>a</mi><mn>4</mn></msub><mo>&lt;</mo><mn>0</mn><mspace width="0.8em"/><mo>⟺</mo><mspace width="0.8em"/><msub><mi>v</mi><mi>in</mi></msub><mo>&lt;</mo><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub><mspace width="0.8em"/><mo>⟺</mo><mspace width="0.8em"/><mi>s</mi><mo>&lt;</mo><mi>a</mi><mo>≡</mo><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo><mi>ρ</mi></math>
+      <div class="why">This is the paper's condition (18). The number <i>a</i> is the knee of the whole story: it is the normalized input voltage where IRCM ends.</div>
+    </div>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">3</span>Below the knee: a pure resistor</h2>
+    <p>With all four intervals present, the paper solves the four unknowns t<sub>α</sub>, t<sub>β</sub>, I<sub>α</sub>, I<sub>β</sub> and averages i<sub>1</sub> (its eqs. 8–13). Everything cancels except one term:</p>
+    <div class="eq">
+      <math display="block"><msub><mi>I</mi><mi>in</mi></msub><mo>=</mo><mo>−</mo><mfrac><mrow><msub><mi>Γ</mi><mn>12</mn></msub><mi>T</mi></mrow><mn>8</mn></mfrac><msub><mi>v</mi><mi>in</mi></msub><mo>=</mo><mfrac><msub><mi>v</mi><mi>in</mi></msub><msub><mi>R</mi><mi>in</mi></msub></mfrac><mspace width="1.4em"/><mo>⇒</mo><mspace width="1.4em"/><mi>i</mi><mo>=</mo><mi>s</mi><mspace width="1em"/><mtext>for</mtext><mspace width="0.4em"/><mi>s</mi><mo>≤</mo><mi>a</mi></math>
+      <div class="why">In normalized units the IRCM current is exactly the sine. No distortion comes from this region.</div>
+    </div>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">4</span>Above the knee: averaging the DCM pulse</h2>
+    <p>In DCM there is no reverse current, so i<sub>1</sub> starts each period at zero. It rises with slope a₂ for the whole first half period, then falls with slope a₃ until it hits zero again (Figure 1, right). The pulse is two triangles:</p>
+    <div class="eq">
+      <math display="block"><msub><mi>I</mi><mi>α</mi></msub><mo>=</mo><msub><mi>a</mi><mn>2</mn></msub><mfrac><mi>T</mi><mn>2</mn></mfrac><mo>,</mo><mspace width="1.2em"/><msub><mi>t</mi><mi>α</mi></msub><mo>=</mo><mo>−</mo><mfrac><msub><mi>I</mi><mi>α</mi></msub><msub><mi>a</mi><mn>3</mn></msub></mfrac><mo>,</mo><mspace width="1.2em"/><msub><mi>I</mi><mi>in</mi></msub><mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac><mo>·</mo><mfrac><msub><mi>I</mi><mi>α</mi></msub><mn>2</mn></mfrac><mrow><mo>(</mo><mfrac><mi>T</mi><mn>2</mn></mfrac><mo>+</mo><msub><mi>t</mi><mi>α</mi></msub><mo>)</mo></mrow><mo>=</mo><mfrac><mi>T</mi><mn>8</mn></mfrac><mo>·</mo><mfrac><mrow><msub><mi>a</mi><mn>2</mn></msub><mo stretchy="false">(</mo><msub><mi>a</mi><mn>3</mn></msub><mo>−</mo><msub><mi>a</mi><mn>2</mn></msub><mo stretchy="false">)</mo></mrow><msub><mi>a</mi><mn>3</mn></msub></mfrac></math>
+      <div class="why">Now substitute the slopes. a₃ − a₂ = −2nk·Γ₁₁V<sub>C</sub>, and nk·Γ₁₁·T = −Γ₁₂·T = 8/R<sub>in</sub>. The inductances disappear and only nk and V<sub>C</sub> remain:</div>
+      <math display="block"><msub><mi>I</mi><mi>in</mi></msub><mo>=</mo><mfrac><mrow><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub></mrow><msub><mi>R</mi><mi>in</mi></msub></mfrac><mo>·</mo><mfrac><mrow><msub><mi>v</mi><mi>in</mi></msub><mo>+</mo><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>+</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub><mo>−</mo><msub><mi>v</mi><mi>in</mi></msub></mrow></mfrac><mspace width="1.2em"/><mo>⇒</mo><mspace width="1.2em"/><mi>i</mi><mo>=</mo><mi>c</mi><mfrac><mrow><mi>s</mi><mo>+</mo><mi>a</mi></mrow><mrow><mi>b</mi><mo>−</mo><mi>s</mi></mrow></mfrac></math>
+      <div class="why">with a = (nk−2)ρ, b = (nk+2)ρ, c = 2ρ. Check: at s = a this gives c·2a/(b−a) = 2ρ·2a/(4ρ) = a, so it joins the resistor line without a jump.</div>
+    </div>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="figB" viewBox="0 0 900 330" role="img" aria-label="Local-average input current versus input voltage"></svg></div>
+      <figcaption><b>Figure 2.</b> The rectifier's input characteristic: local-average current against instantaneous input voltage. It follows the resistor line up to the knee s = a, then bends below it. Hover to read values.</figcaption>
+    </figure>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">5</span>The input current over a mains period</h2>
+    <p>Put s = sin θ into the two pieces. The IRCM piece is the sine itself. The DCM piece starts at θ₁ = arcsin(a) and runs to π − θ₁. If a ≥ 1 the DCM part never happens and THD is exactly zero.</p>
+    <div class="eq key">
+      <math display="block"><mi>i</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mo>=</mo><mrow><mo>{</mo><mtable columnalign="left"><mtr><mtd><mi>sin</mi><mi>θ</mi></mtd><mtd><mspace width="1em"/><mn>0</mn><mo>≤</mo><mi>θ</mi><mo>≤</mo><msub><mi>θ</mi><mn>1</mn></msub></mtd></mtr><mtr><mtd><mi>c</mi><mfrac><mrow><mi>sin</mi><mi>θ</mi><mo>+</mo><mi>a</mi></mrow><mrow><mi>b</mi><mo>−</mo><mi>sin</mi><mi>θ</mi></mrow></mfrac></mtd><mtd><mspace width="1em"/><msub><mi>θ</mi><mn>1</mn></msub><mo>&lt;</mo><mi>θ</mi><mo>≤</mo><mi>π</mi><mo>/</mo><mn>2</mn></mtd></mtr></mtable></mrow><mspace width="1.4em"/><msub><mi>θ</mi><mn>1</mn></msub><mo>=</mo><mi>arcsin</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></math>
+    </div>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="figC" viewBox="0 0 900 320" role="img" aria-label="Input current over a mains half period compared with the ideal sine"></svg></div>
+      <figcaption><b>Figure 3.</b> Input current over half a mains period. It is exact where it overlaps the sine, and the shaded DCM band is the only source of harmonics. The second half period is the mirror image.</figcaption>
+    </figure>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">6</span>THD from Fourier analysis</h2>
+    <p>i(θ) is odd, and symmetric about π/2. Those symmetries mean it contains only odd sine harmonics, all in phase with the voltage, and every integral can be taken over a quarter period. Two numbers are needed: the fundamental amplitude and the RMS value.</p>
+    <div class="eq">
+      <math display="block"><msub><mi>I</mi><mn>1</mn></msub><mo>=</mo><mfrac><mn>4</mn><mi>π</mi></mfrac><munderover><mo>∫</mo><mn>0</mn><mrow><mi>π</mi><mo>/</mo><mn>2</mn></mrow></munderover><mi>i</mi><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mi>sin</mi><mi>θ</mi><mspace width="0.2em"/><mi>d</mi><mi>θ</mi><mo>=</mo><mfrac><mn>4</mn><mi>π</mi></mfrac><msub><mi>S</mi><mn>1</mn></msub><mo>,</mo><mspace width="1.6em"/><msubsup><mi>I</mi><mi>rms</mi><mn>2</mn></msubsup><mo>=</mo><mfrac><mn>2</mn><mi>π</mi></mfrac><munderover><mo>∫</mo><mn>0</mn><mrow><mi>π</mi><mo>/</mo><mn>2</mn></mrow></munderover><msup><mi>i</mi><mn>2</mn></msup><mo stretchy="false">(</mo><mi>θ</mi><mo stretchy="false">)</mo><mspace width="0.2em"/><mi>d</mi><mi>θ</mi><mo>=</mo><mfrac><mn>2</mn><mi>π</mi></mfrac><msub><mi>S</mi><mn>2</mn></msub></math>
+      <div class="why">THD compares everything that is not the fundamental with the fundamental: THD² = (I<sub>rms</sub>² − I<sub>1</sub>²/2) / (I<sub>1</sub>²/2). Substituting:</div>
+      <math display="block"><mi>THD</mi><mo>=</mo><msqrt><mrow><mfrac><mrow><mi>π</mi><msub><mi>S</mi><mn>2</mn></msub></mrow><mrow><mn>4</mn><msubsup><mi>S</mi><mn>1</mn><mn>2</mn></msubsup></mrow></mfrac><mo>−</mo><mn>1</mn></mrow></msqrt><mo>,</mo><mspace width="1.6em"/><mi>PF</mi><mo>=</mo><mfrac><mn>1</mn><msqrt><mrow><mn>1</mn><mo>+</mo><msup><mi>THD</mi><mn>2</mn></msup></mrow></msqrt></mfrac><mo>=</mo><mfrac><mrow><mn>2</mn><msub><mi>S</mi><mn>1</mn></msub></mrow><msqrt><mrow><mi>π</mi><msub><mi>S</mi><mn>2</mn></msub></mrow></msqrt></mfrac></math>
+      <div class="why">Check: for a pure sine, S₁ = S₂ = π/4, so THD = √(π·(π/4)/(4·π²/16) − 1) = 0.</div>
+    </div>
+    <figure class="panel fig">
+      <div class="two">
+        <div class="scroll"><svg id="figD1" viewBox="0 0 480 260" role="img" aria-label="Area S1 under i times sin theta"></svg></div>
+        <div class="scroll"><svg id="figD2" viewBox="0 0 480 260" role="img" aria-label="Area S2 under i squared"></svg></div>
+      </div>
+      <figcaption><b>Figure 4.</b> S₁ and S₂ are these two areas over a quarter period. Each splits at θ₁ into an IRCM part (<span style="color:var(--blue)">blue</span>, identical in both) and a DCM part (<span style="color:var(--amber)">amber</span>) that needs the integrals of step 7.</figcaption>
+    </figure>
+  </section>
+
+  <section class="step">
+    <h2><span class="n">7</span>Solving the integrals</h2>
+    <p><b>IRCM part.</b> Both integrands are sin²θ there, so both areas get the same piece:</p>
+    <div class="eq"><math display="block"><mi>A</mi><mo>=</mo><munderover><mo>∫</mo><mn>0</mn><msub><mi>θ</mi><mn>1</mn></msub></munderover><msup><mi>sin</mi><mn>2</mn></msup><mi>θ</mi><mspace width="0.2em"/><mi>d</mi><mi>θ</mi><mo>=</mo><mfrac><msub><mi>θ</mi><mn>1</mn></msub><mn>2</mn></mfrac><mo>−</mo><mfrac><mrow><mi>sin</mi><mn>2</mn><msub><mi>θ</mi><mn>1</mn></msub></mrow><mn>4</mn></mfrac></math></div>
+    <p><b>DCM part.</b> Partial fractions turn the DCM current into a constant plus one simple fraction, since s + a = (a + b) − (b − s):</p>
+    <div class="eq"><math display="block"><mi>c</mi><mfrac><mrow><mi>s</mi><mo>+</mo><mi>a</mi></mrow><mrow><mi>b</mi><mo>−</mo><mi>s</mi></mrow></mfrac><mo>=</mo><mo>−</mo><mi>c</mi><mo>+</mo><mfrac><mi>K</mi><mrow><mi>b</mi><mo>−</mo><mi>s</mi></mrow></mfrac><mo>,</mo><mspace width="1.2em"/><mi>K</mi><mo>=</mo><mi>c</mi><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mi>b</mi><mo stretchy="false">)</mo><mo>=</mo><mn>4</mn><mi>n</mi><mi>k</mi><msup><mi>ρ</mi><mn>2</mn></msup></math></div>
+    <p>Multiplying by sin θ, or squaring, leaves only three basic integrals from θ₁ to π/2. Note b &gt; 1 always, because ρ ≥ ½ and nk &gt; 2, so the denominator never touches zero.</p>
+    <div class="eq">
+      <math display="block"><msub><mi>J</mi><mn>0</mn></msub><mo>=</mo><mo>∫</mo><mfrac><mrow><mi>d</mi><mi>θ</mi></mrow><mrow><mi>b</mi><mo>−</mo><mi>sin</mi><mi>θ</mi></mrow></mfrac><mo>=</mo><mfrac><mn>2</mn><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></mrow></msqrt></mfrac><msubsup><mrow><mo>[</mo><mi>arctan</mi><mfrac><mrow><mi>b</mi><mi>tan</mi><mo stretchy="false">(</mo><mi>θ</mi><mo>/</mo><mn>2</mn><mo stretchy="false">)</mo><mo>−</mo><mn>1</mn></mrow><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></mrow></msqrt></mfrac><mo>]</mo></mrow><msub><mi>θ</mi><mn>1</mn></msub><mrow><mi>π</mi><mo>/</mo><mn>2</mn></mrow></msubsup></math>
+      <div class="why">Found with the half-angle substitution u = tan(θ/2): sin θ = 2u/(1+u²) and dθ = 2du/(1+u²), which turns the integrand into 2/(bu² − 2u + b), a standard arctan form.</div>
+      <math display="block"><msub><mi>J</mi><mn>1</mn></msub><mo>=</mo><mo>∫</mo><mfrac><mrow><mi>sin</mi><mi>θ</mi><mspace width="0.2em"/><mi>d</mi><mi>θ</mi></mrow><mrow><mi>b</mi><mo>−</mo><mi>sin</mi><mi>θ</mi></mrow></mfrac><mo>=</mo><mi>b</mi><msub><mi>J</mi><mn>0</mn></msub><mo>−</mo><mrow><mo>(</mo><mfrac><mi>π</mi><mn>2</mn></mfrac><mo>−</mo><msub><mi>θ</mi><mn>1</mn></msub><mo>)</mo></mrow></math>
+      <div class="why">Because sin θ/(b − sin θ) = −1 + b/(b − sin θ).</div>
+      <math display="block"><msub><mi>J</mi><mn>2</mn></msub><mo>=</mo><mo>∫</mo><mfrac><mrow><mi>d</mi><mi>θ</mi></mrow><msup><mrow><mo stretchy="false">(</mo><mi>b</mi><mo>−</mo><mi>sin</mi><mi>θ</mi><mo stretchy="false">)</mo></mrow><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><mrow><mi>b</mi><msub><mi>J</mi><mn>0</mn></msub><mo>+</mo><mi>cos</mi><msub><mi>θ</mi><mn>1</mn></msub><mo>/</mo><mo stretchy="false">(</mo><mi>b</mi><mo>−</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>1</mn></mrow></mfrac></math>
+      <div class="why">Found by differentiating cos θ/(b − sin θ): the derivative is (1 − b²)/(b − sin θ)² + b/(b − sin θ). Integrating both sides from θ₁ to π/2 (where sin θ₁ = a) and solving for J₂ gives this line.</div>
+    </div>
+    <p><b>Assemble.</b> Add the IRCM piece and the expanded DCM piece:</p>
+    <div class="eq key">
+      <math display="block"><msub><mi>S</mi><mn>1</mn></msub><mo>=</mo><mi>A</mi><mo>−</mo><mi>c</mi><mi>cos</mi><msub><mi>θ</mi><mn>1</mn></msub><mo>+</mo><mi>K</mi><msub><mi>J</mi><mn>1</mn></msub><mspace width="2em"/><msub><mi>S</mi><mn>2</mn></msub><mo>=</mo><mi>A</mi><mo>+</mo><msup><mi>c</mi><mn>2</mn></msup><mrow><mo>(</mo><mfrac><mi>π</mi><mn>2</mn></mfrac><mo>−</mo><msub><mi>θ</mi><mn>1</mn></msub><mo>)</mo></mrow><mo>−</mo><mn>2</mn><mi>c</mi><mi>K</mi><msub><mi>J</mi><mn>0</mn></msub><mo>+</mo><msup><mi>K</mi><mn>2</mn></msup><msub><mi>J</mi><mn>2</mn></msub></math>
+      <math display="block"><mi>THD</mi><mo>=</mo><msqrt><mrow><mfrac><mrow><mi>π</mi><msub><mi>S</mi><mn>2</mn></msub></mrow><mrow><mn>4</mn><msubsup><mi>S</mi><mn>1</mn><mn>2</mn></msubsup></mrow></mfrac><mo>−</mo><mn>1</mn></mrow></msqrt><mspace width="1.4em"/><mtext>and THD = 0 when</mtext><mspace width="0.4em"/><mi>ρ</mi><mo>≥</mo><mfrac><mn>1</mn><mrow><mi>n</mi><mi>k</mi><mo>−</mo><mn>2</mn></mrow></mfrac></math>
+    </div>
+    <h3>Every number at the current slider setting</h3>
+    <div class="calc" id="calc"></div>
+  </section>
+
+  <section class="step">
+    <h2>Results and checks</h2>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="figE" viewBox="0 0 900 300" role="img" aria-label="Harmonic spectrum of the input current"></svg></div>
+      <figcaption><b>Figure 5.</b> Harmonics of i(θ) as a percentage of the fundamental, from an FFT of the closed-form waveform. Only odd harmonics appear, as the symmetry argument predicts. Their root-sum-square is the THD.</figcaption>
+    </figure>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="figF" viewBox="0 0 900 380" role="img" aria-label="THD versus rho for several nk values"></svg></div>
+      <figcaption><b>Figure 6.</b> THD from the formula against ρ = V<sub>C</sub>/V<sub>m</sub> for four values of nk. Each curve reaches zero at ρ = 1/(nk − 2). The ring is your slider setting. Hover to read values.</figcaption>
+    </figure>
+    <div class="panel tbl">
+      <table>
+        <thead><tr><th>nk</th><th>V<sub>C</sub></th><th>Closed form</th><th>Brute-force numeric</th><th>Paper</th></tr></thead>
+        <tbody>
+          <tr><td class="num">4</td><td class="num">170 V</td><td class="num">0.000%</td><td class="num">0.000%</td><td>UPF (Fig. 5)</td></tr>
+          <tr><td class="num">2.4</td><td class="num">200 V</td><td class="num">3.281%</td><td class="num">3.281%</td><td>2.6% calculated, below 3% measured</td></tr>
+          <tr><td class="num">2.3</td><td class="num">170 V</td><td class="num">6.624%</td><td class="num">6.624%</td><td>–</td></tr>
+          <tr><td class="num">3</td><td class="num">165 V</td><td class="num">1.628%</td><td class="num">1.628%</td><td>–</td></tr>
+          <tr><td class="num">2.1</td><td class="num">180 V</td><td class="num">8.770%</td><td class="num">8.770%</td><td>–</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">The brute-force column simulates 20,000 switching periods over one mains cycle with the full interval equations and takes the Fourier transform. It agrees with the closed form to every printed digit, which confirms the algebra. The formula is exact for the ideal model: ideal diodes and switches, no dead time, constant V<sub>C</sub>, f<sub>s</sub> ≫ f<sub>L</sub>, and each DCM period starting from zero current. For the prototype the paper reports 2.6%. That difference comes from the DCM step: the paper keeps its IRCM expression for I<sub>α</sub> in DCM, while step 4 here starts each DCM period from zero. A real circuit will differ from both because of losses, dead time and bulk-voltage ripple.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const VM = 230 * Math.SQRT2;
+  const st = { nk: 2.4, rho: 0.615 };
+  const PI = Math.PI;
+
+  // ---------- math ----------
+  function consts(nk, rho) {
+    const a = (nk - 2) * rho, b = (nk + 2) * rho, c = 2 * rho;
+    return { a, b, c, K: c * (a + b) };
+  }
+  const iOfS = (s, k) => (s <= k.a ? s : k.c * (s + k.a) / (k.b - s));
+  function closed(nk, rho) {
+    const k = consts(nk, rho);
+    if (k.a >= 1) return { ...k, t1: PI / 2, J0: 0, J1: 0, J2: 0, A: PI / 4, S1: PI / 4, S2: PI / 4, thd: 0, pf: 1, full: true };
+    const t1 = Math.asin(k.a), r = Math.sqrt(k.b * k.b - 1);
+    const F = (th) => (2 / r) * Math.atan((k.b * Math.tan(th / 2) - 1) / r);
+    const J0 = F(PI / 2) - F(t1);
+    const J1 = k.b * J0 - (PI / 2 - t1);
+    const J2 = (k.b * J0 + Math.cos(t1) / (k.b - k.a)) / (k.b * k.b - 1);
+    const A = t1 / 2 - Math.sin(2 * t1) / 4;
+    const S1 = A - k.c * Math.cos(t1) + k.K * J1;
+    const S2 = A + k.c * k.c * (PI / 2 - t1) - 2 * k.c * k.K * J0 + k.K * k.K * J2;
+    const thd = Math.sqrt(Math.max(0, PI * S2 / (4 * S1 * S1) - 1));
+    return { ...k, t1, J0, J1, J2, A, S1, S2, thd, pf: 2 * S1 / Math.sqrt(PI * S2), full: false };
+  }
+  // one switching period, normalized (Γ11 = 1, T = 1, Vm = 1)
+  function period(nk, rho, s) {
+    const Vc = rho, h = 0.5;
+    const sl = (V1, V2) => V1 - nk * V2;
+    const a1 = sl(s + 2 * Vc, -Vc), a2 = sl(s - 2 * Vc, -Vc), a3 = sl(s - 2 * Vc, Vc), a4 = sl(s + 2 * Vc, Vc);
+    const p = a2 / a1, q = a4 / a3;
+    let Ia = h * (a2 + p * a4) / (1 - p * q), Ib = h * (a4 + q * a2) / (1 - p * q);
+    let tb = -Ib / a1, ta = -Ia / a3, mode = 'IRCM';
+    if (!(a4 < 0) || Ib > 0 || tb < 0) { mode = 'DCM'; Ib = 0; tb = 0; Ia = a2 * h; ta = -Ia / a3; }
+    const pts = mode === 'IRCM'
+      ? [[0, Ib], [tb, 0], [h, Ia], [h + ta, 0], [1, Ib]]
+      : [[0, 0], [h, Ia], [h + ta, 0], [1, 0]];
+    return { mode, Ia, Ib, ta, tb, pts };
+  }
+
+  // ---------- svg helpers ----------
+  const NS = 'http://www.w3.org/2000/svg';
+  const f2 = (x) => x.toFixed(1);
+  function frame(W, H, m) { return { W, H, m, x0: m.l, x1: W - m.r, y0: m.t, y1: H - m.b }; }
+  const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const poly = (pts) => pts.map((p) => `${f2(p[0])},${f2(p[1])}`).join(' ');
+  function hoverLayer(svg, fr, onMove) {
+    const tip = document.createElementNS(NS, 'g');
+    tip.setAttribute('class', 'tip');
+    svg.appendChild(tip);
+    const hit = document.createElementNS(NS, 'rect');
+    hit.setAttribute('x', fr.x0); hit.setAttribute('y', fr.y0);
+    hit.setAttribute('width', fr.x1 - fr.x0); hit.setAttribute('height', fr.y1 - fr.y0);
+    hit.setAttribute('fill', 'transparent');
+    svg.appendChild(hit);
+    const move = (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+      const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      tip.innerHTML = onMove(Math.max(fr.x0, Math.min(fr.x1, p.x)));
+    };
+    hit.addEventListener('pointermove', move);
+    hit.addEventListener('pointerdown', move);
+    hit.addEventListener('pointerleave', () => { tip.innerHTML = ''; });
+  }
+  function tipBox(x, fr, lines) {
+    const w = 8 + 7.4 * Math.max(...lines.map((l) => l.t.length)), h = 10 + 17 * lines.length;
+    const bx = x + 12 + w > fr.x1 ? x - 12 - w : x + 12;
+    return `<line x1="${x}" y1="${fr.y0}" x2="${x}" y2="${fr.y1}" class="ax" style="stroke-dasharray:3 3"/>
+      <rect x="${bx}" y="${fr.y0 + 4}" width="${w}" height="${h}" rx="5"/>` +
+      lines.map((l, j) => `<text x="${bx + 8}" y="${fr.y0 + 21 + j * 17}" style="fill:${l.c || 'var(--text)'}">${l.t}</text>`).join('');
+  }
+
+  // Figure 1: one switching period
+  function figA(id, s) {
+    const svg = $(id), fr = frame(480, 250, { l: 44, r: 16, t: 36, b: 34 });
+    const P = period(st.nk, st.rho, s);
+    const ymax = Math.max(P.Ia, Math.abs(P.Ib), 1e-9) * 1.15;
+    const X = lin(0, 1, fr.x0, fr.x1), Y = lin(-ymax * 0.55, ymax, fr.y1, fr.y0);
+    const y0 = Y(0);
+    const pts = P.pts.map(([t, i]) => [X(t), Y(i)]);
+    // shaded regions: split polygon by sign
+    const fwd = [], rev = [];
+    for (let j = 0; j < P.pts.length - 1; j++) {
+      const [ta, ia] = P.pts[j], [tb, ib] = P.pts[j + 1];
+      const seg = [[X(ta), y0], [X(ta), Y(ia)], [X(tb), Y(ib)], [X(tb), y0]];
+      ((ia + ib) / 2 >= 0 ? fwd : rev).push(`<polygon points="${poly(seg)}" fill="var(${(ia + ib) / 2 >= 0 ? '--green-fill' : '--amber-fill'})"/>`);
+    }
+    const avg = P.pts.reduce((acc, p, j) => j ? acc + (P.pts[j][0] - P.pts[j - 1][0]) * (P.pts[j][1] + P.pts[j - 1][1]) / 2 : 0, 0);
+    const title = `v_in = ${(s * VM).toFixed(0)} V (s = ${s.toFixed(2)}) · ${P.mode}`;
+    const lbl = [];
+    lbl.push(`<text x="${X(0.5)}" y="${Y(P.Ia) - 6}" text-anchor="middle" class="t-strong">I_α</text>`);
+    if (P.mode === 'IRCM') lbl.push(`<text x="${X(0)}" y="${Y(P.Ib) + 16}" class="t-strong" style="fill:var(--amber)">I_β</text>`);
+    svg.innerHTML = `
+      <text x="${fr.x0}" y="18" class="t-strong">${title}</text>
+      <line class="gr" x1="${X(0.5)}" y1="${fr.y0}" x2="${X(0.5)}" y2="${fr.y1}"/>
+      ${fwd.join('')}${rev.join('')}
+      <line class="ax" x1="${fr.x0}" y1="${y0}" x2="${fr.x1}" y2="${y0}"/>
+      <text x="${fr.x0 - 6}" y="${y0 + 4}" text-anchor="end">0</text>
+      <text x="${fr.x0 - 6}" y="${fr.y0 + 10}" text-anchor="end">i₁</text>
+      <polyline class="ln" style="stroke:var(--blue)" points="${poly(pts)}"/>
+      ${lbl.join('')}
+      <text x="${X(0.25)}" y="${fr.y1 + 20}" text-anchor="middle">S1 on (V₂ = −V_C)</text>
+      <text x="${X(0.75)}" y="${fr.y1 + 20}" text-anchor="middle">S2 on (V₂ = +V_C)</text>
+      <text x="${fr.x1}" y="${fr.y0 - 8}" text-anchor="end">avg = ${avg >= 0 ? '' : '−'}${Math.abs(avg / (P.Ia || 1) * 100).toFixed(0)}% of I_α</text>`;
+  }
+
+  // Figure 2: characteristic i(s)
+  function figB() {
+    const svg = $('#figB'), fr = frame(900, 330, { l: 60, r: 24, t: 20, b: 44 });
+    const k = consts(st.nk, st.rho);
+    const X = lin(0, 1, fr.x0, fr.x1), Y = lin(0, 1.05, fr.y1, fr.y0);
+    const N = 200, pts = [];
+    for (let j = 0; j <= N; j++) { const s = j / N; pts.push([X(s), Y(iOfS(s, k))]); }
+    const knee = Math.min(k.a, 1);
+    const grid = [0, 0.25, 0.5, 0.75, 1].map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join('') +
+      [0, 0.25, 0.5, 0.75, 1].map((v) => `<text x="${X(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}</text>`).join('');
+    svg.innerHTML = `
+      ${k.a < 1 ? `<rect x="${X(knee)}" y="${fr.y0}" width="${X(1) - X(knee)}" height="${fr.y1 - fr.y0}" fill="var(--dcm)"/>
+      <text x="${(X(knee) + X(1)) / 2}" y="${fr.y0 + 16}" text-anchor="middle" style="fill:var(--amber)">DCM</text>` : ''}
+      <text x="${X(Math.min(knee, 1) / 2)}" y="${fr.y0 + 16}" text-anchor="middle" style="fill:var(--blue)">IRCM</text>
+      ${grid}
+      <line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>
+      <line class="ax" x1="${fr.x0}" y1="${fr.y0}" x2="${fr.x0}" y2="${fr.y1}"/>
+      <text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">s = v_in / V_m</text>
+      <text x="${fr.x0 - 44}" y="${fr.y0 + 8}">i</text>
+      <line class="ln dash" style="stroke:var(--text2)" x1="${X(0)}" y1="${Y(0)}" x2="${X(1)}" y2="${Y(1)}"/>
+      <text x="${X(0.97)}" y="${Y(0.97) - 10}" text-anchor="end">resistor line i = s</text>
+      <polyline class="ln" style="stroke:var(--blue);stroke-width:2.5" points="${poly(pts)}"/>
+      ${k.a < 1 ? `<circle cx="${X(knee)}" cy="${Y(knee)}" r="5" fill="var(--panel)" stroke="var(--text)" stroke-width="2"/>
+      <text x="${X(knee) + 8}" y="${Y(knee) + 20}" class="t-strong">knee s = a = ${k.a.toFixed(3)}</text>
+      <text x="${X(0.86)}" y="${Y(iOfS(0.86, k)) + 28}" text-anchor="middle" style="fill:var(--blue)">i = c(s+a)/(b−s)</text>` : `<text x="${X(0.5)}" y="${Y(0.5) + 24}" style="fill:var(--blue)">a ≥ 1: IRCM over the whole range</text>`}`;
+    hoverLayer(svg, fr, (x) => {
+      const s = (x - fr.x0) / (fr.x1 - fr.x0), i = iOfS(s, k);
+      return tipBox(x, fr, [{ t: `s = ${s.toFixed(3)} (${(s * VM).toFixed(0)} V)` }, { t: `i = ${i.toFixed(4)}`, c: 'var(--blue)' }, { t: `ideal = ${s.toFixed(4)}`, c: 'var(--text2)' }, { t: s <= k.a ? 'IRCM' : 'DCM' }]);
+    });
+  }
+
+  // Figure 3: i(θ) over half period
+  function figC() {
+    const svg = $('#figC'), fr = frame(900, 320, { l: 60, r: 24, t: 20, b: 44 });
+    const k = consts(st.nk, st.rho), R = closed(st.nk, st.rho);
+    const X = lin(0, PI, fr.x0, fr.x1), Y = lin(0, 1.05, fr.y1, fr.y0);
+    const N = 300, act = [], sine = [];
+    for (let j = 0; j <= N; j++) { const th = PI * j / N, s = Math.sin(th); act.push([X(th), Y(iOfS(s, k))]); sine.push([X(th), Y(s)]); }
+    const deg = [0, 30, 60, 90, 120, 150, 180];
+    svg.innerHTML = `
+      ${R.full ? '' : `<rect x="${X(R.t1)}" y="${fr.y0}" width="${X(PI - R.t1) - X(R.t1)}" height="${fr.y1 - fr.y0}" fill="var(--dcm)"/>
+      <text x="${X(PI / 2)}" y="${fr.y1 - 12}" text-anchor="middle" style="fill:var(--amber)">DCM band: θ₁ to π − θ₁</text>
+      <line class="ax" style="stroke-dasharray:3 3" x1="${X(R.t1)}" y1="${fr.y0}" x2="${X(R.t1)}" y2="${fr.y1}"/>
+      <text x="${X(R.t1) + 6}" y="${Y(0.08)}" class="t-strong">θ₁ = ${(R.t1 * 180 / PI).toFixed(1)}°</text>`}
+      ${[0, 0.5, 1].map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join('')}
+      ${deg.map((d) => `<text x="${X(d * PI / 180)}" y="${fr.y1 + 18}" text-anchor="middle">${d}°</text>`).join('')}
+      <line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>
+      <text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">mains angle θ</text>
+      <polyline class="ln dash" style="stroke:var(--text2)" points="${poly(sine)}"/>
+      <polyline class="ln" style="stroke:var(--blue);stroke-width:2.5" points="${poly(act)}"/>
+      <text x="${X(PI / 2)}" y="${Y(1) - 6}" text-anchor="middle">ideal sin θ</text>
+      <text x="${X(PI / 2)}" y="${Y(iOfS(1, k)) + 18}" text-anchor="middle" style="fill:var(--blue)">i(θ)</text>`;
+    hoverLayer(svg, fr, (x) => {
+      const th = (x - fr.x0) / (fr.x1 - fr.x0) * PI, s = Math.sin(th), i = iOfS(s, k);
+      return tipBox(x, fr, [{ t: `θ = ${(th * 180 / PI).toFixed(1)}°` }, { t: `i = ${i.toFixed(4)}`, c: 'var(--blue)' }, { t: `sin θ = ${s.toFixed(4)}`, c: 'var(--text2)' }, { t: `error = ${(i - s).toFixed(4)}` }]);
+    });
+  }
+
+  // Figure 4: integrands
+  function figD(id, which) {
+    const svg = $(id), fr = frame(480, 260, { l: 44, r: 14, t: 36, b: 40 });
+    const k = consts(st.nk, st.rho), R = closed(st.nk, st.rho);
+    const g = (th) => { const i = iOfS(Math.sin(th), k); return which === 1 ? i * Math.sin(th) : i * i; };
+    const X = lin(0, PI / 2, fr.x0, fr.x1), Y = lin(0, 1.05, fr.y1, fr.y0);
+    const N = 160, ircm = [], dcm = [], line = [];
+    for (let j = 0; j <= N; j++) {
+      const th = PI / 2 * j / N, p = [X(th), Y(g(th))];
+      line.push(p);
+      if (th <= R.t1) ircm.push(p);
+      if (th >= R.t1) dcm.push(p);
+    }
+    const t1x = X(Math.min(R.t1, PI / 2));
+    ircm.push([t1x, Y(g(Math.min(R.t1, PI / 2)))]);
+    const area = (pts, xa, xb) => `${xa},${fr.y1} ${poly(pts)} ${xb},${fr.y1}`;
+    const val = which === 1 ? R.S1 : R.S2;
+    const dcmPart = val - R.A;
+    svg.innerHTML = `
+      <text x="${fr.x0}" y="18" class="t-strong">${which === 1 ? 'S₁ = ∫ i·sin θ dθ' : 'S₂ = ∫ i² dθ'} = ${val.toFixed(4)}</text>
+      <polygon points="${area(ircm, X(0), t1x)}" fill="var(--blue-fill)"/>
+      ${R.full ? '' : `<polygon points="${area(dcm, t1x, X(PI / 2))}" fill="var(--amber-fill)"/>`}
+      <line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>
+      <polyline class="ln" style="stroke:var(--text)" points="${poly(line)}"/>
+      ${[0, 30, 60, 90].map((d) => `<text x="${X(d * PI / 180)}" y="${fr.y1 + 18}" text-anchor="middle">${d}°</text>`).join('')}
+      <text x="${X(PI / 8)}" y="${fr.y1 - 10}" text-anchor="middle" style="fill:var(--blue)">A = ${R.A.toFixed(4)}</text>
+      ${R.full ? '' : `<text x="${(t1x + X(PI / 2)) / 2}" y="${fr.y1 - 10}" text-anchor="middle" style="fill:var(--amber)">DCM ${dcmPart.toFixed(4)}</text>
+      <line class="ax" style="stroke-dasharray:3 3" x1="${t1x}" y1="${fr.y0}" x2="${t1x}" y2="${fr.y1}"/>
+      <text x="${t1x + 4}" y="${fr.y0 + 10}">θ₁</text>`}
+      <text x="${fr.x1}" y="${fr.y1 + 34}" text-anchor="end">pure sine would give π/4 = 0.7854</text>`;
+  }
+
+  // Figure 5: harmonic spectrum from FFT of closed-form waveform
+  function figE() {
+    const svg = $('#figE'), fr = frame(900, 300, { l: 60, r: 20, t: 24, b: 44 });
+    const k = consts(st.nk, st.rho), N = 4096, x = [];
+    for (let j = 0; j < N; j++) { const th = 2 * PI * j / N, s = Math.sin(th); x.push(Math.sign(s) * iOfS(Math.abs(s), k)); }
+    const H = (h) => { let b = 0; for (let j = 0; j < N; j++) b += x[j] * Math.sin(h * 2 * PI * j / N); return 2 * b / N; };
+    const h1 = H(1), hs = [];
+    for (let h = 3; h <= 25; h += 2) hs.push({ h, p: Math.abs(H(h)) / h1 * 100 });
+    const ymax = Math.max(1, ...hs.map((d) => d.p)) * 1.2;
+    const bw = (fr.x1 - fr.x0) / hs.length;
+    const Y = lin(0, ymax, fr.y1, fr.y0);
+    const ticks = [0, ymax / 2, ymax].map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v.toFixed(1)}%</text>`).join('');
+    const bars = hs.map((d, j) => {
+      const x0 = fr.x0 + j * bw + bw * 0.22, w = bw * 0.56, y = Y(d.p), hgt = fr.y1 - y;
+      const r = Math.min(4, w / 2, hgt);
+      const path = hgt > 0.5 ? `M${x0},${fr.y1} V${y + r} Q${x0},${y} ${x0 + r},${y} H${x0 + w - r} Q${x0 + w},${y} ${x0 + w},${y + r} V${fr.y1} Z` : '';
+      return `<g><title>Harmonic ${d.h}: ${d.p.toFixed(3)}% of fundamental</title>
+        <rect x="${fr.x0 + j * bw}" y="${fr.y0}" width="${bw}" height="${fr.y1 - fr.y0}" fill="transparent"/>
+        ${path ? `<path d="${path}" fill="var(--blue)"/>` : ''}
+        <text x="${x0 + w / 2}" y="${fr.y1 + 18}" text-anchor="middle">${d.h}</text>
+        ${d.p >= ymax * 0.04 ? `<text x="${x0 + w / 2}" y="${y - 6}" text-anchor="middle" style="fill:var(--text)">${d.p.toFixed(2)}</text>` : ''}</g>`;
+    }).join('');
+    svg.innerHTML = `${ticks}<line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>${bars}
+      <text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">harmonic order (odd only; even harmonics are zero)</text>`;
+  }
+
+  // Figure 6: THD map
+  const SERIES = [{ nk: 2.1, c: '--blue' }, { nk: 2.4, c: '--green' }, { nk: 3, c: '--amber' }, { nk: 4, c: '--purple' }];
+  function figF() {
+    const svg = $('#figF'), fr = frame(900, 380, { l: 60, r: 110, t: 20, b: 46 });
+    const r0 = 0.5, r1 = 1;
+    const curves = SERIES.map((sr) => { const pts = []; for (let j = 0; j <= 200; j++) { const r = r0 + (r1 - r0) * j / 200; pts.push([r, closed(sr.nk, r).thd * 100]); } return { ...sr, pts }; });
+    const ymax = Math.ceil(Math.max(...curves.flatMap((c) => c.pts.map((p) => p[1])), closed(st.nk, st.rho).thd * 100) / 2) * 2 + 1;
+    const X = lin(r0, r1, fr.x0, fr.x1), Y = lin(0, ymax, fr.y1, fr.y0);
+    const yt = []; for (let v = 0; v <= ymax; v += ymax > 12 ? 4 : 2) yt.push(v);
+    const grid = yt.map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}%</text>`).join('') +
+      [0.5, 0.6, 0.7, 0.8, 0.9, 1].map((v) => `<text x="${X(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v.toFixed(1)}</text>`).join('');
+    const cur = closed(st.nk, st.rho).thd * 100;
+    svg.innerHTML = `
+      ${grid}
+      <line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>
+      <line class="ax" x1="${fr.x0}" y1="${fr.y0}" x2="${fr.x0}" y2="${fr.y1}"/>
+      <text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">ρ = V_C / V_m   (0.5 means 2V_C equals the mains peak)</text>
+      ${curves.map((c) => `<polyline class="ln" style="stroke:var(${c.c})" points="${poly(c.pts.map((p) => [X(p[0]), Y(p[1])]))}"/>`).join('')}
+      ${curves.map((c) => { const zr = 1 / (c.nk - 2); return zr <= r1 ? `<circle cx="${X(zr)}" cy="${Y(0)}" r="3.5" fill="var(${c.c})"/>` : ''; }).join('')}
+      <circle cx="${X(Math.min(st.rho, r1))}" cy="${Y(cur)}" r="7" fill="none" stroke="var(--text)" stroke-width="2"/>
+      <text x="${X(Math.min(st.rho, r1)) + 10}" y="${Y(cur) - 10}" class="t-strong">you: nk ${st.nk.toFixed(2)}, ${cur.toFixed(2)}%</text>`;
+    const left = curves.map((c) => ({ c, y: Y(c.pts[0][1]) })).sort((a, b) => a.y - b.y);
+    for (let j = 1; j < left.length; j++) if (left[j].y - left[j - 1].y < 15) left[j].y = left[j - 1].y + 15;
+    left.forEach((l) => {
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', fr.x0 + 8); t.setAttribute('y', l.y - 6);
+      t.setAttribute('style', 'fill:var(--text)');
+      t.textContent = `nk = ${l.c.nk}`;
+      svg.appendChild(t);
+      const sw = document.createElementNS(NS, 'rect');
+      sw.setAttribute('x', fr.x0 + 70 + 4); sw.setAttribute('y', l.y - 10);
+      sw.setAttribute('width', 12); sw.setAttribute('height', 3); sw.setAttribute('rx', 1.5);
+      sw.setAttribute('fill', `var(${l.c.c})`);
+      svg.appendChild(sw);
+    });
+    hoverLayer(svg, fr, (x) => {
+      const r = r0 + (x - fr.x0) / (fr.x1 - fr.x0) * (r1 - r0);
+      return tipBox(x, fr, [{ t: `ρ = ${r.toFixed(3)} (V_C = ${(r * VM).toFixed(0)} V)` },
+        ...SERIES.map((s) => ({ t: `nk ${s.nk}: ${(closed(s.nk, r).thd * 100).toFixed(2)}%`, c: `var(${s.c})` }))]);
+    });
+  }
+
+  function renderCalc() {
+    const R = closed(st.nk, st.rho);
+    const rows = [
+      ['a = (nk−2)ρ', R.a], ['b = (nk+2)ρ', R.b], ['c = 2ρ', R.c], ['K = c(a+b)', R.K],
+      ['θ₁ = arcsin a', R.full ? '—' : (R.t1 * 180 / PI).toFixed(2) + '°'], ['A', R.A],
+      ['J₀', R.full ? '—' : R.J0], ['J₁', R.full ? '—' : R.J1], ['J₂', R.full ? '—' : R.J2],
+      ['S₁', R.S1], ['S₂', R.S2], ['πS₂/(4S₁²)', PI * R.S2 / (4 * R.S1 * R.S1)],
+      ['THD', (R.thd * 100).toFixed(3) + '%', true], ['PF', R.pf.toFixed(5), true],
+    ];
+    $('#calc').innerHTML = rows.map(([k, v, hl]) => `<div${hl ? ' class="hl"' : ''}><span class="k">${k}</span><span class="v">${typeof v === 'number' ? v.toFixed(5) : v}</span></div>`).join('');
+    $('#thdTop').textContent = `THD = ${(R.thd * 100).toFixed(2)}% · PF = ${R.pf.toFixed(4)}`;
+  }
+
+  function render() {
+    const k = consts(st.nk, st.rho);
+    figA('#figA1', Math.min(0.2, Math.max(0.05, k.a * 0.6)));
+    figA('#figA2', 1);
+    figB(); figC(); figD('#figD1', 1); figD('#figD2', 2); figE(); figF(); renderCalc();
+  }
+  function setOut() {
+    $('#nkOut').textContent = st.nk.toFixed(2);
+    $('#rhoOut').innerHTML = `${st.rho.toFixed(3)} (V<sub>C</sub> = ${(st.rho * VM).toFixed(0)} V)`;
+  }
+  let pend = false;
+  const sched = () => { if (!pend) { pend = true; requestAnimationFrame(() => { pend = false; render(); }); } };
+  $('#nk').addEventListener('input', (e) => { st.nk = +e.target.value; setOut(); sched(); });
+  $('#rho').addEventListener('input', (e) => { st.rho = +e.target.value; setOut(); sched(); });
+  document.querySelectorAll('.controls button').forEach((b) => b.addEventListener('click', () => {
+    st.nk = +b.dataset.nk; st.rho = +b.dataset.rho;
+    $('#nk').value = st.nk; $('#rho').value = st.rho; setOut(); render();
+  }));
+  setOut();
+  render();
+})();
+</script>
