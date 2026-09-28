@@ -173,10 +173,14 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 .dev.diode.on .fillme { fill: var(--diode); }
 .dev.diode.on .halo { fill: var(--diode-dim); }
 .dev.diode.on text { fill: var(--diode); font-weight: 600; }
-.dev.rect.on path { stroke: var(--sec); }
-.dev.rect.on .fillme { fill: var(--sec); }
-.dev.rect.on .halo { fill: var(--sec-dim); }
-.dev.rect.on text { fill: var(--sec); font-weight: 600; }
+.dev.sr.on path { stroke: var(--sec); }
+.dev.sr.on .fillme { fill: var(--sec); }
+.dev.sr.on .halo { fill: var(--sec-dim); }
+.dev.sr.on text { fill: var(--sec); font-weight: 600; }
+.dev.diode.sr.on path { stroke: var(--diode); }
+.dev.diode.sr.on .fillme { fill: var(--diode); }
+.dev.diode.sr.on .halo { fill: var(--diode-dim); }
+.dev.diode.sr.on text { fill: var(--diode); }
 .dev.coss .halo { fill: var(--mag-dim); stroke: var(--mag); stroke-dasharray: 3 3; stroke-width: 1.2; }
 .dev.coss text { fill: var(--mag); }
 .flow-band { fill: none; stroke-width: 9; stroke-linejoin: round; opacity: 0.22; }
@@ -206,9 +210,9 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 
 <main class="wrap">
   <header>
-    <div class="eyebrow">2.LLC · Full-bridge LLC primary</div>
-    <h1>How the active full bridge drives an LLC tank</h1>
-    <p class="lede">S1–S4 form the active full bridge. The switches run in diagonal pairs, S1·S4 then S2·S3, each at 50% duty with a short dead time between them. That turns V<sub>in</sub> into a ±V<sub>in</sub> square wave v<sub>ab</sub>. The series tank Cr–Lr filters it into a near-sinusoidal current i<sub>r</sub>, and the diode bridge D5–D8 rectifies it into V<sub>o</sub>. The switching frequency f<sub>s</sub> sets the gain. The magnetizing current i<sub>m</sub> in Lm is what gives every switch zero-voltage turn-on.</p>
+    <div class="eyebrow">2.LLC · Full-bridge LLC with synchronous rectifier</div>
+    <h1>Two active full bridges: the LLC inverter and its synchronous rectifier</h1>
+    <p class="lede">S1–S4 form the active full bridge. The switches run in diagonal pairs, S1·S4 then S2·S3, each at 50% duty with a short dead time between them. That turns V<sub>in</sub> into a ±V<sub>in</sub> square wave v<sub>ab</sub>. The series tank Cr–Lr filters it into a near-sinusoidal current i<sub>r</sub>, and the secondary active bridge S5–S8 rectifies it into V<sub>o</sub>. That secondary bridge is a synchronous rectifier (SR): each MOSFET is turned on while its body diode would conduct, so the current flows through the channel with an I·R<sub>ds(on)</sub> drop instead of a ~0.7 V diode drop. The switching frequency f<sub>s</sub> sets the gain. The magnetizing current i<sub>m</sub> in Lm is what gives every switch zero-voltage turn-on.</p>
     <div class="facts">
       <div class="formula">f<sub>r</sub> = 1 / (2π√(Lr·Cr))</div>
       <div class="formula">Ln = Lm / Lr</div>
@@ -218,13 +222,13 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 
   <section class="panel">
     <div class="scroll schem" id="schemWrap">
-      <svg id="schem" viewBox="0 0 1040 455" role="img" aria-label="Full-bridge LLC schematic with conducting devices and current paths highlighted"></svg>
+      <svg id="schem" viewBox="0 0 1085 455" role="img" aria-label="Full-bridge LLC with synchronous rectifier schematic with conducting devices and current paths highlighted"></svg>
     </div>
     <div class="legend">
       <span><i class="sw" style="background:var(--pri)"></i><span>Primary current i<sub>r</sub> / switch conducting</span></span>
       <span><i class="sw" style="background:var(--diode)"></i><span>Body diode conducting</span></span>
       <span><i class="sw" style="background:var(--mag)"></i><span>Magnetizing current i<sub>m</sub> / Coss transition</span></span>
-      <span><i class="sw" style="background:var(--sec)"></i><span>Rectifier current</span></span>
+      <span><i class="sw" style="background:var(--sec)"></i><span>Secondary current / SR MOSFET conducting</span></span>
       <span><span><b style="color:var(--text)">Bold label</b> = gate on</span></span>
     </div>
   </section>
@@ -257,7 +261,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
   <div class="split">
     <section class="panel">
       <div class="scroll wave">
-        <svg id="wave" viewBox="0 0 1000 500" role="img" aria-label="Gate signals, bridge voltage, resonant and magnetizing current and rectifier current over one switching period"></svg>
+        <svg id="wave" viewBox="0 0 1000 610" role="img" aria-label="Primary and SR gate signals, bridge voltage, resonant and magnetizing current and secondary current over one switching period"></svg>
       </div>
     </section>
     <section class="panel card" id="card" aria-live="polite"></section>
@@ -267,7 +271,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     <h2>Every interval in one switching period</h2>
     <div class="panel scroll tbl">
       <table>
-        <thead><tr><th>Interval</th><th>Bridge conducts</th><th>Rectifier</th><th>v<sub>ab</sub></th><th>What happens</th></tr></thead>
+        <thead><tr><th>Interval</th><th>Primary bridge</th><th>Synchronous rectifier</th><th>v<sub>ab</sub></th><th>What happens</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -275,11 +279,11 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 
   <section class="section">
     <h2>Three operating regions</h2>
-    <p>The bridge itself always does the same thing. What changes with f<sub>s</sub> is when the tank current crosses zero relative to the switching edges, and that decides whether the switches keep ZVS and whether the rectifier diodes turn off softly.</p>
+    <p>The bridge itself always does the same thing. What changes with f<sub>s</sub> is when the tank current crosses zero relative to the switching edges, and that decides whether the switches keep ZVS and whether the SR MOSFETs turn off at zero current.</p>
     <div class="regions">
       <div class="panel region">
         <h3>Below resonance, f<sub>s</sub> &lt; f<sub>r</sub></h3>
-        <p>The resonant half-wave finishes before the switches change state. The rectifier current falls to zero on its own (ZCS), then only i<sub>m</sub> flows until the dead time. Gain rises above 1. Too far down, or too much load, and the tank turns capacitive and ZVS is lost.</p>
+        <p>The resonant half-wave finishes before the switches change state. The secondary current falls to zero on its own, so the SR MOSFETs turn off at zero current (ZCS), then only i<sub>m</sub> flows until the dead time. Gain rises above 1. Too far down, or too much load, and the tank turns capacitive and ZVS is lost.</p>
         <button type="button" data-fn="0.75" data-q="0.4">Show f<sub>s</sub> = 0.75·f<sub>r</sub></button>
       </div>
       <div class="panel region">
@@ -289,11 +293,11 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       </div>
       <div class="panel region">
         <h3>Above resonance, f<sub>s</sub> &gt; f<sub>r</sub></h3>
-        <p>The switches change state before the half-wave ends, so rectifier current is cut off while still flowing, and the diodes see reverse recovery. Primary ZVS is easy here. Gain falls below 1.</p>
+        <p>The switches change state before the half-wave ends, so the SR MOSFETs must turn off while current still flows. That current drops into their body diodes for the dead time, which then see reverse recovery. Primary ZVS is easy here. Gain falls below 1.</p>
         <button type="button" data-fn="1.3" data-q="0.4">Show f<sub>s</sub> = 1.3·f<sub>r</sub></button>
       </div>
     </div>
-    <p>Waveforms come from a time-domain simulation of the tank with an ideal diode rectifier and a stiff output: V<sub>in</sub> = 1, Lr = Cr = 1, secondary values referred to the primary, dead time 3.5% of the period. The Coss swing is modelled as a linear ramp of v<sub>ab</sub> during the first part of the dead time.</p>
+    <p>Waveforms come from a time-domain simulation of the tank with an ideal synchronous rectifier and a stiff output. The SR controller turns each MOSFET on 2% of a period after its body diode starts conducting, holds it off during the primary dead time, and turns it off when the current reaches zero: V<sub>in</sub> = 1, Lr = Cr = 1, secondary values referred to the primary, dead time 3.5% of the period. The Coss swing is modelled as a linear ramp of v<sub>ab</sub> during the first part of the dead time.</p>
   </section>
 </main>
 
@@ -355,8 +359,8 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 
   // ---------- geometry ----------
   const TOP = 50, BOT = 400, YU = 125, YL = 325, YA = 200, YB = 260, H = 45, OFF = 18;
-  const X = { A: 190, B: 330, C: 775, D: 885 };
-  const XV = 50, XM = 575, XT = 640, XS = 680, XC = 955, XR = 1005;
+  const X = { A: 190, B: 330, C: 770, D: 920 };
+  const XV = 50, XM = 575, XT = 640, XS = 680, XC = 995, XR = 1045;
   const POS = { 1: [X.A, YU], 2: [X.A, YL], 3: [X.B, YU], 4: [X.B, YL], 5: [X.C, YU], 6: [X.C, YL], 7: [X.D, YU], 8: [X.D, YL] };
   const PAIR = { P: [1, 4], N: [2, 3] };
   // primary state codes -> which pair carries the current, via switch (T) or body diode (D)
@@ -373,10 +377,22 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
   let M;
 
   // ---------- model / intervals ----------
-  const keyOf = (s) => s.pri + '|' + s.mode;
+  const keyOf = (s) => s.pri + '|' + s.sec;
+  // SR controller: body diode first, MOSFET on after a short delay, off during primary dead time and at zero current
+  function assignSR(S) {
+    const n = S.length, delay = Math.round(0.02 * n);
+    S.forEach((s, j) => {
+      if (s.mode === 0) { s.sec = '0'; return; }
+      let fresh = false;
+      for (let q = 1; q <= delay; q++) if (S[(j - q + n) % n].mode !== s.mode) { fresh = true; break; }
+      const w = fresh || !s.gate ? 'D' : 'S';
+      s.sec = w + (s.mode > 0 ? '+' : '-');
+    });
+  }
   function buildModel() {
     const R = simulate({ fn: st.fn, Q: st.Q, Ln: st.Ln });
     const S = R.samples;
+    assignSR(S);
     const segs = [];
     S.forEach((s, j) => {
       const k = keyOf(s);
@@ -419,39 +435,30 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     else pts.push(...branchPts(3, w, false), [B, TOP], [XV, TOP], [XV, BOT], [A, BOT], ...branchPts(2, w, false), [A, YA]);
     return pts;
   }
-  // rectifier loop, already in the direction of flow
-  function secLoop(mode) {
+  // secondary loop, already in the direction of flow; current always goes up through S5/S8 or S6/S7
+  function secLoop(mode, w) {
     const { C, D } = X;
-    if (mode > 0) return [[XS, YA], [C, YA], [C, TOP], [XC, TOP], [XC, BOT], [D, BOT], [D, YB], [XS, YB], [XS, YA]];
-    return [[XS, YB], [D, YB], [D, TOP], [XC, TOP], [XC, BOT], [C, BOT], [C, YA], [XS, YA], [XS, YB]];
+    if (mode > 0) return [[XS, YA], [C, YA], ...branchPts(5, w, false), [C, TOP], [XC, TOP], [XC, BOT], [D, BOT], ...branchPts(8, w, false), [D, YB], [XS, YB], [XS, YA]];
+    return [[XS, YB], [D, YB], ...branchPts(7, w, false), [D, TOP], [XC, TOP], [XC, BOT], [C, BOT], ...branchPts(6, w, false), [C, YA], [XS, YA], [XS, YB]];
   }
   function swSVG(p) {
     const [x, yc] = POS[p];
     const xt = x - OFF, xd = x + OFF;
+    const side = p > 4 ? ' sr' : '';
     return `
-      <g class="dev" id="S${p}"><title>Switch S${p}</title>
+      <g class="dev${side}" id="S${p}"><title>${p > 4 ? 'SR MOSFET' : 'Switch'} S${p}</title>
         <rect class="halo" x="${xt - 32}" y="${yc - 30}" width="44" height="60" rx="6"/>
         <path d="M${xt},${yc - H} V${yc - 16} M${xt},${yc + 16} V${yc + H} M${xt - 9},${yc - 16} V${yc + 16} M${xt - 9},${yc - 16} H${xt} M${xt - 9},${yc + 16} H${xt}"/>
         <path class="gate" d="M${xt - 15},${yc - 12} V${yc + 12} M${xt - 15},${yc} H${xt - 26}"/>
         <polygon class="fillme" points="${xt - 9},${yc + 16} ${xt - 2},${yc + 12} ${xt - 2},${yc + 20}"/>
         <text x="${xt - 30}" y="${yc + 4.5}" text-anchor="end">S${p}</text>
       </g>
-      <g class="dev diode" id="D${p}"><title>Body diode of S${p}</title>
+      <g class="dev diode${side}" id="D${p}"><title>Body diode of S${p}</title>
         <rect class="halo" x="${xd - 14}" y="${yc - 30}" width="28" height="60" rx="6"/>
         <path d="M${xd},${yc - H} V${yc + H}"/>
         <polygon class="fillme" points="${xd - 8},${yc + 7} ${xd + 8},${yc + 7} ${xd},${yc - 7}"/>
         <path d="M${xd - 8},${yc - 7} H${xd + 8}"/>
         <text x="${xd + 13}" y="${yc + 4.5}">D${p}</text>
-      </g>`;
-  }
-  function recSVG(p) {
-    const [x, yc] = POS[p];
-    return `
-      <g class="dev rect" id="R${p}"><title>Rectifier diode D${p}</title>
-        <rect class="halo" x="${x - 14}" y="${yc - 30}" width="28" height="60" rx="6"/>
-        <polygon class="fillme" points="${x - 10},${yc + 9} ${x + 10},${yc + 9} ${x},${yc - 9}"/>
-        <path d="M${x - 10},${yc - 9} H${x + 10}"/>
-        <text x="${x + 16}" y="${yc + 4.5}">D${p}</text>
       </g>`;
   }
   function legWires(x) {
@@ -473,7 +480,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       `M${XS},${YA} ${coilV(0)}`,
       `M${XS},${YA} H${X.C}`,
       `M${XS},${YB} H${X.C - 6} a6,6 0 0 1 12,0 H${X.D}`,
-      `M${X.C},${TOP} V${BOT} M${X.D},${TOP} V${BOT}`,
+      legWires(X.C), legWires(X.D),
       `M${X.C},${TOP} H${XR} M${X.C},${BOT} H${XR}`,
       `M${XC},${TOP} V218 M${XC},232 V${BOT}`,
       `M${XR},${TOP} V192 M${XR},258 V${BOT}`,
@@ -506,7 +513,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
         <polyline id="mDash" class="flow-dash flow-mag"/><polyline id="pDash" class="flow-dash flow-pri"/><polyline id="sDash" class="flow-dash flow-sec"/>
       </g>
       ${[1, 2, 3, 4].map(swSVG).join('')}
-      ${[5, 6, 7, 8].map(recSVG).join('')}
+      ${[5, 6, 7, 8].map(swSVG).join('')}
       <text id="iLbl" x="480" y="${YA - 22}" text-anchor="middle" class="lbl-big" style="font-size:14px"></text>
       <text id="imLbl" x="${XM - 14}" y="${YB + 30}" text-anchor="end" style="fill:var(--mag)"></text>
       <text id="vabLbl" x="${(X.A + X.B) / 2}" y="440" text-anchor="middle"></text>
@@ -528,9 +535,11 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       if (s.ir < 0) pp = pp.reverse();
       setPts(['#pBand', '#pDash'], pp);
     } else setPts(['#pBand', '#pDash'], null);
+    const srPair = s.mode > 0 ? [5, 8] : [6, 7];
+    if (secOn && s.sec[0] === 'S') srPair.forEach((n) => $('#S' + n).classList.add('gated'));
     if (secOn) {
-      (s.mode > 0 ? [5, 8] : [6, 7]).forEach((n) => $('#R' + n).classList.add('on'));
-      setPts(['#sBand', '#sDash'], secLoop(s.mode));
+      srPair.forEach((n) => $('#' + s.sec[0] + n).classList.add('on'));
+      setPts(['#sBand', '#sDash'], secLoop(s.mode, s.sec[0] === 'S' ? 'T' : 'D'));
       const lm = s.im >= 0 ? [[XM, YA], [XM, YB]] : [[XM, YB], [XM, YA]];
       setPts(['#mBand', '#mDash'], lm);
     } else {
@@ -542,19 +551,21 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     $('#imLbl').textContent = `i_m = ${f(s.im)}`;
     $('#vabLbl').textContent = P.coss ? 'v_ab swinging (dead time)' : `v_ab = ${s.vab > 0 ? '+' : '−'}V_in`;
     $('#phLbl').textContent = s.gate ? `gates: ${s.gate === 'P' ? 'S1, S4' : 'S2, S3'}` : 'dead time: all gates off';
-    $('#recLbl').textContent = secOn ? `rectifier: ${s.mode > 0 ? 'D5, D8' : 'D6, D7'}` : 'rectifier off';
+    $('#recLbl').textContent = secOn ? `SR: ${srPair.map((n) => s.sec[0] + n).join(', ')}${s.sec[0] === 'D' ? ' (body diodes)' : ''}` : 'SR: all off';
   }
 
   // ---------- waveforms ----------
   const WX0 = 110, WX1 = 980;
   const tx = (t) => WX0 + (WX1 - WX0) * t / M.T;
-  const R = { g1: [34, 58], g2: [98, 122], vab: 185, cur: 305, sec: 420, vAmp: 26, iAmp: 68, sAmp: 36 };
+  const R = { g1: [34, 58], g2: [92, 116], g3: [150, 174], g4: [208, 232], vab: 295, cur: 420, sec: 540, vAmp: 26, iAmp: 68, sAmp: 36 };
   function drawWave() {
     const S = M.samples, td = M.td, Th = M.Th, T = M.T;
     const gp = `M${tx(0)},${R.g1[1]} H${tx(td)} V${R.g1[0]} H${tx(Th)} V${R.g1[1]} H${tx(T)}`;
     const gn = `M${tx(0)},${R.g2[1]} H${tx(Th + td)} V${R.g2[0]} H${tx(T)}`;
     const path = (fy) => 'M' + S.map((s) => `${tx(s.t).toFixed(1)},${fy(s).toFixed(1)}`).join(' L') + ` L${tx(T)},${fy(S[0]).toFixed(1)}`;
     const vab = path((s) => R.vab - s.vab * R.vAmp);
+    const g3 = path((s) => (s.sec === 'S+' ? R.g3[0] : R.g3[1]));
+    const g4 = path((s) => (s.sec === 'S-' ? R.g4[0] : R.g4[1]));
     const ir = path((s) => R.cur - s.ir / M.maxI * R.iAmp);
     const im = path((s) => R.cur - s.im / M.maxI * R.iAmp);
     const is = path((s) => R.sec - Math.abs(s.isec) / M.maxS * R.sAmp);
@@ -563,7 +574,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     let lastX = -1e9;
     const labels = evs.map((t, k) => {
       const x = tx(t);
-      const lbl = x - lastX >= minGap || k === evs.length - 1 ? `<text class="w-tlabel" x="${x}" y="490" text-anchor="middle">t${k}</text>` : '';
+      const lbl = x - lastX >= minGap || k === evs.length - 1 ? `<text class="w-tlabel" x="${x}" y="600" text-anchor="middle">t${k}</text>` : '';
       if (lbl) lastX = x;
       return `<line class="w-ev" x1="${x}" y1="22" x2="${x}" y2="${R.sec + 8}"/>${lbl}`;
     }).join('');
@@ -576,12 +587,16 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       ${labels}
       ${rowLbl(R.g1[0] + 8, 'S1, S4')}
       ${rowLbl(R.g2[0] + 8, 'S2, S3')}
+      ${rowLbl(R.g3[0] + 8, 'S5, S8')}
+      ${rowLbl(R.g4[0] + 8, 'S6, S7')}
       ${rowLbl(R.vab, 'v_ab', '±V_in')}
       ${rowLbl(R.cur - 10, 'i_r', '')}
       <text class="w-row" x="8" y="${R.cur + 22}" style="fill:var(--mag)">i_m</text>
-      ${rowLbl(R.sec - 12, '|i_rect|', '')}
+      ${rowLbl(R.sec - 12, '|i_sec|', '')}
       <path class="w-trace w-pri" d="${gp}"/>
       <path class="w-trace w-pri" d="${gn}"/>
+      <path class="w-trace w-sec" d="${g3}"/>
+      <path class="w-trace w-sec" d="${g4}"/>
       <path class="w-trace w-pri" d="${vab}"/>
       <path class="w-trace w-im" d="${im}"/>
       <path class="w-trace w-ir" d="${ir}"/>
@@ -624,21 +639,29 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
           txt: `All gates are off, but i<sub>r</sub> has the wrong sign. It keeps flowing in ${dn(Od, 'd')}, so v<sub>ab</sub> cannot swing. ${dn(I, 'g')} will turn on against the full V<sub>in</sub> (hard switching, with body-diode reverse recovery). This is the capacitive region: f<sub>s</sub> too low for this load.` };
     }
   }
-  function secInfo(mode) {
-    if (mode > 0) return { cond: dn(['D5', 'D8'], 'r'),
-      txt: `${dn(['D5', 'D8'], 'r')} conduct. The output clamps Lm to +nV<sub>o</sub>, so i<sub>m</sub> ramps up linearly. The difference i<sub>r</sub> − i<sub>m</sub> goes through the transformer to the output.` };
-    if (mode < 0) return { cond: dn(['D6', 'D7'], 'r'),
-      txt: `${dn(['D6', 'D7'], 'r')} conduct. Lm is clamped to −nV<sub>o</sub>, so i<sub>m</sub> ramps down linearly. i<sub>r</sub> − i<sub>m</sub> goes to the output.` };
-    return { cond: 'off',
-      txt: 'All rectifier diodes are off, so i<sub>r</sub> = i<sub>m</sub>. Lm joins Lr and Cr in a much slower resonance, and Co alone feeds the load. No energy crosses the transformer.' };
+  function secInfo(code) {
+    if (code === '0') return { cond: 'all off',
+      txt: 'All four SR MOSFETs are off and no current flows in the secondary, so i<sub>r</sub> = i<sub>m</sub>. Lm joins Lr and Cr in a much slower resonance, and Co alone feeds the load.' };
+    const pos = code[1] === '+';
+    const pair = pos ? [5, 8] : [6, 7];
+    const clamp = pos ? `The output clamps Lm to +nV<sub>o</sub>, so i<sub>m</sub> ramps up linearly.` : `Lm is clamped to −nV<sub>o</sub>, so i<sub>m</sub> ramps down linearly.`;
+    if (code[0] === 'S') return { cond: dn(pair.map((n) => 'S' + n), 'r'),
+      txt: `SR MOSFETs ${dn(pair.map((n) => 'S' + n), 'r')} are on. The secondary current i<sub>r</sub> − i<sub>m</sub> (times n) flows through their channels from source to drain, so the loss is only I²·R<sub>ds(on)</sub>. ${clamp}` };
+    return { cond: dn(pair.map((n) => 'D' + n), 'd') + ' (body diodes)',
+      txt: `The secondary current flows in the body diodes ${dn(pair.map((n) => 'D' + n), 'd')} of ${dn(pair.map((n) => 'S' + n), 'g')}. Their gates are off, either because conduction just started and the SR controller has not reacted yet, or because the primary is in its dead time. ${clamp}` };
   }
   function transitionNote(k) {
     const cur = M.iv[k].s, prev = M.iv[(k - 1 + M.iv.length) % M.iv.length].s;
     const parts = [];
-    if (prev.mode !== cur.mode) {
-      if (cur.mode === 0) parts.push('the rectifier current reached zero on its own, so the output diodes turn off softly (ZCS, no reverse recovery).');
-      else if (prev.mode === 0) parts.push(`the voltage across Lm reached nV<sub>o</sub>, so the rectifier starts conducting through ${secInfo(cur.mode).cond}.`);
-      else parts.push(`the rectifier current was forced to reverse while still flowing: ${secInfo(prev.mode).cond} are turned off with current (reverse recovery).`);
+    const srIds = (code, w) => (code[1] === '+' ? [5, 8] : [6, 7]).map((n) => w + n);
+    if (prev.sec !== cur.sec) {
+      if (cur.sec === '0') parts.push(prev.sec[0] === 'S'
+        ? `the secondary current reached zero, so the SR controller turns ${dn(srIds(prev.sec, 'S'), 'r')} off at zero current (ZCS). Leaving them on longer would let the current reverse and pull energy back from Co.`
+        : 'the secondary current reached zero and the body diodes stop conducting.');
+      else if (prev.sec === '0') parts.push(`the voltage across Lm reached nV<sub>o</sub>, so secondary current starts, first in the body diodes ${dn(srIds(cur.sec, 'D'), 'd')}.`);
+      else if (prev.sec[1] === cur.sec[1] && prev.sec[0] === 'D') parts.push(`the SR controller sees negative drain voltage and turns ${dn(srIds(cur.sec, 'S'), 'r')} on while their body diodes conduct, so the SR turn-on is at zero voltage. Current moves into the channel.`);
+      else if (prev.sec[1] === cur.sec[1]) parts.push(`the SR gates of ${dn(srIds(cur.sec, 'S'), 'g')} go off for the primary dead time, and the current falls back into their body diodes.`);
+      else parts.push(`the secondary current was forced to reverse while still flowing, so the body diodes ${dn(srIds(prev.sec, 'D'), 'd')} see reverse recovery.`);
     }
     const a = prev.pri, b = cur.pri;
     if (a !== b) {
@@ -652,7 +675,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
   }
   function describe(k) {
     const s = M.iv[k].s;
-    const p = priInfo(s.pri), r = secInfo(s.mode);
+    const p = priInfo(s.pri), r = secInfo(s.sec);
     let head = p.head;
     if (p.head === 'Power transfer' && s.mode === 0) head = 'Magnetizing current only';
     else if (s.mode === 0 && !p.head.startsWith('Dead')) head += ' · rectifier off';
@@ -664,7 +687,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       <div class="iv-head"><span class="tag">t${k} → t${k + 1}</span><h3>${D.head}</h3></div>
       <dl>
         <div><dt>Full bridge</dt><dd>${D.p.txt}</dd></div>
-        <div><dt>Rectifier</dt><dd>${D.r.txt}</dd></div>
+        <div><dt>Synchronous rectifier</dt><dd>${D.r.txt}</dd></div>
       </dl>
       ${note ? `<p class="note">${note}</p>` : ''}`;
   }
@@ -687,7 +710,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       <span class="chip">${region}</span>
       <span class="chip">Gain nV<sub>o</sub>/V<sub>in</sub> = ${M.Vo.toFixed(2)}</span>
       <span class="chip ${M.zvs ? 'ok' : 'bad'}">Switches: ${M.zvs ? 'ZVS turn-on' : 'hard switching'}</span>
-      <span class="chip ${M.recZcs ? 'ok' : 'bad'}">Rectifier: ${M.recZcs ? 'ZCS turn-off' : 'hard turn-off'}</span>`;
+      <span class="chip ${M.recZcs ? 'ok' : 'bad'}">SR: ${M.recZcs ? 'ZCS turn-off' : 'turn-off with current'}</span>`;
   }
 
   // ---------- control ----------
