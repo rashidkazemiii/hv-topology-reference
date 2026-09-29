@@ -196,8 +196,8 @@ a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
     <article class="panel iv">
       <div class="iv-head"><span class="iv-tag">t0 → t1</span><h3>بازهٔ ۱: شروع dead time و گذار خازن‌های Coss (یکسوساز خاموش)</h3></div>
       <div class="imgs">
-        <figure><img src="img_fa/s0.png" alt="مدار در بازهٔ t0 تا t1"><figcaption>مدار: هر چهار کلید اولیه خاموش‌اند (کادر بنفش خط‌چین یعنی Coss در حال شارژ و دشارژ است). انیمیشن برای ساده‌سازی مسیر را از کنار D1 و D4 رسم کرده است. در واقعیت در این بازه جریان به خازن‌های Coss می‌رود، نه به دیودها.</figcaption></figure>
-        <figure><img src="img_fa/w0.png" alt="شکل موج در بازهٔ t0 تا t1"><figcaption>شکل موج: ناحیهٔ بنفش dead time است. v<sub>ab</sub> در حال بالا رفتن است.</figcaption></figure>
+        <figure><img src="img_iv/s0.png" alt="مدار در بازهٔ t0 تا t1"><figcaption>مدار: هر چهار کلید اولیه خاموش‌اند. جریان تانک دو نیم می‌شود: یک نیمه از C3 و C1 (از راه ریل مثبت) و نیمهٔ دیگر از C4 و C2 (از راه ریل منفی). ولتاژ هر خازن کنارش نوشته شده است: C1 و C4 در حال دشارژ، C2 و C3 در حال شارژ.</figcaption></figure>
+        <figure><img src="img_iv/w0.png" alt="شکل موج در بازهٔ t0 تا t1"><figcaption>شکل موج: ناحیهٔ بنفش dead time است. v<sub>ab</sub> در حال بالا رفتن است.</figcaption></figure>
       </div>
       <div class="grid2">
         <div>
@@ -232,8 +232,8 @@ ZVS condition:           t_tr ≤ t_dead</div>
     <article class="panel iv">
       <div class="iv-head"><span class="iv-tag">t1 → t2</span><h3>بازهٔ ۲: ادامهٔ گذار Coss، ثانویه از دیود بدنه شروع به هدایت می‌کند</h3></div>
       <div class="imgs">
-        <figure><img src="img_fa/s1.png" alt="مدار در بازهٔ t1 تا t2"><figcaption>مدار: دیودهای بدنهٔ D5 و D8 در ثانویه هدایت می‌کنند.</figcaption></figure>
-        <figure><img src="img_fa/w1.png" alt="شکل موج در بازهٔ t1 تا t2"><figcaption>شکل موج: جریان |i<sub>sec</sub>| (سبز پایین) کم‌کم از صفر بالا می‌آید.</figcaption></figure>
+        <figure><img src="img_iv/s1.png" alt="مدار در بازهٔ t1 تا t2"><figcaption>مدار: دیودهای بدنهٔ D5 و D8 در ثانویه هدایت می‌کنند.</figcaption></figure>
+        <figure><img src="img_iv/w1.png" alt="شکل موج در بازهٔ t1 تا t2"><figcaption>شکل موج: جریان |i<sub>sec</sub>| (سبز پایین) کم‌کم از صفر بالا می‌آید.</figcaption></figure>
       </div>
       <div class="prose">
         <p><b>اولیه:</b> هنوز dead time است و هر چهار کلید خاموش‌اند. گذار Coss ادامه دارد تا v<sub>ab</sub> کاملاً به +V<sub>in</sub> برسد.</p>
@@ -257,8 +257,8 @@ SR body-diode loss: P ≈ Vf · i_sec           (Vf ≈ 0.7 V, why this interval
     <article class="panel iv">
       <div class="iv-head"><span class="iv-tag">t2 → t3</span><h3>بازهٔ ۳: دیودهای بدنهٔ D1 و D4 ولتاژ را روی +V<sub>in</sub> نگه می‌دارند</h3></div>
       <div class="imgs">
-        <figure><img src="img_fa/s2.png" alt="مدار در بازهٔ t2 تا t3"><figcaption>مدار: D1 و D4 در اولیه، D5 و D8 در ثانویه هدایت می‌کنند.</figcaption></figure>
-        <figure><img src="img_fa/w2.png" alt="شکل موج در بازهٔ t2 تا t3"><figcaption>شکل موج: v<sub>ab</sub> روی +V<sub>in</sub> صاف شده است و هنوز dead time است.</figcaption></figure>
+        <figure><img src="img_iv/s2.png" alt="مدار در بازهٔ t2 تا t3"><figcaption>مدار: D1 و D4 در اولیه، D5 و D8 در ثانویه هدایت می‌کنند.</figcaption></figure>
+        <figure><img src="img_iv/w2.png" alt="شکل موج در بازهٔ t2 تا t3"><figcaption>شکل موج: v<sub>ab</sub> روی +V<sub>in</sub> صاف شده است و هنوز dead time است.</figcaption></figure>
       </div>
       <div class="prose">
         <p><b>اولیه:</b> ولتاژ Coss کلیدهای S1 و S4 به صفر رسیده است. جریان i<sub>r</sub> هنوز منفی است و باید جایی برود. تنها راهش دیودهای بدنهٔ <span class="chip c-d">D1</span> و <span class="chip c-d">D4</span> است:</p>
@@ -274,8 +274,8 @@ SR body-diode loss: P ≈ Vf · i_sec           (Vf ≈ 0.7 V, why this interval
     <article class="panel iv">
       <div class="iv-head"><span class="iv-tag">t3 → t4</span><h3>بازهٔ ۴: پنجرهٔ ZVS، گیت روشن ولی جریان هنوز معکوس است</h3></div>
       <div class="imgs">
-        <figure><img src="img_fa/s3.png" alt="مدار در بازهٔ t3 تا t4"><figcaption>مدار: گیت S1·S4 روشن است. در ثانویه S5·S8 با کانال هدایت می‌کنند.</figcaption></figure>
-        <figure><img src="img_fa/w3.png" alt="شکل موج در بازهٔ t3 تا t4"><figcaption>شکل موج: i<sub>r</sub> (قرمز) هنوز زیر خط صفر است و به طرف صفر بالا می‌رود.</figcaption></figure>
+        <figure><img src="img_iv/s3.png" alt="مدار در بازهٔ t3 تا t4"><figcaption>مدار: گیت S1·S4 روشن است. در ثانویه S5·S8 با کانال هدایت می‌کنند.</figcaption></figure>
+        <figure><img src="img_iv/w3.png" alt="شکل موج در بازهٔ t3 تا t4"><figcaption>شکل موج: i<sub>r</sub> (قرمز) هنوز زیر خط صفر است و به طرف صفر بالا می‌رود.</figcaption></figure>
       </div>
       <div class="prose">
         <p><b>اولیه:</b> گیت S1 و S4 روشن شده است. چون i<sub>r</sub> هنوز منفی است، جریان در جهت معکوس (از سورس به درین) عبور می‌کند. در عمل وقتی گیت روشن است، این جریان معکوس بیشتر از <b>کانال</b> ماسفت می‌گذرد، چون افتش (I·Rds) کمتر از دیود است. انیمیشن آن را با برچسب دیود بدنه نشان می‌دهد. نکتهٔ اصلی این است که ولتاژ کلید صفر است. روشن شدن در این لحظه بدون تلفات است.</p>
@@ -293,8 +293,8 @@ SR body-diode loss: P ≈ Vf · i_sec           (Vf ≈ 0.7 V, why this interval
     <article class="panel iv">
       <div class="iv-head"><span class="iv-tag">t4 → t5</span><h3>بازهٔ ۵: انتقال توان</h3></div>
       <div class="imgs">
-        <figure><img src="img_fa/s4.png" alt="مدار در بازهٔ t4 تا t5"><figcaption>مدار: S1·S4 در جهت مستقیم هدایت می‌کنند و S5·S8 جریان را به خروجی می‌دهند.</figcaption></figure>
-        <figure><img src="img_fa/w4.png" alt="شکل موج در بازهٔ t4 تا t5"><figcaption>شکل موج: i<sub>r</sub> سینوسی بالا می‌رود و فاصلهٔ آن تا i<sub>m</sub> جریان خروجی است.</figcaption></figure>
+        <figure><img src="img_iv/s4.png" alt="مدار در بازهٔ t4 تا t5"><figcaption>مدار: S1·S4 در جهت مستقیم هدایت می‌کنند و S5·S8 جریان را به خروجی می‌دهند.</figcaption></figure>
+        <figure><img src="img_iv/w4.png" alt="شکل موج در بازهٔ t4 تا t5"><figcaption>شکل موج: i<sub>r</sub> سینوسی بالا می‌رود و فاصلهٔ آن تا i<sub>m</sub> جریان خروجی است.</figcaption></figure>
       </div>
       <div class="prose">
         <p><b>اولیه:</b> حالا i<sub>r</sub> مثبت است و <span class="chip c-s">S1</span> و <span class="chip c-s">S4</span> در جهت عادی (درین به سورس) هدایت می‌کنند:</p>
@@ -318,8 +318,8 @@ power in = Vin · ir  (> 0 now)</div>
     <article class="panel iv">
       <div class="iv-head"><span class="iv-tag">t5 → t6</span><h3>بازهٔ ۶: فقط جریان مغناطیس‌کنندگی، یکسوساز خاموش است</h3></div>
       <div class="imgs">
-        <figure><img src="img_fa/s5.png" alt="مدار در بازهٔ t5 تا t6"><figcaption>مدار: جریان فقط از Lm می‌گذرد و ثانویه کاملاً قطع است.</figcaption></figure>
-        <figure><img src="img_fa/w5.png" alt="شکل موج در بازهٔ t5 تا t6"><figcaption>شکل موج: i<sub>r</sub> و i<sub>m</sub> روی هم افتاده‌اند و |i<sub>sec</sub>| صفر است.</figcaption></figure>
+        <figure><img src="img_iv/s5.png" alt="مدار در بازهٔ t5 تا t6"><figcaption>مدار: جریان فقط از Lm می‌گذرد و ثانویه کاملاً قطع است.</figcaption></figure>
+        <figure><img src="img_iv/w5.png" alt="شکل موج در بازهٔ t5 تا t6"><figcaption>شکل موج: i<sub>r</sub> و i<sub>m</sub> روی هم افتاده‌اند و |i<sub>sec</sub>| صفر است.</figcaption></figure>
       </div>
       <div class="prose">
         <p><b>در t5 چه شد؟</b> جریان ثانویه به صفر رسید. کنترلر SR همین را تشخیص می‌دهد و گیت S5·S8 را در جریان صفر خاموش می‌کند. این <b>ZCS</b> است: هیچ بازیابی معکوسی نیست و تلفات خاموشی ندارد.</p>

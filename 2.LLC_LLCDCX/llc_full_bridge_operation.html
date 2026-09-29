@@ -137,6 +137,7 @@ input[type="range"] { width: 100%; accent-color: var(--pri); }
 .dn.d { color: var(--diode); }
 .dn.r { color: var(--sec); }
 .dn.g { color: var(--text); }
+.dn.c { color: var(--mag); }
 .note { font-size: 13.5px; color: var(--text2); border-top: 1px solid var(--border); padding-top: 12px; }
 
 .tbl { padding: 6px 0; }
@@ -181,8 +182,12 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 .dev.diode.sr.on .fillme { fill: var(--diode); }
 .dev.diode.sr.on .halo { fill: var(--diode-dim); }
 .dev.diode.sr.on text { fill: var(--diode); }
-.dev.coss .halo { fill: var(--mag-dim); stroke: var(--mag); stroke-dasharray: 3 3; stroke-width: 1.2; }
-.dev.coss text { fill: var(--mag); }
+.dev .plate { stroke-width: 2.6; }
+.dev.cap.on path { stroke: var(--mag); stroke-width: 2.4; }
+.dev.cap.on .plate { stroke-width: 3; }
+.dev.cap.on .halo { fill: var(--mag-dim); }
+.dev.cap.on text { fill: var(--mag); font-weight: 600; }
+svg text.cv { font-size: 11px; }
 .flow-band { fill: none; stroke-width: 9; stroke-linejoin: round; opacity: 0.22; }
 .flow-dash { fill: none; stroke-width: 2.6; stroke-dasharray: 7 9; stroke-linejoin: round; animation: flow 0.7s linear infinite; }
 .flow-pri { stroke: var(--pri); }
@@ -230,7 +235,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     <div class="legend">
       <span><i class="sw" style="background:var(--pri)"></i><span>Primary current i<sub>r</sub> / switch conducting</span></span>
       <span><i class="sw" style="background:var(--diode)"></i><span>Body diode conducting</span></span>
-      <span><i class="sw" style="background:var(--mag)"></i><span>Magnetizing current i<sub>m</sub> / Coss transition</span></span>
+      <span><i class="sw" style="background:var(--mag)"></i><span>Magnetizing current i<sub>m</sub> / Coss charging (C1–C4 = output capacitance of S1–S4)</span></span>
       <span><i class="sw" style="background:var(--sec)"></i><span>Secondary current / SR MOSFET conducting</span></span>
       <span><span><b style="color:var(--text)">Bold label</b> = gate on</span></span>
     </div>
@@ -362,7 +367,8 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 
   // ---------- geometry ----------
   const TOP = 50, BOT = 400, YU = 125, YL = 325, YA = 200, YB = 260, H = 45, OFF = 18;
-  const X = { A: 190, B: 330, C: 770, D: 920 };
+  const X = { A: 170, B: 350, C: 770, D: 920 };
+  const CO = 48;   // x offset of each primary switch's Coss branch
   const XV = 50, XM = 575, XT = 640, XS = 680, XC = 995, XR = 1045;
   const POS = { 1: [X.A, YU], 2: [X.A, YL], 3: [X.B, YU], 4: [X.B, YL], 5: [X.C, YU], 6: [X.C, YL], 7: [X.D, YU], 8: [X.D, YL] };
   const PAIR = { P: [1, 4], N: [2, 3] };
@@ -438,6 +444,16 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     else pts.push(...branchPts(3, w, false), [B, TOP], [XV, TOP], [XV, BOT], [A, BOT], ...branchPts(2, w, false), [A, YA]);
     return pts;
   }
+  // dead-time loops: i_r splits in two equal halves, one through C3 and C1 (top), one through C4 and C2 (bottom)
+  function cossLoops(viaLm) {
+    const { A, B } = X;
+    const tank = [[A, YA], [XM, YA]];
+    if (viaLm) tank.push([XM, YB]); else tank.push([XT, YA], [XT, YB], [XM, YB]);
+    tank.push([B, YB]);
+    const top = [...tank, [B, YU + H], [B + CO, YU + H], [B + CO, YU - H], [B, YU - H], [B, TOP], [A, TOP], [A, YU - H], [A + CO, YU - H], [A + CO, YU + H], [A, YU + H], [A, YA]];
+    const bot = [[B, YB], [B, YL - H], [B + CO, YL - H], [B + CO, YL + H], [B, YL + H], [B, BOT], [A, BOT], [A, YL + H], [A + CO, YL + H], [A + CO, YL - H], [A, YL - H], [A, YA]];
+    return [top, bot];
+  }
   // secondary loop, already in the direction of flow; current always goes up through S5/S8 or S6/S7
   function secLoop(mode, w) {
     const { C, D } = X;
@@ -461,12 +477,20 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
         <path d="M${xd},${yc - H} V${yc + H}"/>
         <polygon class="fillme" points="${xd - 8},${yc + 7} ${xd + 8},${yc + 7} ${xd},${yc - 7}"/>
         <path d="M${xd - 8},${yc - 7} H${xd + 8}"/>
-        <text x="${xd + 13}" y="${yc + 4.5}">D${p}</text>
-      </g>`;
+        ${p > 4 ? `<text x="${xd + 13}" y="${yc + 4.5}">D${p}</text>` : `<text x="${xd}" y="${yc + 27}" text-anchor="middle">D${p}</text>`}
+      </g>${p > 4 ? '' : `
+      <g class="dev cap" id="C${p}"><title>Output capacitance Coss of S${p}</title>
+        <rect class="halo" x="${x + CO - 14}" y="${yc - 24}" width="28" height="48" rx="6"/>
+        <path d="M${x + CO},${yc - H} V${yc - 5} M${x + CO},${yc + 5} V${yc + H}"/>
+        <path class="plate" d="M${x + CO - 10},${yc - 5} H${x + CO + 10} M${x + CO - 10},${yc + 5} H${x + CO + 10}"/>
+        <text x="${x + CO + 14}" y="${yc - 3}">C${p}</text>
+        <text class="cv" id="CV${p}" x="${x + CO + 14}" y="${yc + 13}"></text>
+      </g>`}`;
   }
-  function legWires(x) {
+  function legWires(x, cap) {
+    const xr = cap ? x + CO : x + OFF;
     return `M${x},${TOP} V${YU - H} M${x},${YU + H} V${YL - H} M${x},${YL + H} V${BOT}` +
-      [YU, YL].map((yc) => ` M${x - OFF},${yc - H} H${x + OFF} M${x - OFF},${yc + H} H${x + OFF}`).join('');
+      [YU, YL].map((yc) => ` M${x - OFF},${yc - H} H${xr} M${x - OFF},${yc + H} H${xr}`).join('');
   }
   function drawSchematic() {
     const coilLr = Array.from({ length: 4 }, () => 'a10,10 0 0 1 20,0').join(' ');
@@ -474,9 +498,9 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     const wires = [
       `M${XV},${TOP} H${X.B} M${XV},${BOT} H${X.B}`,
       `M${XV},${TOP} V214 M${XV},226 V${BOT}`,
-      legWires(X.A), legWires(X.B),
+      legWires(X.A, true), legWires(X.B, true),
       // a -> Cr -> Lr -> tank node (hop over leg b)
-      `M${X.A},${YA} H${X.B - 6} a6,6 0 0 1 12,0 H396 M404,${YA} H440 ${coilLr} H${XT}`,
+      `M${X.A},${YA} H${X.B - 6} a6,6 0 0 1 12,0 H451 M459,${YA} H480 ${coilLr} H${XT}`,
       `M${XM},${YA} ${coilV(0)}`,
       `M${XT},${YA} ${coilV(1)}`,
       `M${X.B},${YB} H${XT}`,
@@ -490,7 +514,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     ].join(' ');
     $('#schem').innerHTML = `
       <path class="wire" d="${wires}"/>
-      <path class="wire" style="stroke-width:3" d="M396,${YA - 16} V${YA + 16} M404,${YA - 16} V${YA + 16}"/>
+      <path class="wire" style="stroke-width:3" d="M451,${YA - 16} V${YA + 16} M459,${YA - 16} V${YA + 16}"/>
       <path class="wire" d="M${XT + 18},190 V270 M${XT + 22},190 V270"/>
       <path class="wire" style="stroke-width:3" d="M${XV - 20},214 H${XV + 20} M${XC - 16},218 H${XC + 16} M${XC - 16},232 H${XC + 16}"/>
       <path class="wire" style="stroke-width:5" d="M${XV - 11},226 H${XV + 11}"/>
@@ -501,8 +525,8 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
         .map(([x, y]) => `<circle class="node" cx="${x}" cy="${y}" r="3.4"/>`).join('')}
       <text class="lbl-big" x="${XV - 14}" y="208" text-anchor="end">+</text>
       <text class="lbl-big" x="${XV - 20}" y="248" text-anchor="middle">V<tspan font-size="11" dy="3">in</tspan></text>
-      <text class="lbl-big" x="400" y="${YA + 36}" text-anchor="middle">Cr</text>
-      <text class="lbl-big" x="480" y="${YA + 28}" text-anchor="middle">Lr</text>
+      <text class="lbl-big" x="455" y="${YA + 36}" text-anchor="middle">Cr</text>
+      <text class="lbl-big" x="520" y="${YA + 28}" text-anchor="middle">Lr</text>
       <text class="lbl-big" x="${XM - 16}" y="${(YA + YB) / 2 + 5}" text-anchor="end">Lm</text>
       <text class="lbl-big" x="${(XT + XS) / 2}" y="292" text-anchor="middle">n : 1</text>
       <text class="lbl-big" x="${XC - 22}" y="230" text-anchor="end">Co</text>
@@ -512,15 +536,15 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       <text x="${X.A - 10}" y="${YA - 8}" text-anchor="end">a</text>
       <text x="${X.B + 10}" y="${YB - 8}">b</text>
       <g>
-        <polyline id="mBand" class="flow-band flow-mag"/><polyline id="pBand" class="flow-band flow-pri"/><polyline id="sBand" class="flow-band flow-sec"/>
-        <polyline id="mDash" class="flow-dash flow-mag"/><polyline id="pDash" class="flow-dash flow-pri"/><polyline id="sDash" class="flow-dash flow-sec"/>
+        <polyline id="mBand" class="flow-band flow-mag"/><polyline id="pBand" class="flow-band flow-pri"/><polyline id="p2Band" class="flow-band flow-pri"/><polyline id="sBand" class="flow-band flow-sec"/>
+        <polyline id="mDash" class="flow-dash flow-mag"/><polyline id="pDash" class="flow-dash flow-pri"/><polyline id="p2Dash" class="flow-dash flow-pri"/><polyline id="sDash" class="flow-dash flow-sec"/>
       </g>
       ${[1, 2, 3, 4].map(swSVG).join('')}
       ${[5, 6, 7, 8].map(swSVG).join('')}
-      <text id="iLbl" x="480" y="${YA - 22}" text-anchor="middle" class="lbl-big" style="font-size:14px"></text>
+      <text id="iLbl" x="520" y="${YA - 22}" text-anchor="middle" class="lbl-big" style="font-size:14px"></text>
       <text id="imLbl" x="${XM - 14}" y="${YB + 30}" text-anchor="end" style="fill:var(--mag)"></text>
       <text id="vabLbl" x="${(X.A + X.B) / 2}" y="440" text-anchor="middle"></text>
-      <text id="phLbl" x="480" y="440" text-anchor="middle"></text>
+      <text id="phLbl" x="520" y="440" text-anchor="middle"></text>
       <text id="recLbl" x="${(X.C + X.D) / 2}" y="440" text-anchor="middle"></text>`;
   }
   const ptsStr = (pts) => pts.map((p) => p.join(',')).join(' ');
@@ -530,14 +554,24 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     if (s.gate) PAIR[s.gate].forEach((n) => $('#S' + n).classList.add('gated'));
     const P = PRI[s.pri];
     const flowing = Math.abs(s.ir) > 2e-3 * M.maxI;
-    if (P.coss) [1, 2, 3, 4].forEach((n) => $('#S' + n).classList.add('coss'));
+    if (P.coss) [1, 2, 3, 4].forEach((n) => $('#C' + n).classList.add('on'));
     else if (flowing) PAIR[P.pair].forEach((n) => $('#' + (P.w === 'T' ? 'S' : 'D') + n).classList.add('on'));
     const secOn = s.mode !== 0;
-    if (flowing) {
+    if (flowing && P.coss) {
+      let [top, bot] = cossLoops(!secOn);
+      if (s.ir < 0) { top = top.reverse(); bot = bot.reverse(); }
+      setPts(['#pBand', '#pDash'], top);
+      setPts(['#p2Band', '#p2Dash'], bot);
+    } else if (flowing) {
       let pp = priLoop(P.pair, P.w, !secOn);
       if (s.ir < 0) pp = pp.reverse();
       setPts(['#pBand', '#pDash'], pp);
-    } else setPts(['#pBand', '#pDash'], null);
+      setPts(['#p2Band', '#p2Dash'], null);
+    } else { setPts(['#pBand', '#pDash'], null); setPts(['#p2Band', '#p2Dash'], null); }
+    // Coss voltages from the switch-node voltages (Vin = 1)
+    const va = (1 + s.vab) / 2, vb = 1 - va;
+    const cv = (v) => (v < 0.02 ? '0 V' : v > 0.98 ? 'V_in' : `${v.toFixed(2)}·V_in`);
+    [[1, 1 - va], [2, va], [3, 1 - vb], [4, vb]].forEach(([n, v]) => { $('#CV' + n).textContent = cv(v); });
     const srPair = s.mode > 0 ? [5, 8] : [6, 7];
     if (secOn && s.sec[0] === 'S') srPair.forEach((n) => $('#S' + n).classList.add('gated'));
     if (secOn) {
@@ -637,13 +671,14 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
             ' This square-wave voltage drives the resonant tank.' };
       case 'D14': case 'D23':
         return { head: 'ZVS window', cond: dn(Id, 'd'), v: vin,
-          txt: `${dn(I, 'g')} are gated on, but i<sub>r</sub> still flows against them, through their body diodes ${dn(Id, 'd')}, back into V<sub>in</sub>. The switches sit at 0 V while their gate turns on, so there is no turn-on loss.` };
+          txt: `${dn(I, 'g')} are gated on, but i<sub>r</sub> still flows against them, back into V<sub>in</sub>. This reverse current flows through the body diodes ${dn(Id, 'd')} and, once the gate is on, mostly through the channel, which has the lower drop. Either way the switches sit at 0 V while their gate turns on, so there is no turn-on loss.` };
       case 'zP': case 'zN':
         return { head: 'Dead time: body diodes clamp', cond: dn(Id, 'd'), v: vin,
           txt: `All gates are still off. v<sub>ab</sub> has already swung to ${vin}, and i<sub>r</sub> freewheels through ${dn(Id, 'd')} until ${dn(I, 'g')} are turned on at zero voltage.` };
       case 'C+': case 'C-':
-        return { head: 'Dead time: Coss transition', cond: '<span class="dn" style="color:var(--mag)">Coss</span>', v: `${vfrom} → ${vin}`,
-          txt: `All four switches are off. The tank current, mostly i<sub>m</sub>, discharges the output capacitance of ${dn(I, 'g')} and charges that of ${dn(pairIds(out, 'T'), 'g')}, so v<sub>ab</sub> swings from ${vfrom} to ${vin} with no switching loss.` };
+        { const cDis = PAIR[inc].map((n) => 'C' + n), cChg = PAIR[out].map((n) => 'C' + n);
+        return { head: 'Dead time: Coss transition', cond: '<span class="dn" style="color:var(--mag)">C1–C4 (Coss)</span>', v: `${vfrom} → ${vin}`,
+          txt: `All four switches are off. Lr and Lm will not let the tank current stop, so it flows into the output capacitances of the switches. It splits into two equal halves: one through C3 and C1 over the + rail, one through C4 and C2 over the − rail. ${dn(cDis, 'c')} (across ${dn(I, 'g')}) discharge from V<sub>in</sub> to 0 V, and ${dn(cChg, 'c')} (across ${dn(pairIds(out, 'T'), 'g')}) charge from 0 V to V<sub>in</sub>. That moves node a and node b, so v<sub>ab</sub> swings from ${vfrom} to ${vin}. The energy comes from the inductors, so there is no switching loss.` }; }
       default: // hN / hP: ZVS lost
         return { head: 'Dead time: ZVS lost', cond: dn(Od, 'd'), v: vfrom,
           txt: `All gates are off, but i<sub>r</sub> has the wrong sign. It keeps flowing in ${dn(Od, 'd')}, so v<sub>ab</sub> cannot swing. ${dn(I, 'g')} will turn on against the full V<sub>in</sub> (hard switching, with body-diode reverse recovery). This is the capacitive region: f<sub>s</sub> too low for this load.` };
