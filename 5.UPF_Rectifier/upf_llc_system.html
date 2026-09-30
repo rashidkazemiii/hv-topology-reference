@@ -1,0 +1,570 @@
+<title>UPF Rectifier + LLC System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #faf9f7;
+  --panel: #ffffff;
+  --panel2: #f2f1ed;
+  --border: rgba(0,0,0,0.09);
+  --text: #1a1a18;
+  --text2: #55554f;
+  --text3: #8c8c84;
+  --grid: rgba(0,0,0,0.07);
+  --axis: rgba(0,0,0,0.35);
+  --blue: #1a56db;
+  --blue-dim: rgba(26,86,219,0.10);
+  --blue-fill: rgba(26,86,219,0.14);
+  --green: #0d7a4e;
+  --green-dim: rgba(13,122,78,0.10);
+  --amber: #b76e0a;
+  --amber-dim: rgba(183,110,10,0.12);
+  --purple: #8a3ffc;
+  --purple-dim: rgba(138,63,252,0.10);
+  --red: #c0392b;
+  --burst: rgba(183,110,10,0.10);
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+    --border: rgba(255,255,255,0.10);
+    --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+    --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35);
+    --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14); --blue-fill: rgba(91,134,230,0.18);
+    --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+    --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+    --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+    --red: #ff6b5b; --burst: rgba(201,128,31,0.12);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+  --border: rgba(255,255,255,0.10);
+  --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+  --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35);
+  --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14); --blue-fill: rgba(91,134,230,0.18);
+  --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+  --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+  --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+  --red: #ff6b5b; --burst: rgba(201,128,31,0.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15.5px/1.65 var(--sans); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 70px; display: grid; gap: 32px; }
+header { display: grid; gap: 10px; max-width: 76ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+h1 { margin: 0; font-size: clamp(25px, 3.6vw, 33px); line-height: 1.22; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 21px; line-height: 1.35; font-weight: 600; text-wrap: balance; }
+h3 { margin: 0; font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--text2); font-size: 16.5px; }
+section { display: grid; gap: 14px; }
+.prose { display: grid; gap: 12px; max-width: 76ch; }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 5px; }
+.m { font-family: var(--mono); font-size: 0.92em; white-space: nowrap; }
+.eq { font-family: var(--mono); font-size: 14px; background: var(--panel2); border-radius: 8px; padding: 12px 16px; overflow-x: auto; white-space: pre; line-height: 1.8; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+.note { border-left: 4px solid var(--amber); background: var(--amber-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 76ch; }
+.key { border-left: 4px solid var(--green); background: var(--green-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 76ch; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 820px) { .two { grid-template-columns: 1fr; } }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl { overflow-x: auto; padding: 4px 0; }
+.fig { padding: 12px; display: grid; gap: 8px; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig .scroll { overflow-x: auto; }
+.fig .scroll svg { min-width: 640px; }
+.two .fig .scroll svg { min-width: 0; }
+figcaption { font-size: 13.5px; color: var(--text2); padding: 0 4px; }
+figcaption b { color: var(--text); }
+
+.controls { display: grid; gap: 10px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+.ctl-row { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.slider { display: grid; gap: 2px; min-width: 150px; flex: 1 1 150px; }
+.slider label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text2); }
+.slider output { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--blue); }
+.check { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; color: var(--text2); }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+@media (max-width: 900px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--panel); padding: 10px 12px; display: grid; gap: 2px; }
+.tile .k { font: 500 11.5px/1.2 var(--mono); color: var(--text3); letter-spacing: 0.04em; }
+.tile .v { font: 600 17px/1.25 var(--mono); font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12px; color: var(--text2); }
+.pill { display: inline-block; font: 600 12px/1 var(--mono); padding: 4px 7px; border-radius: 999px; }
+.pill.ok { background: var(--green-dim); color: var(--green); }
+.pill.warn { background: var(--amber-dim); color: var(--amber); }
+.pill.bad { background: rgba(192,57,43,0.12); color: var(--red); }
+
+svg text { font-family: var(--mono); font-size: 12px; fill: var(--text2); }
+svg .t-strong { fill: var(--text); font-weight: 600; }
+svg .t-title { fill: var(--text); font-weight: 600; font-size: 13px; }
+.ax { stroke: var(--axis); stroke-width: 1; }
+.gr { stroke: var(--grid); stroke-width: 1; }
+.ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.dash { stroke-dasharray: 6 5; }
+.tip { pointer-events: none; }
+.tip rect { fill: var(--panel); stroke: var(--border); }
+.blk rect { fill: var(--panel2); stroke: var(--axis); stroke-width: 1.2; }
+.blk text { fill: var(--text); }
+.wire { stroke: var(--text2); stroke-width: 1.6; fill: none; }
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">5.UPF_Rectifier · system study</div>
+    <h1>Dornbirn UPF rectifier + LLC: 230 V<sub>ac</sub> to 48 V at 60 W</h1>
+    <p class="lede">The UPF rectifier from the ECCE 2024 paper charges a bus of two stacked capacitors. A full-bridge LLC with synchronous rectifier turns the bus into a regulated 48 V. This page explains the whole chain with its formulas, and simulates how the bus voltage behaves from full load down to light load, including load steps. The output is always held at 48 V by the LLC. The bus voltage has to be held by the rectifier's own control loop, and that is where this topology differs from a normal boost PFC.</p>
+  </header>
+
+  <section>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="blocks" viewBox="0 0 1080 250" role="img" aria-label="System block diagram"></svg></div>
+      <figcaption><b>The system.</b> Two stages, two control loops. The rectifier's loop sets its switching frequency f<sub>s1</sub> to hold the bus. The LLC's loop sets its switching frequency f<sub>s2</sub> to hold 48 V.</figcaption>
+    </figure>
+    <div class="panel tbl"><table id="designTbl"></table></div>
+  </section>
+
+  <section id="stage1">
+    <h2>1. Stage 1: the UPF rectifier sets input power by frequency</h2>
+    <div class="prose">
+      <p>From the paper, in IRCM the rectifier looks like a resistor to the grid:</p>
+    </div>
+    <div class="eq">R_in = 8·fs1·√(L1·L2)·(1 − k²) / k                           (paper eq. 14)
+P_in = V_m² / (2·R_in) = V_m²·k / (16·fs1·n·L2·(1 − k²))          (paper eq. 20)</div>
+    <div class="prose">
+      <p>The important consequence: <b>input power depends on f<sub>s1</sub> and the inductors only, not on the load and not on the bus voltage.</b> With everything else fixed, P<sub>in</sub> ∝ 1/f<sub>s1</sub>. If the design delivers full power at f<sub>s1,full</sub>, then any other power needs</p>
+    </div>
+    <div class="eq">fs1(P) = fs1,full · P_full / P                (IRCM: R_in ∝ fs1)</div>
+    <div class="prose">
+      <p>A boost PFC is different: its current loop draws whatever the load asks for. This rectifier draws a fixed power set by f<sub>s1</sub>, whatever the load takes. So the difference between what comes in and what goes out piles up in the bus capacitors, and a control loop must adjust f<sub>s1</sub> to keep it balanced.</p>
+      <p>The bus voltage must also respect the paper's conditions, with V<sub>C</sub> = V<sub>bus</sub>/2:</p>
+    </div>
+    <div class="eq">no CCM:                     V_bus ≥ V_m                       (|v_in|/2 ≤ V_C)
+IRCM everywhere (UPF):      V_bus ≥ 2·V_m/(nk − 2)            (|v_in|/(nk−2) ≤ V_C)
+no zero-crossing distortion:  nk > 2</div>
+    <div class="prose"><p id="stage1Now"></p></div>
+  </section>
+
+  <section id="bus">
+    <h2>2. The bus: an energy balance</h2>
+    <div class="prose">
+      <p>Cb1 and Cb2 in series form the bus capacitance C<sub>bus</sub> = C<sub>b</sub>/2. The energy in it changes by the difference between rectifier power and LLC power:</p>
+    </div>
+    <div class="eq">d/dt ( ½·C_bus·V_bus² ) = p_in(t) − P_bus ,       P_bus = P_o / η_LLC</div>
+    <div class="prose">
+      <p>Three things follow from this one equation.</p>
+      <ol>
+        <li><b>100 Hz ripple.</b> With a resistive input, p<sub>in</sub>(t) = P<sub>in</sub>·(1 − cos 2ωt). Its average is P<sub>in</sub>, but it pulses at twice the mains frequency. Integrating the pulsating part gives a ripple proportional to the power:
+          <div class="eq" style="margin-top:8px">ΔV_bus,pp ≈ P_bus / (ω·C_bus·V_bus)          (ω = 2π·50 Hz)</div></li>
+        <li><b>Open loop runs away.</b> At a fixed f<sub>s1</sub>, P<sub>in</sub> is fixed. If the load drops, the extra power charges the bus with nothing to stop it:
+          <div class="eq" style="margin-top:8px">dV_bus/dt ≈ (P_in − P_bus) / (C_bus·V_bus)</div>
+          <span id="runaway"></span></li>
+        <li><b>The loop must be slow.</b> If the loop reacted to the 100 Hz ripple, it would modulate f<sub>s1</sub> within each mains cycle, and the input current would stop being sinusoidal. So the controller samples the bus energy once per half mains cycle (every 10 ms, averaged) and runs a PI loop with a crossover of about 5 Hz, the usual PFC voltage-loop trade-off. Its output is a power command P<sub>cmd</sub>, which sets <span class="m">fs1 = fs1,full·P_full/P_cmd</span>.</li>
+      </ol>
+      <p>Because the loop is slow, a sudden load drop makes the bus overshoot before the loop catches up. A fast overvoltage protection (OVP) stops switching at +8% until the bus falls back. An optional <b>feed-forward</b> adds the LLC's power, which the controller can know from the output side, directly to P<sub>cmd</sub>. Then the PI loop only has to trim the losses, and load steps barely move the bus.</p>
+    </div>
+  </section>
+
+  <section id="light">
+    <h2>3. Light load: out of frequency range, into burst mode</h2>
+    <div class="prose">
+      <p>Lower power needs higher f<sub>s1</sub>. Switching loss, gate drive and magnetics limit it to some f<sub>s1,max</sub>, which sets the lowest power the rectifier can deliver continuously:</p>
+    </div>
+    <div class="eq">P_min = P_bus,full · fs1,full / fs1,max            (continuous operation needs P_bus ≥ P_min)</div>
+    <div class="prose">
+      <p>Below P<sub>min</sub> the rectifier cannot reduce its power any further, so the only way to balance the bus is to stop switching part of the time: <b>burst mode</b>. It runs at P<sub>min</sub> until the bus reaches the top of a hysteresis band, stops, and restarts when the bus falls to the bottom of the band. Starting and stopping on mains half-cycle boundaries keeps each burst a clean half sine.</p>
+      <p>Burst mode costs power factor. When running, the current is a perfect sine. When stopped, it is zero. With an on fraction D:</p>
+    </div>
+    <div class="eq">P = D·P_min ,   I_rms = √D·I_rms,on   →   PF = P / (V_rms·I_rms) = √D</div>
+    <div class="prose">
+      <p>The bus now swings over the whole hysteresis band, set by the burst thresholds, not by the load. That swing is what the LLC has to absorb at light load.</p>
+    </div>
+  </section>
+
+  <section id="llc">
+    <h2>4. Stage 2: the LLC turns the bus into 48 V</h2>
+    <div class="prose">
+      <p>The full-bridge LLC is designed to run at resonance at the nominal bus voltage, where it is most efficient. Its turns ratio follows from the unity-gain condition. The tank is sized by the quality factor at full load:</p>
+    </div>
+    <div class="eq">N  = V_bus,ref / V_o                     (full bridge: gain M = N·V_o / V_bus = 1 at resonance)
+R_ac = 8·N²·R_L / π² ,   R_L = V_o² / P_o
+Z0 = Q_full·R_ac ,   Lr = Z0 / (2π·fr) ,   Cr = 1 / (2π·fr·Z0) ,   Lm = Ln·Lr</div>
+    <div class="prose">
+      <p>With first-harmonic approximation (FHA), the gain at normalized frequency f<sub>n</sub> = f<sub>s2</sub>/f<sub>r</sub> is</p>
+    </div>
+    <div class="eq">M(fn) = 1 / √( [1 + (1 − 1/fn²)/Ln]² + Q²·(fn − 1/fn)² ) ,     Q = Q_full · P_o / P_o,full</div>
+    <div class="prose">
+      <p>The LLC controller picks f<sub>n</sub> so that M = N·V<sub>o</sub>/V<sub>bus</sub>. A higher bus needs M &lt; 1 (above resonance), a lower bus needs M &gt; 1 (below resonance). At light load Q → 0, and the gain curve flattens. Even at infinite frequency the gain cannot go below</p>
+    </div>
+    <div class="eq">M_min = Ln / (Ln + 1)     →     V_bus,max = N·V_o·(Ln + 1)/Ln</div>
+    <div class="key" id="llcLimit"></div>
+    <div class="prose"><p>This ties the two stages together: at light load the rectifier's burst band and any overshoot must stay below V<sub>bus,max</sub>, or the LLC loses regulation and has to burst too. (FHA is only approximate far above resonance and at very light load. It is used here to show the trend and the limit, not exact frequencies.)</p></div>
+  </section>
+
+  <section id="sim">
+    <h2>5. Simulation: bus voltage against output power</h2>
+    <div class="controls" aria-label="Simulation settings">
+      <div class="ctl-row">
+        <div class="slider"><label for="po"><span>Output power P<sub>o</sub></span><output id="poOut">10 W</output></label><input id="po" type="range" min="2" max="60" step="1" value="10"></div>
+        <div class="slider"><label for="cb"><span>C<sub>bus</sub> (Cb1 = Cb2 = 2·C<sub>bus</sub>)</span><output id="cbOut">68 µF</output></label><input id="cb" type="range" min="22" max="150" step="2" value="68"></div>
+        <div class="slider"><label for="vref"><span>Bus reference</span><output id="vrefOut">360 V</output></label><input id="vref" type="range" min="340" max="420" step="5" value="360"></div>
+        <div class="slider"><label for="fmax"><span>f<sub>s1,max</sub></span><output id="fmaxOut">400 kHz</output></label><input id="fmax" type="range" min="200" max="800" step="25" value="400"></div>
+        <div class="slider"><label for="nk"><span>nk</span><output id="nkOut">4.00</output></label><input id="nk" type="range" min="2.2" max="5" step="0.05" value="4"></div>
+      </div>
+      <div class="ctl-row">
+        <label class="check" for="step"><input id="step" type="checkbox" checked> Load step from 60 W at t = 0.2 s</label>
+        <label class="check" for="ff"><input id="ff" type="checkbox"> Output-power feed-forward</label>
+      </div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="figT" viewBox="0 0 1000 470" role="img" aria-label="Bus voltage and rectifier frequency against time"></svg></div>
+      <figcaption><b>Time domain.</b> Top: bus voltage with the limits that matter. Bottom: rectifier switching frequency f<sub>s1</sub>, which reads 0 while it is stopped (burst off or OVP). Shaded bands mark burst mode. Hover to read values.</figcaption>
+    </figure>
+    <div class="two">
+      <figure class="panel fig"><div class="scroll"><svg id="figS1" viewBox="0 0 520 300" role="img" aria-label="Bus voltage against output power"></svg></div>
+        <figcaption><b>Bus voltage against P<sub>o</sub>.</b> Line: average. Band: minimum to maximum in steady state.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figS2" viewBox="0 0 520 300" role="img" aria-label="Rectifier switching frequency against output power"></svg></div>
+        <figcaption><b>f<sub>s1</sub> against P<sub>o</sub>.</b> It follows 1/P until it reaches f<sub>s1,max</sub>, then burst mode takes over.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figS3" viewBox="0 0 520 300" role="img" aria-label="Power factor against output power"></svg></div>
+        <figcaption><b>Power factor against P<sub>o</sub>.</b> 1 in continuous IRCM operation, √D in burst mode.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figS4" viewBox="0 0 520 300" role="img" aria-label="LLC normalized frequency range against output power"></svg></div>
+        <figcaption><b>LLC f<sub>s2</sub>/f<sub>r</sub> against P<sub>o</sub>.</b> The range it sweeps to follow the bus ripple and burst band while holding 48 V.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>6. Assumptions</h2>
+    <ul class="prose">
+      <li>Mains 230 V<sub>rms</sub>, 50 Hz. Coupling factor k = 0.9 for the coupled inductor. f<sub>s1,full</sub> = 100 kHz at full load, f<sub>s1,min</sub> = 80 kHz, which gives 25% power headroom for load steps.</li>
+      <li>The rectifier is lossless in the bus balance. The LLC efficiency is a constant 95%, so P<sub>bus</sub> = P<sub>o</sub>/0.95. The LLC regulates 48 V instantly (its loop is far faster than the bus loop), so it draws constant power from the bus.</li>
+      <li>Rectifier input current uses the closed-form local average from the THD derivation: exactly v<sub>in</sub>/R<sub>in</sub> in IRCM, and the DCM expression where IRCM is lost (low nk). Switching ripple is not shown.</li>
+      <li>Bus loop: PI on bus energy, sampled every half mains cycle, crossover 5 Hz, zero at a quarter of that. OVP at +8% with 2% hysteresis. Burst band ±6 V around the reference, decided per half cycle.</li>
+      <li>LLC: f<sub>r</sub> = 250 kHz, Ln = 5, Q<sub>full</sub> = 0.4, gain by FHA.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const st = { Po: 10, Cbus: 68e-6, Vref: 360, fsMax: 400e3, nk: 4, step: true, ff: false };
+  const BASE = { Vrms: 230, fL: 50, k: 0.9, PoFull: 60, Vo: 48, etaLLC: 0.95, fsFull: 100e3, fsMin: 80e3, hyst: 6, ovp: 1.08, fc: 5, fr: 250e3, Ln: 5, Qfull: 0.4 };
+
+  // ---------- model ----------
+  function derived(p) {
+    const Vm = p.Vrms * Math.SQRT2, PbFull = p.PoFull / p.etaLLC;
+    const RinFull = Vm * Vm / (2 * PbFull);
+    const L2 = RinFull * p.k * p.k / (8 * p.fsFull * p.nk * (1 - p.k * p.k));
+    const n = p.nk / p.k, L1 = n * n * L2, M = p.nk * L2;
+    const N = p.Vref / p.Vo, RL = p.Vo * p.Vo / p.PoFull, Rac = 8 * N * N * RL / (Math.PI * Math.PI);
+    const Z0 = p.Qfull * Rac, Lr = Z0 / (2 * Math.PI * p.fr), Cr = 1 / (2 * Math.PI * p.fr * Z0), Lm = p.Ln * Lr;
+    return { Vm, PbFull, RinFull, L2, L1, M, n, N, RL, Rac, Z0, Lr, Cr, Lm,
+      Pmin: PbFull * p.fsFull / p.fsMax, Pmax: PbFull * p.fsFull / p.fsMin, VbusMax: N * p.Vo * (p.Ln + 1) / p.Ln };
+  }
+  function iNorm(s, nk, rho) {
+    const a = (nk - 2) * rho, b = (nk + 2) * rho, c = 2 * rho;
+    return s <= a ? s : c * (s + a) / (b - s);
+  }
+  function thdClosed(nk, rho) {
+    const PI = Math.PI, a = (nk - 2) * rho, b = (nk + 2) * rho, c = 2 * rho, K = c * (a + b);
+    if (a >= 1) return 0;
+    const t1 = Math.asin(a), r = Math.sqrt(b * b - 1);
+    const F = (th) => (2 / r) * Math.atan((b * Math.tan(th / 2) - 1) / r);
+    const J0 = F(PI / 2) - F(t1), J1 = b * J0 - (PI / 2 - t1), J2 = (b * J0 + Math.cos(t1) / (b - a)) / (b * b - 1);
+    const A = t1 / 2 - Math.sin(2 * t1) / 4;
+    const S1 = A - c * Math.cos(t1) + K * J1, S2 = A + c * c * (PI / 2 - t1) - 2 * c * K * J0 + K * K * J2;
+    return Math.sqrt(Math.max(0, PI * S2 / (4 * S1 * S1) - 1));
+  }
+  const Mfha = (fn, Q, Ln) => 1 / Math.sqrt((1 + (1 - 1 / (fn * fn)) / Ln) ** 2 + (Q * (fn - 1 / fn)) ** 2);
+  function llcFn(Mreq, Q, Ln) {
+    let peak = 0, fpk = 1;
+    for (let f = 0.3; f <= 1.0; f += 0.005) { const m = Mfha(f, Q, Ln); if (m > peak) { peak = m; fpk = f; } }
+    const fhi = 4;
+    if (Mreq > peak) return { fn: fpk, ok: false };
+    if (Mreq < Mfha(fhi, Q, Ln)) return { fn: fhi, ok: false };
+    let a = fpk, b = fhi;
+    for (let i = 0; i < 40; i++) { const m = (a + b) / 2; if (Mfha(m, Q, Ln) > Mreq) a = m; else b = m; }
+    return { fn: (a + b) / 2, ok: true };
+  }
+  function simulate(p, PoStep, tStep, tEnd, rec) {
+    const d = derived(p);
+    const w = 2 * Math.PI * p.fL, Th = 1 / (2 * p.fL), dt = 1 / (p.fL * 400);
+    const C = p.Cbus, Eref = 0.5 * C * p.Vref * p.Vref;
+    const wc = 2 * Math.PI * p.fc, Kp = wc, wz = wc / 4;
+    const P0 = tStep > 0 ? p.PoFull : PoStep;
+    let E = Eref, integ = p.ff ? 0 : P0 / p.etaLLC, Pcmd = P0 / p.etaLLC, burst = false, on = true, ovp = false;
+    if (!p.ff && Pcmd < d.Pmin) { burst = true; Pcmd = d.Pmin; }
+    if (p.ff && P0 / p.etaLLC < d.Pmin) { burst = true; Pcmd = d.Pmin; }
+    let accE = 0, accN = 0, tNext = Th, prevV = p.Vref;
+    const out = [];
+    const S = { vmin: 1e9, vmax: 0, sumV: 0, n: 0, sumP: 0, sumI2: 0, sumV2: 0, onN: 0, fsSum: 0, fsN: 0, ccm: false, burstN: 0 };
+    const tStat = tEnd - 0.5;
+    const N = Math.round(tEnd / dt);
+    for (let j = 0; j < N; j++) {
+      const t = j * dt;
+      const Po = t < tStep ? p.PoFull : PoStep, Pbus = Po / p.etaLLC;
+      const V = Math.sqrt(2 * E / C);
+      const vin = d.Vm * Math.sin(w * t);
+      const fs = d.PbFull * p.fsFull / Math.max(Pcmd, d.Pmin);
+      const Rin = d.RinFull * fs / p.fsFull;
+      if (V > p.Vref * p.ovp) ovp = true; else if (V < p.Vref * (p.ovp - 0.02)) ovp = false;
+      const running = on && !ovp;
+      if (running && Math.abs(vin) > V) S.ccm = true;
+      const iin = running ? Math.sign(vin) * (d.Vm / Rin) * iNorm(Math.abs(vin) / d.Vm, p.nk, V / 2 / d.Vm) : 0;
+      const pin = vin * iin;
+      E = Math.max(1e-9, E + (pin - Pbus) * dt);
+      accE += E; accN++;
+      if (t >= tNext) {
+        tNext += Th;
+        const Eavg = accE / accN; accE = 0; accN = 0;
+        const Vavg = Math.sqrt(2 * Eavg / C), err = Eref - Eavg, ffP = p.ff ? Pbus : 0;
+        if (!burst) {
+          integ = Math.min(d.Pmax, Math.max(-d.Pmax, integ + Kp * wz * err * Th));
+          Pcmd = Math.min(d.Pmax, Math.max(0, integ + Kp * err + ffP));
+          if (Pcmd < d.Pmin) { burst = true; on = Vavg < p.Vref; }
+        } else {
+          if (on && Vavg < prevV && Vavg < p.Vref - p.hyst) { burst = false; on = true; Pcmd = d.Pmin * 1.02; integ = Pcmd - Kp * err - ffP; }
+          else if (Vavg > p.Vref + p.hyst) on = false;
+          else if (Vavg < p.Vref - p.hyst) on = true;
+          if (burst) Pcmd = d.Pmin;
+        }
+        prevV = Vavg;
+      }
+      if (t >= tStat) {
+        S.vmin = Math.min(S.vmin, V); S.vmax = Math.max(S.vmax, V); S.sumV += V; S.n++;
+        S.sumP += pin; S.sumI2 += iin * iin; S.sumV2 += vin * vin;
+        if (running) { S.onN++; S.fsSum += fs; S.fsN++; }
+        if (burst) S.burstN++;
+      }
+      if (rec && j % 8 === 0) out.push({ t, V, fs: running ? fs : 0, Po, burst, iin });
+    }
+    const Pavg = S.sumP / S.n, Irms = Math.sqrt(S.sumI2 / S.n), Vrms = Math.sqrt(S.sumV2 / S.n);
+    return { d, out, vmin: S.vmin, vmax: S.vmax, vavg: S.sumV / S.n, duty: S.onN / S.n,
+      fsAvg: S.fsN ? S.fsSum / S.fsN : 0, pf: Irms > 0 ? Pavg / (Vrms * Irms) : 0, ccm: S.ccm, burst: S.burstN > S.n / 2 };
+  }
+  const params = () => ({ ...BASE, Cbus: st.Cbus, Vref: st.Vref, fsMax: st.fsMax, nk: st.nk, ff: st.ff });
+
+  // ---------- svg helpers ----------
+  const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const poly = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const fmt = (x, u, dgt = 1) => {
+    const a = Math.abs(x);
+    if (a >= 1e6) return (x / 1e6).toFixed(dgt) + ' M' + u;
+    if (a >= 1e3) return (x / 1e3).toFixed(dgt) + ' k' + u;
+    if (a >= 1) return x.toFixed(dgt) + ' ' + u;
+    if (a >= 1e-3) return (x * 1e3).toFixed(dgt) + ' m' + u;
+    if (a >= 1e-6) return (x * 1e6).toFixed(dgt) + ' µ' + u;
+    return (x * 1e9).toFixed(dgt) + ' n' + u;
+  };
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo, raw = span / n, mag = 10 ** Math.floor(Math.log10(raw));
+    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;
+    const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(10));
+    return out;
+  }
+  function hover(svg, fr, fn) {
+    const tip = document.createElementNS(NS, 'g'); tip.setAttribute('class', 'tip'); svg.appendChild(tip);
+    const hit = document.createElementNS(NS, 'rect');
+    hit.setAttribute('x', fr.x0); hit.setAttribute('y', fr.y0); hit.setAttribute('width', fr.x1 - fr.x0); hit.setAttribute('height', fr.y1 - fr.y0); hit.setAttribute('fill', 'transparent');
+    svg.appendChild(hit);
+    const mv = (e) => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse()); tip.innerHTML = fn(Math.max(fr.x0, Math.min(fr.x1, q.x))); };
+    hit.addEventListener('pointermove', mv); hit.addEventListener('pointerdown', mv); hit.addEventListener('pointerleave', () => { tip.innerHTML = ''; });
+  }
+  function tipBox(x, fr, lines) {
+    const w = 10 + 7.3 * Math.max(...lines.map((l) => l.t.length)), h = 10 + 17 * lines.length;
+    const bx = x + 12 + w > fr.x1 ? x - 12 - w : x + 12;
+    return `<line x1="${x}" y1="${fr.y0}" x2="${x}" y2="${fr.y1}" class="ax" style="stroke-dasharray:3 3"/><rect x="${bx}" y="${fr.y0 + 4}" width="${w}" height="${h}" rx="5"/>` +
+      lines.map((l, j) => `<text x="${bx + 8}" y="${fr.y0 + 21 + j * 17}" style="fill:${l.c || 'var(--text)'}">${l.t}</text>`).join('');
+  }
+
+  // ---------- block diagram ----------
+  function drawBlocks() {
+    const blk = (x, y, w, h, t1, t2) => `<g class="blk"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/><text x="${x + w / 2}" y="${y + h / 2 - 4}" text-anchor="middle" class="t-strong">${t1}</text><text x="${x + w / 2}" y="${y + h / 2 + 14}" text-anchor="middle" style="fill:var(--text2)">${t2}</text></g>`;
+    const d = derived(params());
+    $('#blocks').innerHTML = `
+      <circle cx="60" cy="100" r="24" class="wire"/><path class="wire" d="M46,100 c5,-12 9,-12 14,0 s9,12 14,0"/>
+      <text x="60" y="146" text-anchor="middle">230 V ac, 50 Hz</text>
+      <path class="wire" d="M84,100 H150"/>
+      ${blk(150, 55, 250, 90, 'Dornbirn UPF rectifier', 'L1–L2 coupled · D1–D4 · S1–S2')}
+      <path class="wire" d="M400,100 H470"/>
+      <rect x="470" y="40" width="130" height="120" rx="8" fill="var(--blue-dim)" stroke="var(--blue)" stroke-width="1.2"/>
+      <text x="535" y="72" text-anchor="middle" class="t-strong">Bus</text>
+      <text x="535" y="94" text-anchor="middle">Cb1 + Cb2</text>
+      <text x="535" y="116" text-anchor="middle" style="fill:var(--blue)" id="blkBus">${st.Vref} V</text>
+      <text x="535" y="138" text-anchor="middle">= 2·V<tspan dy="3" font-size="9">C</tspan></text>
+      <path class="wire" d="M600,100 H670"/>
+      ${blk(670, 55, 230, 90, 'Full-bridge LLC + SR', `N = ${d.N.toFixed(2)} : 1 · fr = 250 kHz`)}
+      <path class="wire" d="M900,100 H960"/>
+      <rect x="960" y="70" width="90" height="60" rx="8" fill="var(--green-dim)" stroke="var(--green)" stroke-width="1.2"/>
+      <text x="1005" y="96" text-anchor="middle" class="t-strong">48 V</text><text x="1005" y="116" text-anchor="middle">≤ 60 W</text>
+      <path class="wire dash" d="M535,160 V205 H275 V145"/>
+      <text x="405" y="224" text-anchor="middle">bus loop: sets f<tspan dy="3" font-size="9">s1</tspan><tspan dy="-3"> (5 Hz, once per half cycle)</tspan></text>
+      <path class="wire dash" d="M1005,130 V205 H785 V145"/>
+      <text x="895" y="224" text-anchor="middle">output loop: sets f<tspan dy="3" font-size="9">s2</tspan></text>
+      <path class="wire dash" style="stroke:var(--amber)" d="M1030,130 V180 H300 V145"/>
+      <text x="665" y="174" text-anchor="middle" style="fill:var(--amber)">optional feed-forward of P<tspan dy="3" font-size="9">o</tspan></text>`;
+  }
+
+  function renderDesign() {
+    const p = params(), d = derived(p);
+    const rho = st.Vref / 2 / d.Vm, thd = thdClosed(st.nk, rho);
+    const rows = [
+      ['Mains peak V<sub>m</sub>', `${d.Vm.toFixed(1)} V`, '230·√2'],
+      ['Bus power at full load P<sub>bus,full</sub>', `${d.PbFull.toFixed(1)} W`, '60 W / 0.95'],
+      ['R<sub>in</sub> at full load', `${d.RinFull.toFixed(0)} Ω`, 'V<sub>m</sub>²/(2·P<sub>bus,full</sub>)'],
+      ['Coupled inductor L2 · L1 · M', `${fmt(d.L2, 'H', 2)} · ${fmt(d.L1, 'H', 1)} · ${fmt(d.M, 'H', 2)}`, `from R<sub>in</sub> at 100 kHz, nk = ${st.nk.toFixed(2)}, k = 0.9`],
+      ['Continuous range of f<sub>s1</sub>', `${(p.fsMin / 1e3).toFixed(0)} – ${(p.fsMax / 1e3).toFixed(0)} kHz`, `P<sub>bus</sub> from ${d.Pmin.toFixed(1)} to ${d.Pmax.toFixed(1)} W`],
+      ['Bus reference · V<sub>C</sub> · ρ = V<sub>C</sub>/V<sub>m</sub>', `${st.Vref} V · ${(st.Vref / 2).toFixed(0)} V · ${rho.toFixed(3)}`, `IRCM needs V<sub>bus</sub> ≥ ${(2 * d.Vm / (st.nk - 2)).toFixed(0)} V`],
+      ['Input THD in continuous mode', `${(thd * 100).toFixed(2)} %`, 'closed-form THD at this nk and ρ'],
+      ['LLC turns ratio N', `${d.N.toFixed(2)} : 1`, 'V<sub>bus,ref</sub> / 48 V'],
+      ['LLC tank Lr · Cr · Lm', `${fmt(d.Lr, 'H', 0)} · ${fmt(d.Cr, 'F', 2)} · ${fmt(d.Lm, 'H', 2)}`, `R<sub>ac</sub> = ${d.Rac.toFixed(0)} Ω, Z0 = ${d.Z0.toFixed(0)} Ω`],
+      ['LLC maximum bus V<sub>bus,max</sub>', `${d.VbusMax.toFixed(0)} V`, 'N·V<sub>o</sub>·(Ln+1)/Ln'],
+    ];
+    $('#designTbl').innerHTML = `<thead><tr><th>Quantity</th><th>Value</th><th>From</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody>`;
+    $('#stage1Now').innerHTML = `At the current settings (nk = ${st.nk.toFixed(2)}, V<sub>bus</sub> = ${st.Vref} V), the no-CCM limit is ${d.Vm.toFixed(0)} V and the IRCM limit is ${(2 * d.Vm / (st.nk - 2)).toFixed(0)} V. ` +
+      (st.Vref >= 2 * d.Vm / (st.nk - 2) ? 'The bus is above both, so the input current is an exact sine (THD = 0) whenever the rectifier runs continuously.' : `The bus is below the IRCM limit, so part of each mains cycle is in DCM and THD is ${(thd * 100).toFixed(2)}% even in continuous operation.`);
+    const dP = (d.PbFull - st.Po / BASE.etaLLC);
+    $('#runaway').innerHTML = `Example: running at the full-load frequency while the output drops to ${st.Po} W leaves ${dP.toFixed(1)} W extra. With C<sub>bus</sub> = ${(st.Cbus * 1e6).toFixed(0)} µF at ${st.Vref} V that is ${(dP / (st.Cbus * st.Vref)).toFixed(0)} V/s: the bus would pass the LLC limit of ${d.VbusMax.toFixed(0)} V in about ${((d.VbusMax ** 2 - st.Vref ** 2) * st.Cbus / (2 * dP) * 1e3).toFixed(0)} ms.`;
+    $('#llcLimit').innerHTML = `With N = ${d.N.toFixed(2)} and Ln = 5: M<sub>min</sub> = 5/6 = 0.833, so V<sub>bus,max</sub> = ${d.VbusMax.toFixed(0)} V. The OVP limit (+8%) is ${(st.Vref * 1.08).toFixed(0)} V, ${st.Vref * 1.08 < d.VbusMax ? 'safely below it' : '<b>above it: the LLC would lose regulation before OVP acts</b>'}.`;
+  }
+
+  // ---------- charts ----------
+  function drawTime(r) {
+    const svg = $('#figT'), d = r.d;
+    const frV = { x0: 70, x1: 980, y0: 20, y1: 270 }, frF = { x0: 70, x1: 980, y0: 320, y1: 430 };
+    const T = r.out[r.out.length - 1].t;
+    const X = lin(0, T, frV.x0, frV.x1);
+    const vs = r.out.map((o) => o.V);
+    const vlo = Math.min(...vs, d.Vm) - 10, vhi = Math.max(...vs, st.Vref * 1.08, Math.min(d.VbusMax, st.Vref * 1.25)) + 8;
+    const YV = lin(vlo, vhi, frV.y1, frV.y0);
+    const fmaxPlot = st.fsMax * 1.1 / 1e3, YF = lin(0, fmaxPlot, frF.y1, frF.y0);
+    // burst shading
+    let shade = '', s0 = null;
+    r.out.forEach((o, j) => { if (o.burst && s0 === null) s0 = o.t; if ((!o.burst || j === r.out.length - 1) && s0 !== null) { shade += `<rect x="${X(s0)}" y="${frV.y0}" width="${X(o.t) - X(s0)}" height="${frF.y1 - frV.y0}" fill="var(--burst)"/>`; s0 = null; } });
+    const vt = niceTicks(vlo, vhi, 6), ft = niceTicks(0, fmaxPlot, 4), tt = niceTicks(0, T, 6);
+    const hl = (v, label, color) => (v > vlo && v < vhi ? `<line x1="${frV.x0}" y1="${YV(v)}" x2="${frV.x1}" y2="${YV(v)}" style="stroke:${color};stroke-dasharray:5 4;stroke-width:1.2"/><text x="${frV.x1 - 4}" y="${YV(v) - 5}" text-anchor="end" style="fill:${color}">${label}</text>` : '');
+    const vline = poly(r.out.map((o) => [X(o.t), YV(o.V)]));
+    const fline = poly(r.out.map((o) => [X(o.t), YF(o.fs / 1e3)]));
+    svg.innerHTML = `${shade}
+      ${vt.map((v) => `<line class="gr" x1="${frV.x0}" y1="${YV(v)}" x2="${frV.x1}" y2="${YV(v)}"/><text x="${frV.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('')}
+      ${ft.map((v) => `<line class="gr" x1="${frF.x0}" y1="${YF(v)}" x2="${frF.x1}" y2="${YF(v)}"/><text x="${frF.x0 - 8}" y="${YF(v) + 4}" text-anchor="end">${v}</text>`).join('')}
+      ${tt.map((v) => `<text x="${X(v)}" y="${frF.y1 + 18}" text-anchor="middle">${(v * 1000).toFixed(0)}</text>`).join('')}
+      <text x="${(frF.x0 + frF.x1) / 2}" y="${frF.y1 + 36}" text-anchor="middle">time (ms)</text>
+      <text x="${frV.x0}" y="${frV.y0 - 6}" class="t-title">V<tspan dy="3" font-size="9">bus</tspan><tspan dy="-3"> (V)</tspan></text>
+      <text x="${frF.x0}" y="${frF.y0 - 6}" class="t-title">f<tspan dy="3" font-size="9">s1</tspan><tspan dy="-3"> (kHz)</tspan></text>
+      ${hl(st.Vref, `reference ${st.Vref} V`, 'var(--text2)')}
+      ${hl(st.Vref * 1.08, `OVP ${(st.Vref * 1.08).toFixed(0)} V`, 'var(--red)')}
+      ${hl(d.VbusMax, `LLC limit ${d.VbusMax.toFixed(0)} V`, 'var(--purple)')}
+      ${hl(d.Vm, `no-CCM limit ${d.Vm.toFixed(0)} V`, 'var(--amber)')}
+      <line class="ax" x1="${frV.x0}" y1="${frV.y1}" x2="${frV.x1}" y2="${frV.y1}"/>
+      <line class="ax" x1="${frF.x0}" y1="${frF.y1}" x2="${frF.x1}" y2="${frF.y1}"/>
+      <line x1="${frF.x0}" y1="${YF(st.fsMax / 1e3)}" x2="${frF.x1}" y2="${YF(st.fsMax / 1e3)}" style="stroke:var(--red);stroke-dasharray:5 4"/>
+      <text x="${frF.x1 - 4}" y="${YF(st.fsMax / 1e3) - 5}" text-anchor="end" style="fill:var(--red)">f<tspan dy="3" font-size="9">s1,max</tspan></text>
+      <polyline class="ln" style="stroke:var(--blue)" points="${vline}"/>
+      <polyline class="ln" style="stroke:var(--green);stroke-width:1.6" points="${fline}"/>
+      ${st.step ? `<line x1="${X(0.2)}" y1="${frV.y0}" x2="${X(0.2)}" y2="${frF.y1}" class="ax" style="stroke-dasharray:2 3"/><text x="${X(0.2) + 4}" y="${frV.y0 + 12}">60 W → ${st.Po} W</text>` : ''}`;
+    const all = { x0: frV.x0, x1: frV.x1, y0: frV.y0, y1: frF.y1 };
+    hover(svg, all, (x) => {
+      const t = (x - frV.x0) / (frV.x1 - frV.x0) * T;
+      const o = r.out[Math.min(r.out.length - 1, Math.round(t / (r.out[1].t - r.out[0].t)))];
+      return tipBox(x, all, [{ t: `t = ${(o.t * 1000).toFixed(1)} ms` }, { t: `V_bus = ${o.V.toFixed(1)} V`, c: 'var(--blue)' },
+        { t: o.fs ? `f_s1 = ${(o.fs / 1e3).toFixed(0)} kHz` : 'rectifier stopped', c: 'var(--green)' }, { t: `P_o = ${o.Po} W` }, { t: o.burst ? 'burst mode' : 'continuous' }]);
+    });
+  }
+
+  function smallChart(id, sw, cfg) {
+    const svg = $(id), fr = { x0: 56, x1: 505, y0: 26, y1: 256 };
+    const X = lin(0, 60, fr.x0, fr.x1), Y = lin(cfg.lo, cfg.hi, fr.y1, fr.y0);
+    const yt = niceTicks(cfg.lo, cfg.hi, 5), xt = [0, 10, 20, 30, 40, 50, 60];
+    const bStart = sw.find((q) => !q.burst);
+    const burstX = sw.filter((q) => q.burst).map((q) => q.Po);
+    const bEdge = burstX.length ? Math.max(...burstX) : null;
+    svg.innerHTML = `
+      ${bEdge !== null ? `<rect x="${X(0)}" y="${fr.y0}" width="${X(bEdge + 0.5) - X(0)}" height="${fr.y1 - fr.y0}" fill="var(--burst)"/><text x="${X(0) + 6}" y="${fr.y0 + 14}" style="fill:var(--amber)">burst</text>` : ''}
+      ${yt.map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${cfg.fmtY ? cfg.fmtY(v) : v}</text>`).join('')}
+      ${xt.map((v) => `<text x="${X(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}</text>`).join('')}
+      <text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 36}" text-anchor="middle">P<tspan dy="3" font-size="9">o</tspan><tspan dy="-3"> (W)</tspan></text>
+      <text x="${fr.x0}" y="${fr.y0 - 10}" class="t-title">${cfg.title}</text>
+      <line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>
+      ${cfg.band ? `<polygon points="${poly([...sw.map((q) => [X(q.Po), Y(cfg.band(q)[1])]), ...sw.slice().reverse().map((q) => [X(q.Po), Y(cfg.band(q)[0])])])}" fill="${cfg.bandFill}"/>` : ''}
+      ${(cfg.refs || []).map((rf) => `<line x1="${fr.x0}" y1="${Y(rf.v)}" x2="${fr.x1}" y2="${Y(rf.v)}" style="stroke:${rf.c};stroke-dasharray:5 4"/><text x="${fr.x1 - 4}" y="${Y(rf.v) - 5}" text-anchor="end" style="fill:${rf.c}">${rf.t}</text>`).join('')}
+      ${cfg.line ? `<polyline class="ln" style="stroke:${cfg.color}" points="${poly(sw.map((q) => [X(q.Po), Y(cfg.line(q))]))}"/>` : ''}
+      <circle cx="${X(st.Po)}" cy="${Y(cfg.cur)}" r="6" fill="none" stroke="var(--text)" stroke-width="2"/>`;
+    hover(svg, fr, (x) => {
+      const po = (x - fr.x0) / (fr.x1 - fr.x0) * 60;
+      const q = sw.reduce((b, c) => (Math.abs(c.Po - po) < Math.abs(b.Po - po) ? c : b));
+      return tipBox(X(q.Po), fr, [{ t: `P_o = ${q.Po} W` }, ...cfg.tip(q)]);
+    });
+  }
+
+  // ---------- main ----------
+  let SW = null, SWkey = '';
+  function sweep() {
+    const p = params(), key = JSON.stringify(p);
+    if (key === SWkey) return SW;
+    const d = derived(p), out = [];
+    for (let Po = 2; Po <= 60; Po += 2) {
+      const r = simulate(p, Po, 0, 1.3, false);
+      const Q = BASE.Qfull * Po / BASE.PoFull;
+      const a = llcFn(d.N * BASE.Vo / r.vmax, Q, BASE.Ln), b = llcFn(d.N * BASE.Vo / r.vmin, Q, BASE.Ln);
+      out.push({ Po, vmin: r.vmin, vmax: r.vmax, vavg: r.vavg, fs: r.fsAvg, pf: r.pf, burst: r.burst, duty: r.duty, fnLo: Math.min(a.fn, b.fn), fnHi: Math.max(a.fn, b.fn), ok: a.ok && b.ok });
+    }
+    SW = out; SWkey = key;
+    return out;
+  }
+  function render() {
+    const p = params();
+    const r = simulate(p, st.Po, st.step ? 0.2 : 0, 1.2, true);
+    const d = r.d, Q = BASE.Qfull * st.Po / BASE.PoFull;
+    const la = llcFn(d.N * BASE.Vo / r.vmax, Q, BASE.Ln), lb = llcFn(d.N * BASE.Vo / r.vmin, Q, BASE.Ln);
+    const mode = r.burst ? 'burst' : 'continuous';
+    const ripple = r.vmax - r.vmin;
+    const ripplePred = (st.Po / BASE.etaLLC) / (2 * Math.PI * 50 * st.Cbus * st.Vref);
+    const pk = st.step ? Math.max(...r.out.filter((o) => o.t > 0.2).map((o) => o.V)) : r.vmax;
+    $('#tiles').innerHTML = [
+      ['Mode', `<span class="pill ${r.burst ? 'warn' : 'ok'}">${mode}</span>`, r.burst ? `on ${(r.duty * 100).toFixed(0)}% of the time` : `P_bus ≥ P_min = ${d.Pmin.toFixed(1)} W`],
+      ['Bus steady state', `${r.vavg.toFixed(1)} V`, `${r.vmin.toFixed(1)} – ${r.vmax.toFixed(1)} V (${ripple.toFixed(1)} V p-p)`],
+      ['100 Hz ripple formula', `${ripplePred.toFixed(1)} V`, r.burst ? 'burst band dominates here' : 'P/(ωCV), matches the band'],
+      ['Peak after step', st.step ? `${pk.toFixed(1)} V` : '–', st.step ? (pk >= st.Vref * 1.079 ? 'clamped by OVP' : 'no OVP needed') : 'step off'],
+      ['Rectifier f<sub>s1</sub>', r.fsAvg ? `${(r.fsAvg / 1e3).toFixed(0)} kHz` : '–', `PF ${r.pf.toFixed(3)}`],
+      ['LLC f<sub>s2</sub>/f<sub>r</sub>', `${Math.min(la.fn, lb.fn).toFixed(3)} – ${Math.max(la.fn, lb.fn).toFixed(3)}`, la.ok && lb.ok ? '48 V held' : '<b style="color:var(--red)">out of range</b>'],
+    ].map(([k, v, s]) => `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`).join('');
+    drawTime(r);
+    const sw = sweep();
+    const vlo = Math.min(...sw.map((q) => q.vmin), st.Vref - 20), vhi = Math.max(...sw.map((q) => q.vmax), st.Vref + 20);
+    smallChart('#figS1', sw, { title: 'V_bus (V)', lo: Math.floor(vlo / 5) * 5, hi: Math.ceil(vhi / 5) * 5, color: 'var(--blue)', line: (q) => q.vavg, band: (q) => [q.vmin, q.vmax], bandFill: 'var(--blue-fill)', cur: r.vavg,
+      refs: [{ v: st.Vref, t: 'reference', c: 'var(--text3)' }], tip: (q) => [{ t: `avg ${q.vavg.toFixed(1)} V`, c: 'var(--blue)' }, { t: `${q.vmin.toFixed(1)} – ${q.vmax.toFixed(1)} V` }] });
+    smallChart('#figS2', sw, { title: 'f_s1 (kHz)', lo: 0, hi: Math.ceil(st.fsMax * 1.15 / 1e5) * 100, color: 'var(--green)', line: (q) => q.fs / 1e3, cur: r.fsAvg / 1e3,
+      refs: [{ v: st.fsMax / 1e3, t: 'f_s1,max', c: 'var(--red)' }], tip: (q) => [{ t: `f_s1 = ${(q.fs / 1e3).toFixed(0)} kHz`, c: 'var(--green)' }, { t: q.burst ? `burst, on ${(q.duty * 100).toFixed(0)}%` : 'continuous' }] });
+    smallChart('#figS3', sw, { title: 'Power factor', lo: 0, hi: 1.05, color: 'var(--purple)', line: (q) => q.pf, cur: r.pf, fmtY: (v) => v.toFixed(1),
+      tip: (q) => [{ t: `PF = ${q.pf.toFixed(3)}`, c: 'var(--purple)' }, { t: q.burst ? `√D = ${Math.sqrt(q.duty).toFixed(3)}` : 'IRCM, sine current' }] });
+    const fhi = Math.max(1.2, ...sw.map((q) => q.fnHi)) + 0.05, flo = Math.min(0.9, ...sw.map((q) => q.fnLo)) - 0.05;
+    smallChart('#figS4', sw, { title: 'LLC f_s2 / f_r', lo: Math.floor(flo * 20) / 20, hi: Math.ceil(fhi * 20) / 20, band: (q) => [q.fnLo, q.fnHi], bandFill: 'rgba(183,110,10,0.25)', cur: (la.fn + lb.fn) / 2, fmtY: (v) => v.toFixed(2),
+      refs: [{ v: 1, t: 'resonance', c: 'var(--text3)' }], tip: (q) => [{ t: `f_s2/f_r = ${q.fnLo.toFixed(3)} – ${q.fnHi.toFixed(3)}`, c: 'var(--amber)' }, { t: q.ok ? '48 V held' : 'out of range' }] });
+  }
+  let pend = false;
+  const sched = () => { if (!pend) { pend = true; requestAnimationFrame(() => { pend = false; renderDesign(); drawBlocks(); render(); }); } };
+  const bind = (id, key, out, conv, show) => $(id).addEventListener('input', (e) => { st[key] = conv(+e.target.value); $(out).textContent = show(+e.target.value); sched(); });
+  bind('#po', 'Po', '#poOut', (v) => v, (v) => `${v} W`);
+  bind('#cb', 'Cbus', '#cbOut', (v) => v * 1e-6, (v) => `${v} µF`);
+  bind('#vref', 'Vref', '#vrefOut', (v) => v, (v) => `${v} V`);
+  bind('#fmax', 'fsMax', '#fmaxOut', (v) => v * 1e3, (v) => `${v} kHz`);
+  bind('#nk', 'nk', '#nkOut', (v) => v, (v) => v.toFixed(2));
+  $('#step').addEventListener('change', (e) => { st.step = e.target.checked; sched(); });
+  $('#ff').addEventListener('change', (e) => { st.ff = e.target.checked; sched(); });
+  renderDesign(); drawBlocks(); render();
+})();
+</script>
