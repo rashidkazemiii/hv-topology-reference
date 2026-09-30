@@ -153,19 +153,29 @@ svg .lbl { font-size: 14px; fill: var(--text); font-weight: 500; }
     <div class="eq">V_C · M(fn, Q) = N · V_o ,     M(fn, Q) = 1 / √( [1 + (1 − 1/fn²)/Ln]² + Q²·(fn − 1/fn)² )
 Q = Z0 / R_ac ,   R_ac = 8·N²·R_o / π² ,   R_o = V_o² / P_o     →   Q = Q0 · P_o / P_o,full</div>
     <div class="prose">
-      <p><b>(c) Power balance on the bus.</b> In steady state the rectifier delivers what the LLC draws: <span class="m">η·P_in = P_o</span>.</p>
+      <p><b>(c) Power balance on the bus.</b> In steady state the rectifier delivers what the load and the losses take. Conduction and other losses are lumped into an efficiency η = 90%. The switching loss of S1–S2 is a separate, adjustable constant P<sub>sw</sub> (0 to 8 W):</p>
+    </div>
+    <div class="eq">P_in = P_o / η + P_sw</div>
+    <div class="prose">
       <p>The controller turns the only knob, f<sub>s</sub>, to hold 48 V. Combining (a) and (c) fixes f<sub>s</sub> from the power alone. Then (b) has only one unknown left, V<sub>C</sub>. So the bus voltage is an <i>outcome</i>, not a set point:</p>
     </div>
-    <div class="eq key">fs(P_o) = fs,full · P_o,full / P_o                         (from a + c, IRCM)
+    <div class="eq key">fs(P_o) = fs,full · P_in,full / P_in(P_o)                  (from a + c, IRCM)
 V_bus(P_o) = 2·N·V_o / M( fs(P_o)/fr , Q0·P_o/P_o,full )     (from b)</div>
     <div class="prose">
-      <p>With x = P<sub>o</sub>/P<sub>o,full</sub> and the full-load design point at f<sub>n0</sub> = f<sub>s,full</sub>/f<sub>r</sub>, the two load-dependent terms combine neatly. Q·f<sub>n</sub> = Q0·f<sub>n0</sub> stays constant and Q/f<sub>n</sub> = Q0·x²/f<sub>n0</sub>, which gives a closed form for the bus voltage against load:</p>
+      <p>Write x = P<sub>o</sub>/P<sub>o,full</sub> for the load, and y = f<sub>s,full</sub>/f<sub>s</sub> = P<sub>in</sub>/P<sub>in,full</sub> for the frequency, with the full-load design point at f<sub>n0</sub> = f<sub>s,full</sub>/f<sub>r</sub>. Then f<sub>n</sub> = f<sub>n0</sub>/y and Q = Q0·x, which gives a closed form for the bus voltage against load:</p>
     </div>
-    <div class="eq key">V_bus(x) = 2·N·V_o · √( [1 + (1 − x²/fn0²)/Ln]² + Q0²·(fn0 − x²/fn0)² )
+    <div class="eq key">y = (x·P_o,full/η + P_sw) / (P_o,full/η + P_sw)
 
-light-load limit (x → 0):   V_bus,max = 2·N·V_o · √( (1 + 1/Ln)² + (Q0·fn0)² )</div>
+V_bus(x) = 2·N·V_o · √( [1 + (1 − y²/fn0²)/Ln]² + Q0²·x²·(fn0/y − y/fn0)² )
+
+without switching loss (P_sw = 0, so y = x):
+V_bus(x) = 2·N·V_o · √( [1 + (1 − x²/fn0²)/Ln]² + Q0²·(fn0 − x²/fn0)² )  →  V_bus,max = 2·N·V_o·√( (1 + 1/Ln)² + (Q0·fn0)² )
+
+with switching loss, at zero load (x → 0, y → y0 = P_sw/P_in,full):
+V_bus(0) = 2·N·V_o · [1 + (1 − y0²/fn0²)/Ln]</div>
     <div class="prose">
-      <p>Reading it: at full load (x = 1) the square root equals 1/M(f<sub>n0</sub>, Q0), so V<sub>bus</sub> is the design value. As the load falls, f<sub>s</sub> rises, the LLC moves above resonance where its gain is below 1, and the bus has to rise to keep 48 V. It does not rise without limit: it approaches V<sub>bus,max</sub>, set only by Ln, Q0 and f<sub>n0</sub>. This is the paper's statement that the bus is "limited to the reflected secondary voltage". Larger Ln and smaller Q0 keep it lower.</p>
+      <p>Reading it: at full load (x = 1) the square root equals 1/M(f<sub>n0</sub>, Q0), so V<sub>bus</sub> is the design value. As the load falls, f<sub>s</sub> rises, the LLC moves above resonance where its gain is below 1, and the bus has to rise to keep 48 V. It does not rise without limit. Without switching loss it approaches V<sub>bus,max</sub>, set only by Ln, Q0 and f<sub>n0</sub>. This is the paper's statement that the bus is "limited to the reflected secondary voltage". Larger Ln and smaller Q0 keep it lower.</p>
+      <p><b>What the switching loss changes.</b> P<sub>sw</sub> is drawn from the bus at every load, so the input power never falls below P<sub>sw</sub>. The frequency therefore rises less at light load: at zero load it stops at f<sub>s,full</sub>/y0 instead of going to infinity. The LLC stays closer to resonance, its gain drops less, and the bus rises less. The switching loss acts like a small built-in load that holds the bus down. The same loss lowers light-load efficiency, <span class="m">η_total = P_o/(P_o/η + P_sw)</span>, and raises the load at which burst mode starts. (Physically, turn-off loss grows with f<sub>s</sub>. Here it is a fixed number you set.)</p>
       <p id="knobNow"></p>
       <p><b>Why the bus finds this point by itself.</b> Suppose the bus is a little too high. To hold 48 V the LLC needs less gain, so the controller raises f<sub>s</sub>. By (a) a higher f<sub>s</sub> means less input power, so the bus discharges back down. A low bus is corrected the same way. So no separate bus loop is needed: the output loop plus the Dornbirn power law form a stable negative feedback on the bus. The load-step simulation below shows it.</p>
     </div>
@@ -190,9 +200,9 @@ THD (closed form):         THD² = π·S₂/(4·S₁²) − 1 ,  S₁, S₂ from
     <div class="prose">
       <p>f<sub>s</sub> ∝ 1/P<sub>o</sub>, so it grows quickly at light load. At a maximum frequency f<sub>s,max</sub> the lowest continuous power is</p>
     </div>
-    <div class="eq">P_o,min = P_o,full · fs,full / fs,max</div>
+    <div class="eq">P_in,min = P_in,full · fs,full / fs,max        P_o,min = η·(P_in,min − P_sw)</div>
     <div class="prose">
-      <p>Below that, the converter runs in bursts at f<sub>s,max</sub> and stops in between, with the output capacitor holding 48 V. In each burst the LLC has to deliver the same power it did at P<sub>o,min</sub>, and the rectifier delivers P<sub>in</sub>(f<sub>s,max</sub>). So the bus stays at V<sub>bus</sub>(P<sub>o,min</sub>) and simply stops rising. The burst on-fraction is D = P<sub>o</sub>/P<sub>o,min</sub>, and the power factor drops to √D, because the current is a clean sine while running and zero while stopped.</p>
+      <p>Below that, the converter runs in bursts at f<sub>s,max</sub> and stops in between, with the output capacitor holding 48 V. In each burst the LLC has to deliver the same power it did at P<sub>o,min</sub>, and the rectifier delivers P<sub>in</sub>(f<sub>s,max</sub>). So the bus stays at V<sub>bus</sub>(P<sub>o,min</sub>) and simply stops rising. If P<sub>sw</sub> ≥ P<sub>in,min</sub>, f<sub>s</sub> never reaches f<sub>s,max</sub> and no burst is needed at all. The burst on-fraction is D = P<sub>o</sub>/P<sub>o,min</sub>, and the power factor drops to √D, because the current is a clean sine while running and zero while stopped.</p>
     </div>
   </section>
 
@@ -241,6 +251,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
         <div class="slider"><label for="nk"><span>nk</span><output id="nkOut">4.00</output></label><input id="nk" type="range" min="2.2" max="5" step="0.05" value="4"></div>
         <div class="slider"><label for="fmax"><span>f<sub>s,max</sub></span><output id="fmaxOut">400 kHz</output></label><input id="fmax" type="range" min="150" max="800" step="25" value="400"></div>
         <div class="slider"><label for="vbf"><span>V<sub>bus</sub> at full load</span><output id="vbfOut">380 V</output></label><input id="vbf" type="range" min="340" max="440" step="5" value="380"></div>
+        <div class="slider"><label for="psw"><span>Switching loss P<sub>sw</sub></span><output id="pswOut">2.0 W</output></label><input id="psw" type="range" min="0" max="8" step="0.5" value="2"></div>
       </div>
       <div class="ctl-row">
         <span class="seg" role="group" aria-label="Output loop">
@@ -277,7 +288,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
   <section>
     <h2>7. Assumptions and how this differs from the paper</h2>
     <ul class="prose">
-      <li>230 V<sub>rms</sub>, 50 Hz. Output 48 V, 60 W. Overall efficiency a constant 90% (the paper measured about 87–88% at full load). Coupled-inductor coupling k = 0.9. Full-load switching frequency 100 kHz.</li>
+      <li>230 V<sub>rms</sub>, 50 Hz. Output 48 V, 60 W. Conduction and other losses as a constant efficiency of 90%, plus the adjustable switching loss P<sub>sw</sub> as a fixed power drawn from the bus. The paper measured about 87–88% overall at full load. Coupled-inductor coupling k = 0.9. Full-load switching frequency 100 kHz.</li>
       <li>The rectifier uses the Dornbirn two-winding coupled inductor and its equations. The PCIM prototype uses a variant (a buffer inductor Lf plus windings LC2 and LC3 in both lines, with I<sub>avg</sub> = n<sub>C</sub>·T·V<sub>in</sub>/(4L<sub>f</sub>), its eq. 14), which is also resistive and also ∝ 1/f<sub>s</sub>, so the bus behaviour is the same in kind.</li>
       <li>The LLC turns ratio N is chosen so that the bus is V<sub>bus,full</sub> at full load. The LLC gain uses FHA, which is only approximate well above resonance. That is one reason the paper's measured light-load bus (432 V) sits below the FHA limit with its own Ln and Q.</li>
       <li>The fast output loop is ideal, adjusting f<sub>s</sub> instantly. The slow loop updates f<sub>s</sub> once per mains half cycle. Burst mode is treated on average. Switching ripple and dead time are not shown.</li>
@@ -290,21 +301,23 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
   const $ = (s) => document.querySelector(s);
   const NS = 'http://www.w3.org/2000/svg';
   const PAPER = [[5, 432], [10, 430], [20, 425], [30, 410], [40, 400], [50, 385], [60, 380]];
-  const st = { Po: 20, Ln: 8, Q0: 0.3, fn0: 1, Cb: 22e-6, nk: 4, fsMax: 400e3, VbusFull: 380, fast: true, step: true };
+  const st = { Po: 20, Ln: 8, Q0: 0.3, fn0: 1, Cb: 22e-6, nk: 4, fsMax: 400e3, VbusFull: 380, Psw: 2, fast: true, step: true };
   const FIX = { Vrms: 230, fL: 50, Vo: 48, PoFull: 60, eta: 0.9, k: 0.9, fsFull: 100e3 };
 
   // ---------- model ----------
   const Mfha = (fn, Q, Ln) => 1 / Math.sqrt((1 + (1 - 1 / (fn * fn)) / Ln) ** 2 + (Q * (fn - 1 / fn)) ** 2);
   function design() {
-    const p = { ...FIX, nk: st.nk, Ln: st.Ln, Q0: st.Q0, fn0: st.fn0, fsMax: st.fsMax, VbusFull: st.VbusFull };
-    const Vm = p.Vrms * Math.SQRT2, PinFull = p.PoFull / p.eta, RinFull = Vm * Vm / (2 * PinFull);
+    const p = { ...FIX, nk: st.nk, Ln: st.Ln, Q0: st.Q0, fn0: st.fn0, fsMax: st.fsMax, VbusFull: st.VbusFull, Psw: st.Psw };
+    const Vm = p.Vrms * Math.SQRT2, PinFull = p.PoFull / p.eta + p.Psw, RinFull = Vm * Vm / (2 * PinFull);
     const L2 = RinFull * p.k * p.k / (8 * p.fsFull * p.nk * (1 - p.k * p.k));
     const nc = p.nk / p.k, L1 = nc * nc * L2, M = p.nk * L2, det = L1 * L2 - M * M;
     const M0 = Mfha(p.fn0, p.Q0, p.Ln), N = (p.VbusFull / 2) * M0 / p.Vo;
     const R0 = p.Vo * p.Vo / p.PoFull, Rac = 8 * N * N * R0 / Math.PI ** 2;
     const fr = p.fsFull / p.fn0, Z0 = p.Q0 * Rac, Lr = Z0 / (2 * Math.PI * fr), Cr = 1 / (2 * Math.PI * fr * Z0), Lm = p.Ln * Lr;
+    // highest bus over the whole load range, from the closed form (with P_sw > 0 it can peak before zero load)
+    let lim = 0; for (let x = 0.002; x <= 1; x += 0.002) lim = Math.max(lim, vbusX(d0({ ...p, N, PinFull }), x));
     return { ...p, Vm, PinFull, RinFull, L1, L2, M, nc, det, G11: L2 / det, G12: -M / det, G22: L1 / det, M0, N, R0, Rac, fr, Z0, Lr, Cr, Lm,
-      PoMin: p.PoFull * p.fsFull / p.fsMax, VbusLim: 2 * N * p.Vo * Math.sqrt((1 + 1 / p.Ln) ** 2 + (p.Q0 * p.fn0) ** 2) };
+      PinMin: PinFull * p.fsFull / p.fsMax, PoMin: Math.max(0, p.eta * (PinFull * p.fsFull / p.fsMax - p.Psw)), VbusLim: lim };
   }
   function iNorm(s, nk, rho) { const a = (nk - 2) * rho, b = (nk + 2) * rho, c = 2 * rho; return s <= a ? s : c * (s + a) / (b - s); }
   function closedS(nk, rho) {
@@ -330,7 +343,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
   }
   // steady state, continuous operation: solve (a) P_in(fs, rho) = P_o/eta and (b) V_C·M = N·V_o
   function steadyCont(d, Po) {
-    const Pin = Po / d.eta, Q = d.Q0 * Po / d.PoFull;
+    const Pin = Po / d.eta + d.Psw, Q = d.Q0 * Po / d.PoFull;
     let Vc = d.VbusFull / 2, fs = d.fsFull;
     for (let it = 0; it < 80; it++) {
       const g = 4 / Math.PI * closedS(d.nk, Vc / d.Vm).S1;
@@ -350,7 +363,13 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
     const b = steadyCont(d, hi);
     return { ...b, burst: true, D: Po / hi, Pon: hi };
   }
-  const vbusClosed = (d, Po) => { const x = Po / d.PoFull; return 2 * d.N * d.Vo * Math.sqrt((1 + (1 - x * x / d.fn0 ** 2) / d.Ln) ** 2 + d.Q0 ** 2 * (d.fn0 - x * x / d.fn0) ** 2); };
+  // closed form (IRCM): y = fs,full/fs = P_in/P_in,full,  fn = fn0/y,  Q = Q0·x
+  function d0(p) { return p; }
+  function vbusX(d, x) {
+    const PinF = d.PoFull / d.eta + d.Psw, y = (x * d.PoFull / d.eta + d.Psw) / PinF;
+    return 2 * d.N * d.Vo * Math.sqrt((1 + (1 - y * y / d.fn0 ** 2) / d.Ln) ** 2 + d.Q0 ** 2 * x * x * (d.fn0 / y - y / d.fn0) ** 2);
+  }
+  const vbusClosed = (d, Po) => vbusX(d, Po / d.PoFull);
   // Dornbirn switching period (vin >= 0) with zero-average i2; returns interval list
   function pfcCycle(d, vin, Vc, fs) {
     const T = 1 / fs, h = T / 2, { G11, G12, G22, nk } = d;
@@ -409,7 +428,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
       const Rin = d.RinFull * fs / d.fsFull;
       const iin = D * Math.sign(vin) * d.Vm / Rin * iNorm(Math.abs(vin) / d.Vm, d.nk, Vc / d.Vm);
       const pin = vin * iin;
-      E = Math.max(1e-9, E + (pin - Po / d.eta) * dt);
+      E = Math.max(1e-9, E + (pin - Po / d.eta - D * d.Psw) * dt);
       accVc += Vc; accN++;
       if (t >= tNext) { tNext += Th; if (!fast) { const Vca = accVc / accN; fsHeld = llcFn(d.N * d.Vo / Vca, Q, d.Ln).fn * d.fr; } accVc = 0; accN = 0; }
       if (t >= tStat) {
@@ -529,7 +548,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
       <text x="${fV.x0}" y="${fV.y0 - 8}" class="t-title">V_bus (V)</text>
       <text x="${fF.x0}" y="${fF.y0 - 8}" class="t-title">f_s (kHz)</text>
       <text x="${fO.x0}" y="${fO.y0 - 8}" class="t-title">V_o (V)</text>
-      ${d.VbusLim < vhi ? hl(fV, YV, d.VbusLim, `light-load limit ${d.VbusLim.toFixed(0)} V`, 'var(--purple)') : ''}
+      ${d.VbusLim < vhi ? hl(fV, YV, d.VbusLim, `highest bus ${d.VbusLim.toFixed(0)} V`, 'var(--purple)') : ''}
       ${hl(fF, YF, d.fsMax / 1e3, 'f_s,max', 'var(--red)')}
       ${hl(fO, YO, 48, '48 V', 'var(--text3)')}
       <polyline class="ln" style="stroke:var(--blue)" points="${poly(r.out.map((o) => [X(o.t), YV(o.Vbus)]))}"/>
@@ -566,11 +585,11 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
     const s = steady(d, st.Po);
     const r = simulate(d, st.Po, st.step ? 0.15 : 0, 0.9, Cbus, st.fast, true);
     const z = zvsAt(d, s, s.burst ? s.Pon : st.Po);
-    const rippleF = (st.Po / d.eta) / (2 * Math.PI * 50 * Cbus * s.Vbus);
+    const PinNow = st.Po / d.eta + st.Psw * (s.burst ? s.D : 1), rippleF = PinNow / (2 * Math.PI * 50 * Cbus * s.Vbus);
     $('#tiles').innerHTML = [
-      ['Mode', `<span class="pill ${s.burst ? 'warn' : 'ok'}">${s.burst ? 'burst' : 'continuous'}</span>`, s.burst ? `on ${(s.D * 100).toFixed(0)}%, PF ≈ ${Math.sqrt(s.D).toFixed(2)}` : `P_o ≥ ${d.PoMin.toFixed(1)} W`],
+      ['Mode', `<span class="pill ${s.burst ? 'warn' : 'ok'}">${s.burst ? 'burst' : 'continuous'}</span>`, s.burst ? `on ${(s.D * 100).toFixed(0)}%, PF ≈ ${Math.sqrt(s.D).toFixed(2)}` : (d.PoMin > 0 ? `continuous down to ${d.PoMin.toFixed(1)} W` : 'continuous at any load')],
       ['Bus (steady)', `${s.Vbus.toFixed(1)} V`, `ripple ${(r.vmax - r.vmin).toFixed(1)} V p-p (formula ${rippleF.toFixed(1)})`],
-      ['Switching f<sub>s</sub>', `${(s.fs / 1e3).toFixed(0)} kHz`, `f_n = ${(s.fs / d.fr).toFixed(2)}, LLC gain ${Mfha(s.fs / d.fr, s.Q, d.Ln).toFixed(3)}`],
+      ['Switching f<sub>s</sub>', `${(s.fs / 1e3).toFixed(0)} kHz`, `f_n = ${(s.fs / d.fr).toFixed(2)} · efficiency ${(100 * st.Po / PinNow).toFixed(1)}%`],
       ['Input THD · PF', `${(r.thd * 100).toFixed(1)} %`, `PF ${r.pf.toFixed(4)} · ${st.fast ? 'fast loop' : 'slow loop'}`],
       ['Output V<sub>o</sub>', `${r.vomin.toFixed(2)}–${r.vomax.toFixed(2)}`, st.fast ? 'held flat by f_s' : '100 Hz ripple from the bus'],
       ['ZVS current', `${z.total.toFixed(2)} A`, `PFC ${z.ig2.toFixed(2)} + LLC ${z.llc.toFixed(2)} A`],
@@ -583,7 +602,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
     const burstTo = sw.filter((q) => q.s.burst).map((q) => q.P).pop();
     const vAll = [...sw.map((q) => q.s.Vbus), ...PAPER.map((p) => p[1]), d.VbusLim, st.VbusFull];
     chart('#figV', { title: 'V_bus (V)', lo: Math.floor((Math.min(...vAll) - 10) / 10) * 10, hi: Math.ceil((Math.max(...vAll) + 10) / 10) * 10, burstTo,
-      refs: [{ v: d.VbusLim, t: `limit ${d.VbusLim.toFixed(0)} V`, c: 'var(--purple)' }],
+      refs: [{ v: d.VbusLim, t: `highest ${d.VbusLim.toFixed(0)} V`, c: 'var(--purple)' }],
       series: [{ pts: pw.filter((P) => P >= 3).map((P) => [P, vbusClosed(d, P)]), c: 'var(--text3)', dash: true },
         { pts: sw.map((q) => [q.P, q.s.Vbus]), c: 'var(--blue)', w: 2.4, label: 'model', labelAt: sw.length - 1 }],
       marks: [...PAPER.map(([x, y]) => ({ x, y, c: 'var(--amber)', sq: true })), { x: st.Po, y: s.Vbus, c: 'var(--text)', r: 7 }],
@@ -594,7 +613,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
       series: [{ pts: fsList, c: 'var(--green)', w: 2.4 }], marks: [{ x: st.Po, y: (s.burst ? d.fsMax : s.fs) / 1e3, c: 'var(--text)', r: 7 }],
       tip: (P, X, fr) => { const q = sw.reduce((b, c) => (Math.abs(c.P - P) < Math.abs(b.P - P) ? c : b)); return tipBox(X(q.P), fr, [{ t: `P_o = ${q.P} W` }, { t: `f_s = ${((q.s.burst ? d.fsMax : q.s.fs) / 1e3).toFixed(0)} kHz`, c: 'var(--green)' }, { t: q.s.burst ? `burst, D = ${q.s.D.toFixed(2)}` : 'continuous' }]); } });
 
-    const key = JSON.stringify([st.Ln, st.Q0, st.fn0, st.Cb, st.nk, st.fsMax, st.VbusFull, st.fast]);
+    const key = JSON.stringify([st.Ln, st.Q0, st.fn0, st.Cb, st.nk, st.fsMax, st.VbusFull, st.Psw, st.fast]);
     if (key !== sweepKey) {
       sweepKey = key;
       sweepData = [5, 10, 15, 20, 25, 30, 40, 50, 60].map((P) => { const q = simulate(d, P, 0, 0.45, Cbus, st.fast, false); const ss = steady(d, P); return { P, thd: q.thd, pf: ss.burst ? q.pf * Math.sqrt(ss.D) : q.pf, burst: ss.burst }; });
@@ -649,13 +668,14 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
       ['LLC tank Lr · Cr · Lm', `${fmt(d.Lr, 'H', 0)} · ${fmt(d.Cr, 'F', 2)} · ${fmt(d.Lm, 'H', 2)}`, `f_r = ${(d.fr / 1e3).toFixed(0)} kHz, R_ac = ${d.Rac.toFixed(0)} Ω, Z0 = ${d.Z0.toFixed(0)} Ω`],
       ['Coupled inductor L1 · L2 · M', `${fmt(d.L1, 'H', 1)} · ${fmt(d.L2, 'H', 2)} · ${fmt(d.M, 'H', 2)}`, `R_in = ${d.RinFull.toFixed(0)} Ω at 100 kHz, nk = ${st.nk.toFixed(2)}, k = 0.9`],
       ['Rectifier conditions at full load', `V_bus ≥ ${d.Vm.toFixed(0)} V (no CCM), ≥ ${(2 * d.Vm / (st.nk - 2)).toFixed(0)} V (IRCM)`, st.VbusFull >= 2 * d.Vm / (st.nk - 2) ? 'met: THD = 0 from the rectifier itself' : `IRCM partly lost: THD ${(closedS(st.nk, st.VbusFull / 2 / d.Vm).thd * 100).toFixed(2)}% at full load`],
-      ['Light-load bus limit', `${d.VbusLim.toFixed(0)} V`, '2·N·V_o·√((1+1/Ln)² + (Q0·f_n0)²)'],
-      ['Lowest continuous power', `${d.PoMin.toFixed(1)} W`, 'P_o,full·f_s,full/f_s,max'],
+      ['Highest bus over the load range', `${d.VbusLim.toFixed(0)} V`, st.Psw > 0 ? `max of the closed form; at zero load ${vbusX(d, 0).toFixed(0)} V` : '2·N·V_o·√((1+1/Ln)² + (Q0·f_n0)²)'],
+      ['Switching loss', `${st.Psw.toFixed(1)} W`, `P_in,full = 60/0.9 + P_sw = ${d.PinFull.toFixed(1)} W; full-load efficiency ${(100 * 60 / d.PinFull).toFixed(1)}%`],
+      ['Lowest continuous power', d.PoMin > 0 ? `${d.PoMin.toFixed(1)} W` : 'none (no burst)', `η·(P_in,full·f_s,full/f_s,max − P_sw), P_in at f_s,max = ${d.PinMin.toFixed(1)} W`],
       ['Bulk capacitors', `Cb1 = Cb2 = ${(st.Cb * 1e6).toFixed(0)} µF`, `C_bus = ${(Cbus * 1e6).toFixed(1)} µF; each sees up to ${(d.VbusLim / 2).toFixed(0)} V`],
       ['PCIM prototype, for comparison', 'Lm 2100 µH, Lr 400 µH, Cr 3.3 nF, Cb 22 µF', 'f_s 55–140 kHz, bus 380–432 V, THD ≈ 2%, PF 0.994'],
     ];
     $('#designTbl').innerHTML = `<thead><tr><th>Quantity</th><th>Value</th><th>From</th></tr></thead><tbody>${rows.map((q) => `<tr><td>${q[0]}</td><td class="num">${q[1]}</td><td>${q[2]}</td></tr>`).join('')}</tbody>`;
-    $('#knobNow').innerHTML = `With the current design (N = ${d.N.toFixed(2)}, Ln = ${st.Ln}, Q0 = ${st.Q0.toFixed(2)}, f<sub>n0</sub> = ${st.fn0.toFixed(2)}): V<sub>bus</sub> = ${st.VbusFull} V at 60 W, ${vbusClosed(d, 30).toFixed(0)} V at 30 W, ${vbusClosed(d, 15).toFixed(0)} V at 15 W, and the light-load limit is <b>${d.VbusLim.toFixed(0)} V</b>. With the paper's Ln = 5.25 and Q0 = 0.4 the same formula gives a higher limit, about ${(2 * d.N * 48 * Math.sqrt((1 + 1 / 5.25) ** 2 + (0.4 * st.fn0) ** 2)).toFixed(0)} V.`;
+    $('#knobNow').innerHTML = `With the current design (N = ${d.N.toFixed(2)}, Ln = ${st.Ln}, Q0 = ${st.Q0.toFixed(2)}, f<sub>n0</sub> = ${st.fn0.toFixed(2)}): V<sub>bus</sub> = ${st.VbusFull} V at 60 W, ${vbusClosed(d, 30).toFixed(0)} V at 30 W, ${vbusClosed(d, 15).toFixed(0)} V at 15 W, and the highest bus anywhere in the load range is <b>${d.VbusLim.toFixed(0)} V</b> (switching loss ${st.Psw.toFixed(1)} W). Without switching loss the limit would be ${(2 * d.N * 48 * Math.sqrt((1 + 1 / st.Ln) ** 2 + (st.Q0 * st.fn0) ** 2)).toFixed(0)} V.`;
   }
 
   let pend = false;
@@ -669,6 +689,7 @@ I_r, φ: LLC tank current and impedance angle by FHA,  I_r = (4/π)·V_C / |Z_in
   bind('#nk', 'nk', '#nkOut', (v) => v, (v) => v.toFixed(2));
   bind('#fmax', 'fsMax', '#fmaxOut', (v) => v * 1e3, (v) => `${v} kHz`);
   bind('#vbf', 'VbusFull', '#vbfOut', (v) => v, (v) => `${v} V`);
+  bind('#psw', 'Psw', '#pswOut', (v) => v, (v) => `${v.toFixed(1)} W`);
   const setLoop = (fast) => { st.fast = fast; $('#loopFast').setAttribute('aria-pressed', fast); $('#loopSlow').setAttribute('aria-pressed', !fast); sched(); };
   $('#loopFast').addEventListener('click', () => setLoop(true));
   $('#loopSlow').addEventListener('click', () => setLoop(false));
