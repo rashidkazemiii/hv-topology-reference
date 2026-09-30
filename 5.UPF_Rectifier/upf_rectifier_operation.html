@@ -325,7 +325,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
   }
   // one switching period for vin >= 0, starting at t0 (S2 turns off, S1 turns on)
   function cyclePos(d, vin) {
-    const { G11, G12, G22, Vc, T, L2 } = d;
+    const { G11, G12, G22, Vc, T, L2, nk } = d;
     const h = T / 2;
     const s1 = (V1, V2) => G11 * V1 + G12 * V2;
     const s2 = (V1, V2) => G12 * V1 + G22 * V2;
@@ -342,10 +342,12 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     iv.push({ j: 2, a: tb, b: h, Vx: 2 * Vc, V2: -Vc, i1s: 0, s1: a2 });
     iv.push({ j: 3, a: h, b: h + Math.min(ta, h), Vx: 2 * Vc, V2: Vc, i1s: Ia, s1: a3 });
     if (mode === 'IRCM') iv.push({ j: 4, a: h + ta, b: T, Vx: -2 * Vc, V2: Vc, i1s: 0, s1: a4 });
-    else if (h + ta < T - 1e-12) iv.push({ j: 0, a: h + ta, b: T, Vx: 0, V2: Vc, i1s: 0, s1: 0 });
+    // DCM gap: all bridge diodes off, i1 held at 0. L1 still sees the voltage induced by L2:
+    // V1 = M·di2/dt = (M/L2)·V2 = nk·V2, so Vx = vin − V1 = vin − nk·Vc, constant through the gap.
+    else if (h + ta < T - 1e-12) iv.push({ j: 0, a: h + ta, b: T, Vx: vin - nk * Vc, V2: Vc, i1s: 0, s1: 0 });
     let i2 = 0;
     iv.forEach((v) => {
-      v.s2 = v.j === 0 ? v.V2 / L2 : s2(vin - v.Vx, v.V2);
+      v.s2 = s2(vin - v.Vx, v.V2);   // in the DCM gap this equals V2/L2 because V1 = nk·V2
       v.i2s = i2; i2 += v.s2 * (v.b - v.a);
     });
     let area = 0;
@@ -523,7 +525,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     const f = (x) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2) + ' A';
     $('#i1Lbl').textContent = Math.abs(e.i1) > small ? `i1 = ${f(e.i1)} ${e.i1 > 0 ? '→' : '←'}` : 'i1 = 0 (DCM)';
     $('#i2Lbl').textContent = `i2 = ${f(e.i2)} ${e.i2 > 0 ? '→' : '←'}`;
-    $('#vxLbl').textContent = e.Vx ? `Vx = ${e.Vx > 0 ? '+' : '−'}2Vc` : 'Vx floating';
+    $('#vxLbl').textContent = e.v.j === 0 ? `Vx = vin − nk·V2 = ${e.Vx.toFixed(0).replace('-', '−')} V (diodes off)` : `Vx = ${e.Vx > 0 ? '+' : '−'}2Vc`;
     $('#v2Lbl').textContent = `V2 = ${e.V2 > 0 ? '+' : '−'}Vc (${sw.gate ? 'S' + sw.gate + ' on' : 'dead time'})`;
     $('#vinLbl').textContent = `vin = ${C.vin.toFixed(0)} V`;
   }
@@ -644,10 +646,15 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     else if (growing) { head = 'Reverse current builds up (IRCM)'; phase = 'rev-up'; }
     else { head = 'Reverse current returns to zero'; phase = 'rev-down'; }
     const diodes = v.j === 0 ? [] : (mid > 0 ? ['D1', 'D4'] : ['D2', 'D3']);
-    const vx = v.j === 0 ? 'floating' : (v.Vx > 0 ? '+2V<sub>C</sub>' : '−2V<sub>C</sub>');
+    const vx = v.j === 0 ? `${v.Vx.toFixed(0).replace('-', '−')} V` : (v.Vx > 0 ? '+2V<sub>C</sub>' : '−2V<sub>C</sub>');
     const vin = Math.abs(C.vin).toFixed(0);
     let bridgeTxt;
-    if (v.j === 0) bridgeTxt = `All four bridge diodes are off and i<sub>1</sub> = 0. The applied voltage cannot drive a reverse current here because |v<sub>in</sub>| = ${vin} V is above (nk − 2)·V<sub>C</sub> = ${((st.nk - 2) * st.Vc).toFixed(0)} V. This gap is what bends the input current away from a sine.`;
+    if (v.j === 0) {
+      const sgn2 = v.V2 > 0 ? '+' : '−';
+      bridgeTxt = `All four bridge diodes are off and i<sub>1</sub> is held at 0, so di<sub>1</sub>/dt = 0. L1 still has a voltage, though: the changing i<sub>2</sub> induces V<sub>1</sub> = M·di<sub>2</sub>/dt. With di<sub>1</sub>/dt = 0 the second winding equation gives di<sub>2</sub>/dt = V<sub>2</sub>/L2, so V<sub>1</sub> = (M/L2)·V<sub>2</sub> = nk·V<sub>2</sub> = ${sgn2}${(st.nk * st.Vc).toFixed(0)} V. ` +
+        `V<sub>x</sub> is therefore not zero: V<sub>x</sub> = v<sub>in</sub> − nk·V<sub>2</sub> = ${C.vin.toFixed(0).replace('-', '−')} − (${sgn2}${(st.nk * st.Vc).toFixed(0)}) = ${v.Vx.toFixed(0).replace('-', '−')} V, and it stays constant through the whole gap, because v<sub>in</sub>, V<sub>C</sub> and V<sub>2</sub> do not change inside it. ` +
+        `It lies strictly between −2V<sub>C</sub> and +2V<sub>C</sub> (±${(2 * st.Vc).toFixed(0)} V), so both diode pairs stay reverse biased. The lower bound is exactly the DCM condition |v<sub>in</sub>| > (nk − 2)·V<sub>C</sub> = ${((st.nk - 2) * st.Vc).toFixed(0)} V: no reverse current can start. This gap is what bends the input current away from a sine.`;
+    }
     else {
       const v1 = v.Vx > 0 ? `v<sub>in</sub> − 2V<sub>C</sub>` : `v<sub>in</sub> + 2V<sub>C</sub>`;
       bridgeTxt = `i<sub>1</sub> ${mid > 0 ? '> 0' : '< 0'}, so ${dn(diodes, 'd')} conduct and connect the line to the bulk stack with V<sub>x</sub> = ${vx}. L1 sees V<sub>1</sub> = ${v1}. ` +
