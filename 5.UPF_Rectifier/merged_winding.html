@@ -1,0 +1,531 @@
+<title>One Winding for L2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #faf9f7; --panel: #ffffff; --panel2: #f2f1ed;
+  --border: rgba(0,0,0,0.09); --text: #1a1a18; --text2: #55554f; --text3: #8c8c84;
+  --grid: rgba(0,0,0,0.07); --axis: rgba(0,0,0,0.35); --wire: #3a3a36;
+  --core: #d9d5cb; --core-edge: #a9a397;
+  --blue: #1a56db; --blue-dim: rgba(26,86,219,0.10);
+  --green: #0d7a4e; --green-dim: rgba(13,122,78,0.10);
+  --amber: #b76e0a; --amber-dim: rgba(183,110,10,0.12);
+  --purple: #8a3ffc; --purple-dim: rgba(138,63,252,0.10);
+  --red: #c0392b; --red-dim: rgba(192,57,43,0.10);
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+    --border: rgba(255,255,255,0.10); --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+    --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35); --wire: #b9b8b0;
+    --core: #3d3b36; --core-edge: #6a665d;
+    --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14);
+    --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+    --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+    --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+    --red: #ff6b5b; --red-dim: rgba(255,107,91,0.12);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+  --border: rgba(255,255,255,0.10); --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+  --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35); --wire: #b9b8b0;
+  --core: #3d3b36; --core-edge: #6a665d;
+  --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14);
+  --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+  --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+  --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+  --red: #ff6b5b; --red-dim: rgba(255,107,91,0.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15.5px/1.65 var(--sans); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 70px; display: grid; gap: 30px; }
+header { display: grid; gap: 10px; max-width: 76ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+h1 { margin: 0; font-size: clamp(25px, 3.6vw, 33px); line-height: 1.22; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 20px; font-weight: 600; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font: 600 13px/1 var(--mono); color: var(--blue); background: var(--blue-dim); padding: 5px 8px; border-radius: 5px; }
+h3 { margin: 0; font-size: 15.5px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--text2); font-size: 16.5px; }
+section { display: grid; gap: 14px; }
+.prose { display: grid; gap: 12px; max-width: 76ch; }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 5px; }
+.m { font-family: var(--mono); font-size: 0.92em; white-space: nowrap; }
+.eq { font-family: var(--mono); font-size: 14px; background: var(--panel2); border-radius: 8px; padding: 12px 16px; overflow-x: auto; white-space: pre; line-height: 1.8; max-width: 100%; }
+.eq.key { background: var(--green-dim); border-left: 4px solid var(--green); border-radius: 0 8px 8px 0; }
+.live { font: 500 13px/1.6 var(--mono); color: var(--text); background: var(--blue-dim); border-radius: 6px; padding: 8px 12px; max-width: 76ch; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+.note { border-left: 4px solid var(--amber); background: var(--amber-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 76ch; }
+.key { border-left: 4px solid var(--green); background: var(--green-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 76ch; }
+.fig { padding: 12px; display: grid; gap: 8px; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig .scroll { overflow-x: auto; }
+.fig .scroll svg { min-width: 640px; }
+.two .fig .scroll svg { min-width: 0; }
+figcaption { font-size: 13.5px; color: var(--text2); padding: 0 4px; }
+figcaption b { color: var(--text); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl { overflow-x: auto; padding: 4px 0; }
+.tbl table { min-width: 640px; }
+.controls { display: grid; gap: 10px; padding: 12px 16px; }
+.ctl-row { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.slider { display: grid; gap: 2px; min-width: 150px; flex: 1 1 150px; }
+.slider label, .sel label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text2); }
+.slider output { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--blue); }
+.sel { display: grid; gap: 4px; min-width: 170px; }
+select { font: 500 13px var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.seg button { font: 500 12.5px/1 var(--sans); color: var(--text2); background: var(--panel2); border: 0; padding: 8px 11px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #0e1320; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #0e1320; } }
+input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+@media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--panel); padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.tile .k { font: 500 11.5px/1.2 var(--mono); color: var(--text3); letter-spacing: 0.04em; }
+.tile .v { font: 600 17px/1.25 var(--mono); font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12px; color: var(--text2); }
+.pill { display: inline-block; font: 600 12px/1 var(--mono); padding: 4px 7px; border-radius: 999px; }
+.pill.ok { background: var(--green-dim); color: var(--green); }
+.pill.bad { background: var(--red-dim); color: var(--red); }
+svg text { font-family: var(--mono); font-size: 12px; fill: var(--text2); }
+svg .t-title { fill: var(--text); font-weight: 600; font-size: 13px; }
+svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
+.ax { stroke: var(--axis); stroke-width: 1; }
+.gr { stroke: var(--grid); stroke-width: 1; }
+.ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.tip { pointer-events: none; }
+.tip rect { fill: var(--panel); stroke: var(--border); }
+.wire { stroke: var(--wire); stroke-width: 1.6; fill: none; }
+.solid { fill: var(--wire); }
+.term { fill: var(--panel); stroke: var(--wire); stroke-width: 1.6; }
+.c-base { color: var(--text2); } .c-a { color: var(--amber); } .c-c { color: var(--green); }
+td.best { color: var(--green); font-weight: 600; }
+td.worse { color: var(--red); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font: 500 12.5px/1.4 var(--mono); color: var(--text2); padding: 0 4px; }
+.legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.readout { font: 500 12.5px/1.7 var(--mono); color: var(--text2); padding: 0 4px; }
+.readout b { color: var(--text); font-weight: 600; }
+.wrap > *, section > * { min-width: 0; }
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">5.UPF_Rectifier · single-stage converter · magnetic merging</div>
+    <h1>Can L2 and the LLC primary be one winding?</h1>
+    <p class="lede">Yes, but only if the resonant tank moves to the secondary side. This page tests two ways of removing W2 with a time-domain simulation of the full single-stage converter (Dornbirn rectifier + half-bridge LLC on S1–S2, 230 V<sub>ac</sub> → 48 V / 60 W). Variant A keeps the tank on the primary and puts W1 on the LLC transformer. It works, but the current that W2 used to carry does not go away: it moves into Cr and Lr. Variant C moves Lr–Cr to the secondary. Then the primary sees exactly the voltage L2 saw, Lm takes the place of L2, and every Dornbirn formula stays exact.</p>
+  </header>
+
+  <div class="tiles" id="heroTiles"></div>
+
+  <section>
+    <h2><span class="n">1</span>Variant A: W1 as a third winding, tank unchanged</h2>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="schA" viewBox="0 0 1260 440" role="img" aria-label="Variant A schematic: W1 on the LLC transformer, Cr and Lr on the primary side, no W2"></svg></div>
+      <figcaption><b>Variant A.</b> W2 is removed. W1 is wound on the LLC transformer (dashed: same core), so its drive voltage is now the magnetizing voltage v<sub>m</sub> instead of the half-bridge voltage. Cr–Lr stay between the switch node and the primary.</figcaption>
+    </figure>
+    <div class="prose"><p>In the baseline, W1 is coupled to W2, and W2 sits directly across the half bridge (v<sub>2</sub> = v<sub>sw</sub> = ±V<sub>C</sub>). In variant A, W1 sees the transformer's magnetizing voltage v<sub>m</sub>. That voltage is a clean ±N·V<sub>o</sub> only while the output diodes conduct:</p></div>
+    <div class="eq">di1/dt = (v_in − V_x − nk·v_m) / Lσ1                       (was: … − nk·v_sw)
+i_m = i_r + nk·i1 − i_s'                                    KCL at the magnetizing node (primary-referred)
+v_m = ±N·V_o                                                 output diodes conducting
+v_m = [(v_sw − v_Cr)/Lr + nk·(v_in − V_x)/Lσ1] / (1/Lr + nk²/Lσ1 + 1/Lm)     output diodes off
+⟨i_m⟩ ≈ nk·I_in(t)                                           Cr blocks DC in i_r → 50 Hz flux bias in the transformer</div>
+    <div class="note"><b>Correcting my earlier answer.</b> I said the circulating current i<sub>2</sub> would disappear in this arrangement. The simulation shows it does not. The power that W2 used to move between the half bridge and the input loop still has to flow, and in variant A its only path is through Cr–Lr. The tank RMS current rises from 0.40 A to 1.28 A, and the Cr peak voltage from 84 V to 288 V.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>Why: the pump power through W1</h2>
+    <div class="prose"><p>The Dornbirn mechanism works by pushing power through W1 every switching period. In the simulation this is about <b id="pw1"></b>: the half bridge sends it through the magnetic coupling into the input loop, and it returns to the bus through the diode bridge. This is the reason the converter draws a sinusoidal current, and it cannot be removed:</p></div>
+    <div class="eq key">P_W1 = ⟨ nk · v2 · i1 ⟩        v2 = the voltage W1 is coupled to
+baseline:   source of P_W1 = half bridge → W2 directly          (no resonant element in the path)
+variant A:  source of P_W1 = half bridge → Cr → Lr → transformer   (the tank carries it)
+variant C:  source of P_W1 = half bridge → primary directly        (same as baseline, W2 = primary)</div>
+    <div class="prose"><p>So the rule for merging is: <b>the winding W1 is coupled to must sit directly across the half bridge, with no resonant element in series.</b> The resonant tank has to be on the other side of the magnetizing branch, which means the secondary side.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>Variant C: move Lr–Cr to the secondary — the solution</h2>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="schC" viewBox="0 0 1260 440" role="img" aria-label="Variant C schematic: primary directly across the half bridge with Lm equal to L2, W1 on the same core, Lr and Cr on the secondary side"></svg></div>
+      <figcaption><b>Variant C.</b> One core carries the primary N<sub>p</sub>, W1 and the secondary N<sub>s</sub>. The primary sits directly between sw and mid, so its magnetizing inductance Lm <i>is</i> L2. The series resonant pair Lr′–Cr′ is on the secondary side. All the reactive current that W2 carried now flows in the primary, which the half bridge drives directly. The output tank only carries the load current.</figcaption>
+    </figure>
+    <div class="eq">primary voltage = v_sw = ±V_C exactly            → W1 sees the same drive as with a separate W2
+L2 → Lm,   W2 → Np,   nk = N_W1 / Np              → R_in = 8·fs·Lσ1/nk,  I_in = nk·T·v_in/(8·Lσ1)  (unchanged, exact)
+λ_core,pk = nk·Lm·I_in,pk + V_C/(4·fs)            → one magnetizing flux instead of two (coupled inductor + transformer)
+Lr′ = Lr/N² ,  Cr′ = N²·Cr                         → on the 48 V side</div>
+    <div class="live" id="liveC"></div>
+    <div class="prose">
+      <p><b>What changes at light load.</b> With Lm in front of the tank, the output stage is a series resonant converter (SRC) driven by ±V<sub>C</sub>. Lm no longer takes part in the resonance, so the gain cannot rise above 1 and the bus does not have to climb as high to keep 48 V. In the simulation the bus is 438 V at 12 W, against 482 V for the baseline LLC. The switching frequency still follows f<sub>s</sub> ∝ 1/P, because the input side is unchanged.</p>
+      <p><b>Leakage placement.</b> A two-winding transformer can always be written exactly as Lm on the primary terminals followed by all of its leakage on the secondary side (the Γ model). So Lr′ can be the primary–secondary leakage, or a small inductor on the 48 V side. What matters is that the W1–primary coupling keeps its designed leakage Lσ1 (a shunt or a separate choke, as in the integrated-magnetics page), and that no inductance sits in series with the primary itself.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>Waveforms, simulated live in this page</h2>
+    <div class="panel controls" aria-label="Waveform controls">
+      <div class="ctl-row">
+        <span class="seg" role="group" aria-label="Variant">
+          <button type="button" id="vB" aria-pressed="false">Baseline</button>
+          <button type="button" id="vA" aria-pressed="false">A: tank on primary</button>
+          <button type="button" id="vC" aria-pressed="true">C: tank on secondary</button>
+        </span>
+        <div class="sel"><label for="load"><span>Output power</span></label><select id="load"></select></div>
+        <div class="slider"><label for="th"><span>line angle θ</span><output id="thOut">90°</output></label><input id="th" type="range" min="3" max="90" step="1" value="90"></div>
+        <div class="slider" id="lmBox"><label for="lm"><span>Lm (variant C only)</span><output id="lmOut">1.17 mH</output></label><input id="lm" type="range" min="0.3" max="2" step="0.05" value="1.175"></div>
+      </div>
+    </div>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="figW" viewBox="0 0 1000 690" role="img" aria-label="One switching period: voltages, input winding current, tank current, magnetizing current and switch-node current"></svg></div>
+      <div class="readout" id="wRead"></div>
+      <figcaption><b>One switching period at the chosen line angle, in steady state.</b> Each panel uses the same scale for all three variants, so switching between them compares directly. Row 3 is the resonant-tank current, referred to the primary. The dashed line in row 4 is the period average of the magnetizing current: the 50 Hz flux bias, ≈ nk·I<sub>in</sub>. Circles in row 5 mark the turn-off currents; a positive current at the S1 turn-off and a negative one at the S2 turn-off give ZVS. The operating point (f<sub>s</sub>, V<sub>bus</sub>) comes from the full line-cycle solution described in section 8.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>Full load, side by side</h2>
+    <div class="panel tbl"><table id="cmp"></table></div>
+    <div class="prose"><p>Variant C keeps every input-side number of the baseline: the same f<sub>s</sub>, the same bus and the same THD. Its switch current is 10 % lower, because the reactive current and the load current now flow through one winding and partly cancel. Variant A pays for removing W2 with a much larger tank current, three times the Cr voltage and a larger transformer flux. It also loses some THD, because its W1 drive voltage is not an exact square wave.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>Across the load range</h2>
+    <div class="legend"><span><i style="background:var(--text3)"></i>baseline</span><span><i style="background:var(--amber)"></i>A: tank on primary</span><span><i style="background:var(--green)"></i>C: tank on secondary</span></div>
+    <div class="two">
+      <figure class="panel fig"><div class="scroll"><svg id="figV" viewBox="0 0 520 300" role="img" aria-label="Bus voltage against output power"></svg></div><figcaption><b>Bus voltage.</b> C stays lowest at light load because its output stage is an SRC.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figT" viewBox="0 0 520 300" role="img" aria-label="Input current THD against output power"></svg></div><figcaption><b>Input current THD.</b> A loses the exact square drive and degrades at light load; baseline and C stay on the ideal Dornbirn curve.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figF" viewBox="0 0 520 300" role="img" aria-label="Switching frequency against output power"></svg></div><figcaption><b>Switching frequency.</b> Baseline and C follow f<sub>s</sub> ∝ 1/P. A's frequency range is narrower, because its input current also depends on the bus.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figS" viewBox="0 0 520 300" role="img" aria-label="Switch RMS current against output power"></svg></div><figcaption><b>S1 RMS current.</b> C is lowest at every load.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>In variant C, Lm is a free design knob</h2>
+    <div class="prose"><p>The integrated-magnetics page showed analytically that the input side does not depend on L2. Variant C makes Lm play that role, and the simulation confirms the result: across Lm = 0.3–2 mH, f<sub>s</sub>, V<sub>bus</sub>, THD and the tank current do not change at all. Only the core flux and the switch current move, in opposite directions:</p></div>
+    <div class="two">
+      <div class="panel tbl"><table id="lmTbl"></table></div>
+      <figure class="panel fig"><div class="scroll"><svg id="figLm" viewBox="0 0 520 300" role="img" aria-label="Core flux and switch RMS current against Lm in variant C"></svg></div><figcaption><b>The one trade-off left.</b> Lower Lm: less core flux (smaller core), but more magnetizing current (higher S1 RMS, more ZVS margin).</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">8</span>How the simulation works, and its limits</h2>
+    <ul class="prose">
+      <li><b>Circuit model.</b> Ideal switches with 50 % duty and no dead time. Ideal diodes in the input bridge and the output rectifier. Stiff bus capacitors (V<sub>C</sub> each) and a stiff 48 V output. Small resistances for damping: 0.5 Ω in the tank and 1 Ω in the W1 loop. Euler integration with 1000 steps per period, run to periodic steady state.</li>
+      <li><b>Quasi-static over the line.</b> Each line angle (18 per quarter cycle) is solved as its own steady state. The line current is the period average of i<sub>1</sub>, and THD and PF come from those averages. The capacitor midpoint is modeled by forcing the period average of the current into it to zero. That is what puts the bias nk·I<sub>in</sub> into the magnetizing current.</li>
+      <li><b>Operating point.</b> Two conditions are solved together. First, bus power balance over the line cycle: what the diode bridge delivers equals what the half bridge takes. Second, P<sub>o</sub> = target. f<sub>s</sub> is found by a bracketed root search, and V<sub>C</sub> by bisection inside it.</li>
+      <li><b>Same parts everywhere.</b> All variants use the single-stage design: nk = 4, Lσ1 = <span id="ls1"></span>, Lr = <span id="lr"></span>, Cr = <span id="cr"></span>, N = <span id="nt"></span>. Lm is 1.86 mH (LLC, Ln = 8) in the baseline and variant A, and L2 = 1.17 mH in variant C. Variant C's tank on the secondary is the same Lr–Cr referred through N².</li>
+      <li><b>Not modeled.</b> Core and switching losses, dead time and the C<sub>oss</sub> transitions, winding capacitance, and the three-winding leakage structure in detail. As on the other pages, FEM and a prototype are the next step. The model's energy balance closes within about 3 %.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">9</span>Verdict</h2>
+    <div class="key"><b>Use variant C.</b> Put W1 and the LLC primary on one core, with the primary connected directly across the half bridge so that its magnetizing inductance is L2. Move Lr–Cr to the 48 V side. The result is one magnetic core instead of two, the exact Dornbirn input behavior (THD 0.12 %, unity PF), 10 % lower switch RMS current, a lower light-load bus (438 V vs 482 V at 12 W) and a resonant capacitor that sees only about 18 V. Lm remains a free choice for the flux/ZVS trade-off.</div>
+    <div class="prose"><p>For a journal paper, the claim is concrete: <i>"a single-stage UPF converter with one magnetic component, whose input behavior is independent of the magnetizing inductance"</i>. The supporting evidence is the analytic L2-independence result, the pump-power argument for why the tank must sit on the secondary, and these simulations. Variant A is worth one paragraph as the obvious alternative and why it fails.</p></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const DATA = {"design":{"base":{"Ls1":0.0044083,"L2":0.0011746,"N":3.9583,"Lr":0.00023286,"Cr":1.0878e-8,"Lm":0.0018628,"nk":4,"Rr":0.5,"R1":1,"Vm":325.27,"Vo":48},"merged":{"Ls1":0.0044083,"L2":0.0011746,"N":3.9583,"Lr":0.00023286,"Cr":1.0878e-8,"Lm":0.0018628,"nk":4,"Rr":0.5,"R1":1,"Vm":325.27,"Vo":48},"sec":{"Ls1":0.0044083,"L2":0.0011746,"N":3.9583,"Lr":0.00023286,"Cr":1.0878e-8,"Lm":0.0011746,"nk":4,"Rr":0.5,"R1":1,"Vm":325.27,"Vo":48}},"full":{"base":{"fs":100010,"Vbus":380.3,"Vc":190.15,"Pin":59.819,"Po":59.991,"Pw1":-42.969,"thd":0.0012179,"pf":1,"conv":true,"i1rms":0.34131,"irrms":0.39714,"i2rms":1.1067,"swrms":1.0089,"isrms":1.4011,"vCpk":83.845,"irpk":0.57258,"i1pk":0.79463,"zvs":1.8862,"lamTx":0.00051041,"lamMag":0.0022027,"bias":1.4706,"Iin":[[0.0436,0.01621],[0.1309,0.04811],[0.2182,0.07992],[0.3054,0.11002],[0.3927,0.1407],[0.48,0.16998],[0.5672,0.19757],[0.6545,0.22411],[0.7418,0.24823],[0.829,0.27065],[0.9163,0.2923],[1.0036,0.31045],[1.0908,0.32594],[1.1781,0.33979],[1.2654,0.35041],[1.3526,0.35892],[1.4399,0.36521],[1.5272,0.36766]]},"merged":{"fs":98688,"Vbus":368.1,"Vc":184.05,"Pin":61.917,"Po":59.9,"Pw1":-40.475,"thd":0.0054371,"pf":0.99999,"conv":true,"i1rms":0.35042,"irrms":1.2795,"i2rms":0,"swrms":0.90624,"isrms":1.7167,"vCpk":287.7,"irpk":1.9206,"i1pk":0.7989,"zvs":1.4557,"lamTx":0,"lamMag":0.0034342,"bias":1.5947,"Iin":[[0.0436,0.01463],[0.1309,0.04756],[0.2182,0.07908],[0.3054,0.11343],[0.3927,0.14386],[0.48,0.17538],[0.5672,0.20361],[0.6545,0.23257],[0.7418,0.25681],[0.829,0.2809],[0.9163,0.30215],[1.0036,0.32146],[1.0908,0.33539],[1.1781,0.35335],[1.2654,0.36505],[1.3526,0.37248],[1.4399,0.3777],[1.5272,0.38006]]},"sec":{"fs":100000,"Vbus":380.39,"Vc":190.2,"Pin":59.825,"Po":60.074,"Pw1":-43.003,"thd":0.001219,"pf":1,"conv":true,"i1rms":0.34136,"irrms":0.35121,"i2rms":1.107,"swrms":0.90474,"isrms":1.3902,"vCpk":73.223,"irpk":0.50047,"i1pk":0.79477,"zvs":1.6177,"lamTx":0,"lamMag":0.002203,"bias":1.4707,"Iin":[[0.0436,0.01621],[0.1309,0.04812],[0.2182,0.07993],[0.3054,0.11004],[0.3927,0.14072],[0.48,0.17],[0.5672,0.1976],[0.6545,0.22414],[0.7418,0.24826],[0.829,0.27068],[0.9163,0.29233],[1.0036,0.31049],[1.0908,0.32597],[1.1781,0.33983],[1.2654,0.35043],[1.3526,0.35895],[1.4399,0.36525],[1.5272,0.36769]]}},"load":{"base":[{"fs":127430,"Vbus":412.52,"Vc":206.26,"Pin":46.941,"Po":45.365,"Pw1":-42.759,"thd":0.0013765,"pf":1,"conv":true,"i1rms":0.2756,"irrms":0.31728,"i2rms":0.92935,"swrms":0.87573,"isrms":1.0367,"vCpk":51.134,"irpk":0.45939,"i1pk":0.64825,"zvs":1.7905,"lamTx":0.00039333,"lamMag":0.0017605,"bias":1.1543,"PoT":45},{"fs":190850,"Vbus":452.31,"Vc":226.16,"Pin":31.337,"Po":30.4,"Pw1":-36.544,"thd":0.0013216,"pf":1,"conv":true,"i1rms":0.19053,"irrms":0.22174,"i2rms":0.66994,"swrms":0.63748,"isrms":0.71162,"vCpk":22.652,"irpk":0.37753,"i1pk":0.45256,"zvs":1.3855,"lamTx":0.00024887,"lamMag":0.0012028,"bias":0.77181,"PoT":30},{"fs":287230,"Vbus":471.57,"Vc":235.78,"Pin":20.835,"Po":20.044,"Pw1":-27.019,"thd":0.0012807,"pf":1,"conv":true,"i1rms":0.12881,"irrms":0.14987,"i2rms":0.46109,"swrms":0.43811,"isrms":0.47682,"vCpk":11.387,"irpk":0.27681,"i1pk":0.3063,"zvs":0.96858,"lamTx":0.00017801,"lamMag":0.0008056,"bias":0.51113,"PoT":20},{"fs":477370,"Vbus":481.66,"Vc":240.83,"Pin":12.541,"Po":12.008,"Pw1":-17.143,"thd":0.0014403,"pf":1,"conv":true,"i1rms":0.078209,"irrms":0.091268,"i2rms":0.28245,"swrms":0.26795,"isrms":0.28773,"vCpk":4.1168,"irpk":0.17246,"i1pk":0.18626,"zvs":0.59915,"lamTx":0.00010372,"lamMag":0.00048762,"bias":0.30776,"PoT":12}],"merged":[{"fs":106750,"Vbus":416.09,"Vc":208.04,"Pin":48.692,"Po":44.756,"Pw1":-44.138,"thd":0.014367,"pf":0.9999,"conv":true,"i1rms":0.28662,"irrms":1.1114,"i2rms":0,"swrms":0.79759,"isrms":1.4185,"vCpk":237.68,"irpk":1.7432,"i1pk":0.65594,"zvs":1.4351,"lamTx":0,"lamMag":0.0027362,"bias":1.2306,"PoT":45},{"fs":131990,"Vbus":487.08,"Vc":243.54,"Pin":32.119,"Po":29.914,"Pw1":-38.933,"thd":0.017204,"pf":0.99985,"conv":true,"i1rms":0.19317,"irrms":0.78876,"i2rms":0,"swrms":0.58414,"isrms":0.9505,"vCpk":129.93,"irpk":1.2506,"i1pk":0.45637,"zvs":1.1614,"lamTx":0,"lamMag":0.0017431,"bias":0.74577,"PoT":30},{"fs":171070,"Vbus":529.69,"Vc":264.85,"Pin":21.526,"Po":20.074,"Pw1":-29.855,"thd":0.041473,"pf":0.99914,"conv":true,"i1rms":0.13093,"irrms":0.55068,"i2rms":0,"swrms":0.41217,"isrms":0.68879,"vCpk":69.522,"irpk":0.93831,"i1pk":0.31667,"zvs":0.86797,"lamTx":0,"lamMag":0.0011363,"bias":0.46822,"PoT":20},{"fs":250490,"Vbus":553.93,"Vc":276.97,"Pin":13.055,"Po":12.004,"Pw1":-19.537,"thd":0.059967,"pf":0.99821,"conv":true,"i1rms":0.080367,"irrms":0.34436,"i2rms":0,"swrms":0.25906,"isrms":0.44247,"vCpk":31.127,"irpk":0.61833,"i1pk":0.19769,"zvs":0.56375,"lamTx":0,"lamMag":0.00068417,"bias":0.27236,"PoT":12}],"sec":[{"fs":130760,"Vbus":394.41,"Vc":197.2,"Pin":45.764,"Po":44.948,"Pw1":-36.633,"thd":0.0014887,"pf":1,"conv":true,"i1rms":0.26437,"irrms":0.25587,"i2rms":0.87249,"swrms":0.75943,"isrms":1.0128,"vCpk":41.581,"irpk":0.3325,"i1pk":0.61872,"zvs":1.526,"lamTx":0,"lamMag":0.0016997,"bias":1.126,"PoT":45},{"fs":195630,"Vbus":417.98,"Vc":208.99,"Pin":30.579,"Po":30.004,"Pw1":-28.872,"thd":0.0012108,"pf":1,"conv":true,"i1rms":0.18039,"irrms":0.17625,"i2rms":0.61202,"swrms":0.54624,"isrms":0.69766,"vCpk":18.552,"irpk":0.25555,"i1pk":0.42458,"zvs":1.1639,"lamTx":0,"lamMag":0.0011489,"bias":0.75076,"PoT":30},{"fs":293500,"Vbus":431.07,"Vc":215.54,"Pin":20.397,"Po":19.986,"Pw1":-20.932,"thd":0.0013772,"pf":1,"conv":true,"i1rms":0.12169,"irrms":0.11972,"i2rms":0.4186,"swrms":0.37622,"isrms":0.4739,"vCpk":8.2376,"irpk":0.19387,"i1pk":0.28744,"zvs":0.81811,"lamTx":0,"lamMag":0.00077242,"bias":0.5013,"PoT":20},{"fs":488770,"Vbus":437.77,"Vc":218.88,"Pin":12.241,"Po":11.988,"Pw1":-13.091,"thd":0.0014439,"pf":1,"conv":true,"i1rms":0.073475,"irrms":0.072455,"i2rms":0.25458,"swrms":0.22927,"isrms":0.2868,"vCpk":2.9667,"irpk":0.12263,"i1pk":0.17379,"zvs":0.50328,"lamTx":0,"lamMag":0.00046516,"bias":0.3007,"PoT":12}]},"lm":{"merged":[{"fs":98776,"Vbus":368.8,"Vc":184.4,"Pin":61.749,"Po":59.863,"Pw1":-40.593,"thd":0.0055397,"pf":0.99998,"conv":true,"i1rms":0.34965,"irrms":1.2786,"i2rms":0,"swrms":0.90536,"isrms":1.7175,"vCpk":286.69,"irpk":1.9161,"i1pk":0.79725,"zvs":1.4602,"lamTx":0,"lamMag":0.0034341,"bias":1.5942,"Lm":0.001863},{"fs":98749,"Vbus":367.39,"Vc":183.7,"Pin":61.949,"Po":59.787,"Pw1":-40.281,"thd":0.0073279,"pf":0.99997,"conv":true,"i1rms":0.35037,"irrms":1.3533,"i2rms":0,"swrms":0.95754,"isrms":1.7277,"vCpk":301.01,"irpk":2.0089,"i1pk":0.79139,"zvs":1.5811,"lamTx":0,"lamMag":0.0023521,"bias":1.5751,"Lm":0.0012},{"fs":98599,"Vbus":364.31,"Vc":182.15,"Pin":62.12,"Po":60.004,"Pw1":-39.552,"thd":0.0086735,"pf":0.99996,"conv":true,"i1rms":0.35116,"irrms":1.4613,"i2rms":0,"swrms":1.0344,"isrms":1.7389,"vCpk":325.99,"irpk":2.1687,"i1pk":0.78898,"zvs":1.7579,"lamTx":0,"lamMag":0.0017131,"bias":1.5685,"Lm":0.0008},{"fs":98332,"Vbus":358.05,"Vc":179.03,"Pin":62.629,"Po":60.073,"Pw1":-38.076,"thd":0.014589,"pf":0.99989,"conv":true,"i1rms":0.35332,"irrms":1.6572,"i2rms":0,"swrms":1.1731,"isrms":1.7566,"vCpk":371.62,"irpk":2.4814,"i1pk":0.78575,"zvs":2.0674,"lamTx":0,"lamMag":0.0012344,"bias":1.5622,"Lm":0.0005}],"sec":[{"fs":100000,"Vbus":380.39,"Vc":190.2,"Pin":59.825,"Po":60.074,"Pw1":-43.003,"thd":0.001219,"pf":1,"conv":true,"i1rms":0.34136,"irrms":0.35121,"i2rms":1.0145,"swrms":0.84667,"isrms":1.3902,"vCpk":73.223,"irpk":0.50047,"i1pk":0.79477,"zvs":1.4506,"lamTx":0,"lamMag":0.003417,"bias":1.4707,"Lm":0.002},{"fs":100000,"Vbus":380.39,"Vc":190.2,"Pin":59.825,"Po":60.074,"Pw1":-43.003,"thd":0.001219,"pf":1,"conv":true,"i1rms":0.34136,"irrms":0.35121,"i2rms":1.1069,"swrms":0.90469,"isrms":1.3902,"vCpk":73.223,"irpk":0.50047,"i1pk":0.79477,"zvs":1.6175,"lamTx":0,"lamMag":0.0022036,"bias":1.4707,"Lm":0.001175},{"fs":100000,"Vbus":380.39,"Vc":190.2,"Pin":59.825,"Po":60.074,"Pw1":-43.003,"thd":0.001219,"pf":1,"conv":true,"i1rms":0.34136,"irrms":0.35121,"i2rms":1.2127,"swrms":0.97222,"isrms":1.3902,"vCpk":73.223,"irpk":0.50047,"i1pk":0.79477,"zvs":1.8072,"lamTx":0,"lamMag":0.0016521,"bias":1.4707,"Lm":0.0008},{"fs":100000,"Vbus":380.39,"Vc":190.2,"Pin":59.825,"Po":60.074,"Pw1":-43.003,"thd":0.001219,"pf":1,"conv":true,"i1rms":0.34136,"irrms":0.35121,"i2rms":1.4132,"swrms":1.1027,"isrms":1.3902,"vCpk":73.223,"irpk":0.50047,"i1pk":0.79477,"zvs":2.1639,"lamTx":0,"lamMag":0.0012109,"bias":1.4707,"Lm":0.0005},{"fs":100000,"Vbus":380.39,"Vc":190.2,"Pin":59.825,"Po":60.074,"Pw1":-43.003,"thd":0.001219,"pf":1,"conv":true,"i1rms":0.34136,"irrms":0.35121,"i2rms":1.7726,"swrms":1.3424,"isrms":1.3902,"vCpk":73.223,"irpk":0.50047,"i1pk":0.79477,"zvs":2.7978,"lamTx":0,"lamMag":0.00091671,"bias":1.4707,"Lm":0.0003}]}};
+  const MODES = ['base', 'merged', 'sec'], NAMES = ['Baseline', 'A: tank on primary', 'C: tank on secondary'], COL = ['var(--text3)', 'var(--amber)', 'var(--green)'];
+  const P = MODES.map((m) => ({ ...DATA.design[m] }));
+
+  // ---------- the simulator used to produce every number on this page ----------
+  // mode: 0 = baseline (coupled inductor W1-W2 + LLC), 1 = merged (W1 on LLC transformer, tank on primary),
+  //       2 = secondary tank (W1 + primary on one core, Lm = L2, Lr-Cr moved to the secondary side)
+  function period(p, x, vin, Vc, fs, mode, ns = 1000, rec = null) {
+    const merged = mode === 1, sec = mode === 2;
+    const T = 1 / fs, dt = T / ns, NVo = p.N * p.Vo, nk = p.nk;
+    const r = { Iin: 0, Pbr: 0, Phb: 0, Po: 0, Pw1: 0, i1sq: 0, irsq: 0, i2sq: 0, swsq: 0, issq: 0, imMax: -1e9, imMin: 1e9, iLMax: -1e9, iLMin: 1e9, zvs1: 0, zvs2: 0, vCpk: 0, irpk: 0, imAvg: 0, isAvg: 0, i2Avg: 0, ipAvg: 0, i1pk: 0 };
+    for (let j = 0; j < ns; j++) {
+      const t = (j + 0.5) * dt, vsw = t < T / 2 ? Vc : -Vc;
+      let vm, is, i2, isw, v2;
+      if (sec) {
+        // primary straight across sw-mid: magnetizing voltage = vsw. Series tank (referred) on the secondary side.
+        v2 = vsw; vm = vsw;
+        if (x.s === 0) { const vd = vsw - x.vC; if (Math.abs(vd) > NVo) x.s = Math.sign(vd); }
+        if (x.q === 0) { const V1 = vin - nk * v2; if (V1 > 2 * Vc) x.q = 1; else if (V1 < -2 * Vc) x.q = -1; }
+        const di1 = x.q !== 0 ? (vin - 2 * Vc * x.q - p.R1 * x.i1 - nk * v2) / p.Ls1 : 0;
+        if (x.s !== 0) { x.ir += (vsw - x.vC - p.Rr * x.ir - x.s * NVo) / p.Lr * dt; x.vC += x.ir / p.Cr * dt; if (x.s * x.ir < 0) { x.ir = 0; x.s = 0; } }
+        x.i1 += di1 * dt; x.im += vsw / p.Lm * dt;
+        if (x.q !== 0 && x.q * x.i1 < 0) { x.i1 = 0; x.q = 0; }
+        is = x.ir; i2 = x.im - nk * x.i1; isw = i2 + x.ir;           // primary current = magnetizing − reflected W1 + reflected load
+        r.ipAvg += isw * dt;
+      } else {
+        const A = (vsw - x.vC - p.Rr * x.ir) / p.Lr;
+        if (x.s !== 0) vm = x.s * NVo;
+        else {
+          vm = merged && x.q !== 0 ? (A + nk * (vin - 2 * Vc * x.q - p.R1 * x.i1) / p.Ls1) / (1 / p.Lr + nk * nk / p.Ls1 + 1 / p.Lm) : A / (1 / p.Lr + 1 / p.Lm);
+          if (Math.abs(vm) > NVo) { x.s = Math.sign(vm); vm = x.s * NVo; }
+        }
+        v2 = merged ? vm : vsw;                       // voltage that W1 is coupled to
+        if (x.q === 0) { const V1 = vin - nk * v2; if (V1 > 2 * Vc) x.q = 1; else if (V1 < -2 * Vc) x.q = -1; }
+        const di1 = x.q !== 0 ? (vin - 2 * Vc * x.q - p.R1 * x.i1 - nk * v2) / p.Ls1 : 0;
+        x.ir += A * dt - vm / p.Lr * dt; x.vC += x.ir / p.Cr * dt;
+        x.i1 += di1 * dt; x.im += vm / p.Lm * dt;
+        if (!merged) x.iL += vsw / p.L2 * dt;              // iL = i2 + nk·i1 (coupled-inductor magnetizing, W2-referred)
+        if (x.q !== 0 && x.q * x.i1 < 0) { x.i1 = 0; x.q = 0; }
+        const inj = merged ? nk * x.i1 : 0;
+        is = x.ir + inj - x.im;                        // primary-referred output-rectifier current
+        if (x.s !== 0 && x.s * is < 0) { x.s = 0; }
+        if (x.s === 0) { x.im = x.ir + inj; is = 0; }
+        i2 = merged ? 0 : x.iL - nk * x.i1; isw = x.ir + i2;   // current out of the switch node
+      }
+      r.Iin += x.i1 * dt; r.Pbr += (x.q !== 0 ? 2 * Vc * Math.abs(x.i1) : 0) * dt; r.Phb += vsw * isw * dt; r.Po += NVo * Math.abs(is) * dt;
+      r.Pw1 += nk * v2 * x.i1 * dt;
+      r.i1sq += x.i1 * x.i1 * dt; r.irsq += x.ir * x.ir * dt; r.i2sq += i2 * i2 * dt; r.issq += is * is * dt;
+      if (t < T / 2) r.swsq += isw * isw * dt;
+      const mag = mode === 0 ? x.iL : x.im;            // the current that carries the 50 Hz bias
+      r.imMax = Math.max(r.imMax, x.im); r.imMin = Math.min(r.imMin, x.im); r.imAvg += mag * dt; r.isAvg += is * dt; r.i2Avg += i2 * dt;
+      if (mode === 0) { r.iLMax = Math.max(r.iLMax, x.iL); r.iLMin = Math.min(r.iLMin, x.iL); }
+      r.i1pk = Math.max(r.i1pk, Math.abs(x.i1)); r.vCpk = Math.max(r.vCpk, Math.abs(x.vC)); r.irpk = Math.max(r.irpk, Math.abs(x.ir));
+      if (j === ns / 2 - 1) r.zvs1 = isw; if (j === ns - 1) r.zvs2 = isw;
+      if (rec && j % rec.every === 0) rec.out.push({ t, vsw, vm, v2, i1: x.i1, ir: x.ir, im: x.im, iL: x.iL, mag, is, i2, isw, vC: x.vC, Vx: x.q !== 0 ? 2 * Vc * x.q : vin - nk * v2 });
+    }
+    for (const k of Object.keys(r)) if (/Iin|^P|sq$|Avg$/.test(k)) r[k] /= T;
+    // capacitor midpoint: the local average of the switch-node current is zero (charge balance of Cb1/Cb2),
+    // so the magnetizing current of the part W1 is coupled to carries the line-current term nk·I_in
+    if (mode === 0) x.iL -= r.i2Avg;
+    if (sec) x.im -= r.ipAvg;
+    return r;
+  }
+  function steady(p, x, vin, Vc, fs, mode, minP = 20, maxP = 1500) {
+    let r, n = 0, prev = { ...x };
+    for (; n < maxP; n++) {
+      r = period(p, x, vin, Vc, fs, mode);
+      if (n >= minP && Math.abs(x.ir - prev.ir) < 5e-3 && Math.abs(x.vC - prev.vC) < 0.5 && Math.abs(x.im - prev.im) < 5e-3 && Math.abs(x.i1 - prev.i1) < 1e-3 && (mode !== 0 || Math.abs(x.iL - prev.iL) < 2e-3)) break;
+      prev = { ...x };
+    }
+    return r;
+  }
+  const fresh = () => ({ i1: 0, iL: 0, ir: 0, vC: 0, im: 0, q: 0, s: 0 });
+
+  // ---------- helpers ----------
+  const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const nice = (x) => { const e = Math.pow(10, Math.floor(Math.log10(x))), f = x / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; };
+  const ticks = (a, b, n) => { const s = nice((b - a) / n), out = []; for (let v = Math.ceil(a / s - 1e-9) * s; v <= b + 1e-9; v += s) out.push(+v.toFixed(10)); return out; };
+  const poly = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const fmtL = (x) => (x >= 1e-3 ? (x * 1e3).toFixed(2) + ' mH' : (x * 1e6).toFixed(1) + ' µH');
+  const pct = (a, b) => `${a > b ? '+' : '−'}${Math.abs((a / b - 1) * 100).toFixed(0)} %`;
+  const F = DATA.full;
+
+  // ---------- hero tiles ----------
+  const c = F.sec, b = F.base, a = F.merged, l12 = (m) => DATA.load[m].find((q) => q.PoT === 12);
+  $('#heroTiles').innerHTML = [
+    ['Magnetic cores', '1 instead of 2', 'W1, primary and secondary share one core in variant C'],
+    ['THD at 60 W', `${(c.thd * 100).toFixed(2)} %`, `same as the baseline (${(b.thd * 100).toFixed(2)} %); A: ${(a.thd * 100).toFixed(2)} %`],
+    ['S1 RMS', `${c.swrms.toFixed(2)} A`, `${pct(c.swrms, b.swrms)} vs baseline ${b.swrms.toFixed(2)} A`],
+    ['Bus at 12 W', `${l12('sec').Vbus.toFixed(0)} V`, `baseline ${l12('base').Vbus.toFixed(0)} V, A ${l12('merged').Vbus.toFixed(0)} V`],
+    ['Tank current, A vs C', `${a.irrms.toFixed(2)} vs ${c.irrms.toFixed(2)} A`, 'variant A pushes the pump current through Cr–Lr'],
+  ].map(([k, v, t]) => `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${t}</span></div>`).join('');
+  $('#pw1').textContent = `${Math.abs(b.Pw1).toFixed(0)} W at 60 W output (baseline ${Math.abs(b.Pw1).toFixed(1)} W, A ${Math.abs(a.Pw1).toFixed(1)} W, C ${Math.abs(c.Pw1).toFixed(1)} W)`;
+  const pc = P[2];
+  $('#liveC').textContent = `Here: Lm = L2 = ${fmtL(pc.Lm)}, nk = ${pc.nk}, Lσ1 = ${fmtL(pc.Ls1)}. On the secondary: Lr′ = Lr/N² = ${fmtL(pc.Lr / pc.N ** 2)}, Cr′ = N²·Cr = ${(pc.Cr * pc.N ** 2 * 1e9).toFixed(0)} nF, peak Cr′ voltage ${(c.vCpk / pc.N).toFixed(1)} V. One core flux λ = ${(c.lamMag * 1e3).toFixed(2)} mWb·turn, against ${(b.lamMag * 1e3).toFixed(2)} (coupled inductor) + ${(b.lamTx * 1e3).toFixed(2)} (transformer) on two cores in the baseline.`;
+  $('#ls1').textContent = fmtL(P[0].Ls1); $('#lr').textContent = fmtL(P[0].Lr); $('#cr').textContent = (P[0].Cr * 1e9).toFixed(2) + ' nF'; $('#nt').textContent = P[0].N.toFixed(3);
+
+  // ---------- schematics ----------
+  const coilH = (x0, y, nb) => `M${x0},${y} ` + Array.from({ length: nb }, () => 'a9,9 0 0 1 18,0').join(' ');
+  const coilV = (x, y0, nb, right) => `M${x},${y0} ` + Array.from({ length: nb }, () => `a9,9 0 0 ${right ? 1 : 0} 0,18`).join(' ');
+  const cs = (col, w = 2.4) => `stroke:${col};stroke-width:${w}`;
+  function drawSch(id, variant) {
+    const TOP = 60, BOT = 390, MID = 225, YT = MID - 70, YB = MID + 70;
+    const XS = 50, XP = 350, XN = 420, XC = 510, XH = 700, XTX = 950, XSEC = 986;
+    const C = variant === 'C', XDA = C ? 1130 : 1050, XDB = C ? 1180 : 1110, XCO = C ? 1225 : 1160;
+    const G = 'var(--green)', B = 'var(--blue)', A = 'var(--amber)', Pu = 'var(--purple)';
+    const diode = (x, yc, lab) => `<polygon class="solid" points="${x - 9},${yc + 8} ${x + 9},${yc + 8} ${x},${yc - 8}"/><path class="wire" d="M${x - 9},${yc - 8} H${x + 9}"/><text x="${x + 13}" y="${yc + 4}">${lab}</text>`;
+    const cap = (x, yc, lab) => `<path class="wire" style="stroke-width:3" d="M${x - 16},${yc - 5} H${x + 16} M${x - 16},${yc + 5} H${x + 16}"/><text x="${x + 22}" y="${yc + 4}" class="lbl">${lab}</text>`;
+    const fet = (x, yc, lab) => { const xt = x - 14; return `<path class="wire" d="M${x},${yc - 40} V${yc - 22} H${xt} V${yc - 14} M${xt},${yc + 14} V${yc + 22} H${x} V${yc + 40} M${xt - 8},${yc - 15} V${yc + 15} M${xt - 14},${yc - 11} V${yc + 11} M${xt - 14},${yc} H${xt - 26}"/><polygon class="solid" points="${x + 12},${yc - 6} ${x + 22},${yc - 6} ${x + 17},${yc + 4}"/><path class="wire" d="M${x},${yc - 22} H${x + 17} V${yc + 22} H${x} M${x + 12},${yc + 4} H${x + 22}"/><text x="${xt - 30}" y="${yc + 5}" text-anchor="end" class="lbl">${lab}</text>`; };
+    let s = `
+      <path class="wire" d="M${XS},${YT} V${MID - 22} M${XS},${MID + 22} V${YB}"/>
+      <circle class="wire" cx="${XS}" cy="${MID}" r="22"/><path class="wire" d="M${XS - 12},${MID} c4,-11 8,-11 12,0 s8,11 12,0"/>
+      <text x="${XS - 30}" y="${MID + 5}" text-anchor="end" class="lbl">v<tspan dy="3" font-size="10">in</tspan></text>
+      <path class="wire" d="M${XS},${YT} H92 M146,${YT} H176 M248,${YT} H${XP}"/>
+      <path class="wire" style="${cs(A)}" d="${coilH(92, YT, 3)}"/><text x="119" y="${YT - 18}" text-anchor="middle" class="lbl" style="fill:${A}">Lσ1</text>
+      <path class="wire" style="${cs(G)}" d="${coilH(176, YT, 4)}"/><circle cx="181" cy="${YT + 11}" r="3" fill="${G}"/><text x="212" y="${YT + 30}" text-anchor="middle" class="lbl" style="fill:${G}">W1</text>
+      <text x="300" y="${YT - 8}" text-anchor="middle" style="fill:var(--text)">i₁→</text>
+      <path class="wire" style="stroke:${G};stroke-dasharray:5 4;stroke-width:1.4" d="M212,${YT - 14} V24 H${XTX + 18} V${MID - 12}"/>
+      <text x="${(212 + XTX) / 2}" y="18" text-anchor="middle" style="fill:${G}">W1 is wound on the same core as the transformer</text>
+      <path class="wire" d="M${XS},${YB} H${XP - 6} a6,6 0 0 1 12,0 H${XN}"/>
+      <path class="wire" d="M${XP},${TOP} V${BOT} M${XN},${TOP} V${BOT} M${XP},${TOP} H${XH} M${XP},${BOT} H${XH}"/>
+      ${diode(XP, 105, 'D1')}${diode(XN, 105, 'D2')}${diode(XP, 330, 'D3')}${diode(XN, 330, 'D4')}
+      <path class="wire" d="M${XC},${TOP} V${MID - 95} M${XC},${MID - 85} V${MID + 85} M${XC},${MID + 95} V${BOT}"/>
+      ${cap(XC, MID - 90, 'Cb1')}${cap(XC, MID + 90, 'Cb2')}
+      <path class="wire" d="M${XH},${TOP} V${MID - 105} M${XH},${MID - 25} V${MID + 25} M${XH},${MID + 105} V${BOT}"/>
+      ${fet(XH, MID - 65, 'S1')}${fet(XH, MID + 65, 'S2')}
+      <circle class="solid" cx="${XC + 12}" cy="${MID}" r="3.5"/><circle class="solid" cx="${XH}" cy="${MID}" r="3.5"/>
+      <path class="wire" d="M${XC + 12},${MID} V${MID + 72}"/>
+      <text x="${XC + 18}" y="${MID - 8}">mid</text><text x="${XH + 8}" y="${MID - 8}">sw</text>
+      <text x="${XC + 70}" y="${MID + 4}" text-anchor="middle" style="fill:var(--text3)">no W2</text>
+      <path class="wire" d="M${XTX},${MID + 72} H${XH + 6} a6,6 0 0 0 -12,0 H${XC + 12}"/>
+      <path class="wire" style="${cs(B)}" d="${coilV(XTX, MID, 4, true)}"/>
+      <path class="wire" d="M${XTX - 30},${MID} V${MID + 72} M${XTX - 30},${MID} H${XTX} M${XTX - 30},${MID + 72} H${XTX}"/>
+      <path class="wire" style="${cs(B)}" d="${coilV(XTX - 30, MID, 4, false)}"/>
+      <text x="${XTX - 44}" y="${MID + 40}" text-anchor="end" class="lbl" style="fill:${B}">${C ? 'Lm = L2' : 'Lm'}</text>
+      <path class="wire" style="stroke:${B}" d="M${XTX + 16},${MID - 6} V${MID + 78} M${XTX + 20},${MID - 6} V${MID + 78}"/>
+      <path class="wire" style="${cs(B)}" d="${coilV(XSEC, MID, 4, false)}"/>
+      <text x="${XTX + 18}" y="${MID + 100}" text-anchor="middle" style="fill:${B}">Np : Ns</text>
+      ${diode(XDA, 140, '')}${diode(XDB, 140, '')}${diode(XDA, 330, '')}${diode(XDB, 330, '')}
+      <path class="wire" d="M${XSEC},${MID + 72} H${XDA - 6} a6,6 0 0 1 12,0 H${XDB} M${XDA},${TOP + 40} V${BOT - 40} M${XDB},${TOP + 40} V${BOT - 40} M${XDA},${TOP + 40} H${XCO + 20} M${XDA},${BOT - 40} H${XCO + 20} M${XCO},${TOP + 40} V${MID + 30} M${XCO},${MID + 42} V${BOT - 40}"/>
+      <path class="wire" style="stroke-width:3" d="M${XCO - 14},${MID + 30} H${XCO + 14} M${XCO - 14},${MID + 42} H${XCO + 14}"/>
+      <text x="${XCO}" y="${MID + 14}" text-anchor="middle" class="lbl">Co</text><text x="${XCO}" y="${TOP + 30}" text-anchor="middle" class="lbl">48 V</text>`;
+    if (!C) s += `
+      <path class="wire" d="M${XH},${MID} H765 M775,${MID} H810 M882,${MID} H${XTX}"/>
+      <path class="wire" style="stroke-width:3;stroke:${A}" d="M765,${MID - 15} V${MID + 15} M775,${MID - 15} V${MID + 15}"/>
+      <text x="770" y="${MID - 22}" text-anchor="middle" class="lbl" style="fill:${A}">Cr</text>
+      <path class="wire" style="${cs(A)}" d="${coilH(810, MID, 4)}"/><text x="846" y="${MID - 18}" text-anchor="middle" class="lbl" style="fill:${A}">Lr</text>
+      <text x="790" y="${MID + 34}" text-anchor="middle" style="fill:${A}">pump current flows here</text>
+      <path class="wire" d="M${XSEC},${MID} H${XDA}"/>`;
+    else s += `
+      <path class="wire" d="M${XH},${MID} H${XTX}"/>
+      <text x="835" y="${MID - 30}" text-anchor="middle" style="fill:${G}">primary across sw–mid</text><text x="835" y="${MID - 12}" text-anchor="middle" style="fill:${G}">v = ±V<tspan dy="3" font-size="9">C</tspan></text>
+      <path class="wire" d="M${XSEC},${MID} H1004 M1058,${MID} H1070 M1080,${MID} H${XDA}"/>
+      <path class="wire" style="${cs(Pu)}" d="${coilH(1004, MID, 3)}"/><text x="1031" y="${MID - 18}" text-anchor="middle" class="lbl" style="fill:${Pu}">Lr′</text>
+      <path class="wire" style="stroke-width:3;stroke:${Pu}" d="M1070,${MID - 15} V${MID + 15} M1080,${MID - 15} V${MID + 15}"/>
+      <text x="1075" y="${MID - 22}" text-anchor="middle" class="lbl" style="fill:${Pu}">Cr′</text>
+      <text x="1042" y="${MID - 44}" text-anchor="middle" style="fill:${Pu}">tank on 48 V side</text>`;
+    $(id).innerHTML = s;
+  }
+  drawSch('#schA', 'A'); drawSch('#schC', 'C');
+
+  // ---------- comparison table ----------
+  const rows = [
+    ['Switching frequency', (q) => q.fs / 1e3, 'kHz', 1, null],
+    ['Bus voltage', (q) => q.Vbus, 'V', 0, null],
+    ['Input current THD', (q) => q.thd * 100, '%', 2, 'low'],
+    ['Power factor', (q) => q.pf, '', 4, null],
+    ['Power through W1, P_W1', (q) => Math.abs(q.Pw1), 'W', 1, null],
+    ['S1 RMS current', (q) => q.swrms, 'A', 3, 'low'],
+    ['Tank RMS current (Cr, Lr; primary-referred)', (q) => q.irrms, 'A', 3, 'low'],
+    ['Cr peak voltage (primary-referred)', (q) => q.vCpk, 'V', 0, 'low'],
+    ['W2 RMS (baseline only)', (q) => q.i2rms, 'A', 3, null, (m) => m === 0],
+    ['Secondary RMS (48 V side)', (q) => q.isrms, 'A', 2, 'low'],
+    ['Input winding W1 RMS', (q) => q.i1rms, 'A', 3, null],
+    ['Peak flux linkage, magnetizing part carrying the bias', (q) => q.lamMag * 1e3, 'mWb·t', 2, null],
+    ['Peak flux linkage, separate LLC transformer', (q) => q.lamTx * 1e3, 'mWb·t', 2, null, (m) => m === 0],
+    ['50 Hz bias current in that magnetizing branch', (q) => q.bias, 'A', 2, null],
+    ['Worst turn-off current (ZVS margin)', (q) => q.zvs, 'A', 2, null],
+    ['Magnetic cores', () => null, '', 0, null],
+  ];
+  const fq = MODES.map((m) => F[m]);
+  $('#cmp').innerHTML = `<thead><tr><th>At 60 W</th>${NAMES.map((n, i) => `<th style="color:${COL[i]}">${n}</th>`).join('')}</tr></thead><tbody>${rows.map(([lab, f, u, dg, better, only]) => {
+    if (lab === 'Magnetic cores') return `<tr><td>${lab}</td><td class="num">2 + Lr (coupled inductor, transformer)</td><td class="num">1 + Lr (transformer with W1)</td><td class="num best">1 (Lr′ can be leakage)</td></tr>`;
+    const v = fq.map(f), base = v[0];
+    return `<tr><td>${lab}</td>${v.map((x, i) => {
+      if (only && !only(i)) return '<td class="num">—</td>';
+      let cls = '';
+      if (better === 'low' && i > 0) cls = x < base * 0.97 ? 'best' : x > base * 1.05 ? 'worse' : '';
+      return `<td class="num ${cls}">${x.toFixed(dg)} ${u}${i > 0 && better ? ` <span style="color:var(--text3)">(${pct(x, base)})</span>` : ''}</td>`;
+    }).join('')}</tr>`;
+  }).join('')}</tbody>`;
+
+  // ---------- load sweep charts ----------
+  const loadSeries = (f) => MODES.map((m) => [[60, f(F[m])], ...DATA.load[m].map((q) => [q.PoT, f(q)])].sort((u, v) => u[0] - v[0]));
+  function lineChart(id, series, yl, fmt, yMin = null) {
+    const svg = $(id), fr = { x0: 60, x1: 500, y0: 30, y1: 250 };
+    const all = series.flat().map((p) => p[1]), lo = yMin ?? Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.12 || 1;
+    const y0 = yMin ?? lo - pad, y1 = hi + pad;
+    const X = lin(10, 62, fr.x0, fr.x1), Y = lin(y0, y1, fr.y1, fr.y0);
+    let h = ticks(y0, y1, 5).map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(v)}</text>`).join('');
+    h += [12, 20, 30, 45, 60].map((v) => `<text x="${X(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}</text>`).join('');
+    h += `<line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/><text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">P_o (W)</text><text x="${fr.x0}" y="${fr.y0 - 12}" class="t-title">${yl}</text>`;
+    series.forEach((s, i) => {
+      h += `<polyline class="ln" style="stroke:${COL[i]}" points="${poly(s.map(([x, y]) => [X(x), Y(y)]))}"/>`;
+      h += s.map(([x, y]) => `<circle cx="${X(x)}" cy="${Y(y)}" r="3.5" fill="${COL[i]}"><title>${NAMES[i]}: ${x} W → ${fmt(y)}</title></circle>`).join('');
+    });
+    svg.innerHTML = h;
+  }
+  lineChart('#figV', loadSeries((q) => q.Vbus), 'bus voltage (V)', (v) => v.toFixed(0));
+  lineChart('#figT', loadSeries((q) => q.thd * 100), 'input current THD (%)', (v) => v.toFixed(1), 0);
+  lineChart('#figF', loadSeries((q) => q.fs / 1e3), 'switching frequency (kHz)', (v) => v.toFixed(0), 0);
+  lineChart('#figS', loadSeries((q) => q.swrms), 'S1 RMS current (A)', (v) => v.toFixed(2), 0);
+
+  // ---------- Lm sweep (variant C) ----------
+  const LM = DATA.lm.sec;
+  $('#lmTbl').innerHTML = `<thead><tr><th>Lm</th><th>λ peak</th><th>S1 RMS</th><th>ZVS</th><th>THD</th><th>V<sub>bus</sub></th></tr></thead><tbody>${LM.map((q) => `<tr><td class="num">${fmtL(q.Lm)}</td><td class="num">${(q.lamMag * 1e3).toFixed(2)} mWb·t</td><td class="num">${q.swrms.toFixed(3)} A</td><td class="num">${q.zvs.toFixed(2)} A</td><td class="num">${(q.thd * 100).toFixed(2)} %</td><td class="num">${q.Vbus.toFixed(0)} V</td></tr>`).join('')}</tbody>`;
+  (() => {
+    const svg = $('#figLm'), fr = { x0: 60, x1: 460, y0: 30, y1: 250 };
+    const X = lin(0.2, 2.1, fr.x0, fr.x1), Yl = lin(0, 4, fr.y1, fr.y0), Ys = lin(0, 1.6, fr.y1, fr.y0);
+    let h = ticks(0, 4, 4).map((v) => `<line class="gr" x1="${fr.x0}" y1="${Yl(v)}" x2="${fr.x1}" y2="${Yl(v)}"/><text x="${fr.x0 - 8}" y="${Yl(v) + 4}" text-anchor="end" style="fill:var(--blue)">${v}</text><text x="${fr.x1 + 8}" y="${Yl(v) + 4}" style="fill:var(--red)">${(v * 0.4).toFixed(1)}</text>`).join('');
+    h += [0.3, 0.5, 0.8, 1.2, 1.6, 2.0].map((v) => `<text x="${X(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}</text>`).join('');
+    h += `<line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/><text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">Lm (mH)</text>`;
+    h += `<text x="${fr.x0}" y="${fr.y0 - 12}" class="t-title" style="fill:var(--blue)">λ peak (mWb·turn)</text><text x="${fr.x1 + 30}" y="${fr.y0 - 12}" text-anchor="end" class="t-title" style="fill:var(--red)">S1 RMS (A)</text>`;
+    const pl = LM.map((q) => [X(q.Lm * 1e3), Yl(q.lamMag * 1e3)]), ps = LM.map((q) => [X(q.Lm * 1e3), Ys(q.swrms)]);
+    h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(pl)}"/><polyline class="ln" style="stroke:var(--red)" points="${poly(ps)}"/>`;
+    h += LM.map((q, i) => `<circle cx="${pl[i][0]}" cy="${pl[i][1]}" r="3.5" fill="var(--blue)"><title>Lm ${fmtL(q.Lm)}: λ ${(q.lamMag * 1e3).toFixed(2)} mWb·t</title></circle><circle cx="${ps[i][0]}" cy="${ps[i][1]}" r="3.5" fill="var(--red)"><title>Lm ${fmtL(q.Lm)}: S1 ${q.swrms.toFixed(3)} A</title></circle>`).join('');
+    svg.innerHTML = h;
+  })();
+
+  // ---------- live waveforms ----------
+  const st = { mode: 2, Po: 60, th: 90, Lm: P[2].Lm };
+  const loads = [60, 45, 30, 20, 12];
+  $('#load').innerHTML = loads.map((v) => `<option value="${v}">${v} W</option>`).join('');
+  const opAt = (m, Po) => (Po === 60 ? F[MODES[m]] : DATA.load[MODES[m]].find((q) => q.PoT === Po));
+  const warm = {};
+  function simAll() {
+    const vin = P[0].Vm * Math.sin(st.th * Math.PI / 180);
+    return [0, 1, 2].map((m) => {
+      const op = opAt(m, st.Po), p = m === 2 ? { ...P[2], Lm: st.Lm } : P[m], key = `${m}|${st.Po}|${m === 2 ? st.Lm : ''}`;
+      const x = warm[key] ? { ...warm[key] } : fresh();
+      steady(p, x, vin, op.Vbus / 2, op.fs, m, warm[key] ? 20 : 300);
+      warm[key] = { ...x };
+      const rec = { every: 2, out: [] }, r = period(p, x, vin, op.Vbus / 2, op.fs, m, 1000, rec);
+      return { op, r, w: rec.out, T: 1 / op.fs, p };
+    });
+  }
+  function drawW() {
+    const S = simAll(), cur = S[st.mode], svg = $('#figW');
+    const rowsW = [
+      { lab: 'voltages (V)', tr: [['vsw', 'var(--text3)', 'v_sw'], ['v2', 'var(--blue)', 'v2 (W1 drive)']] },
+      { lab: 'input winding i₁ (A)', tr: [['i1', 'var(--amber)', 'i₁']] },
+      { lab: 'tank current i_r (A)', tr: [['ir', 'var(--purple)', 'i_r (Cr, Lr)']] },
+      { lab: 'magnetizing, bias-carrying (A)', tr: [['mag', 'var(--green)', 'i_mag']] },
+      { lab: 'switch-node current (A)', tr: [['isw', 'var(--red)', 'i_sw']] },
+    ];
+    const fr = { x0: 70, x1: 860, top: 22, h: 108, gap: 26 };
+    let h = '';
+    rowsW.forEach((row, k) => {
+      const keys = row.tr.map((t) => t[0]);
+      let mx = 0; S.forEach((s) => s.w.forEach((o) => keys.forEach((kk) => { mx = Math.max(mx, Math.abs(o[kk])); })));
+      mx = nice(mx * 1.05);
+      const yT = fr.top + k * (fr.h + fr.gap), Y = lin(-mx, mx, yT + fr.h, yT), X = lin(0, cur.T, fr.x0, fr.x1);
+      h += `<text x="${fr.x0}" y="${yT - 6}" class="t-title">${row.lab}</text>`;
+      h += [-mx, -mx / 2, 0, mx / 2, mx].map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${+v.toFixed(2)}</text>`).join('');
+      h += `<line class="gr" x1="${X(cur.T / 2)}" y1="${yT}" x2="${X(cur.T / 2)}" y2="${yT + fr.h}" style="stroke-dasharray:3 3"/>`;
+      row.tr.forEach(([kk, col, nm], j) => {
+        h += `<polyline class="ln" style="stroke:${col};stroke-width:${kk === 'vsw' ? 1.4 : 2}" points="${poly(cur.w.map((o) => [X(o.t), Y(o[kk])]))}"/>`;
+        h += `<text x="${fr.x1 + 10}" y="${yT + 14 + j * 16}" style="fill:${col}">${nm}</text>`;
+      });
+      if (row.tr[0][0] === 'mag') { const avg = cur.r.imAvg; h += `<line x1="${fr.x0}" y1="${Y(avg)}" x2="${fr.x1}" y2="${Y(avg)}" style="stroke:var(--green);stroke-dasharray:6 4"/><text x="${fr.x1 + 10}" y="${yT + 46}" style="fill:var(--green)">avg ${avg.toFixed(2)} A</text><text x="${fr.x1 + 10}" y="${yT + 62}">nk·I_in ${(cur.p.nk * cur.r.Iin).toFixed(2)} A</text>`; }
+      if (row.tr[0][0] === 'isw') { const z1 = cur.r.zvs1, z2 = cur.r.zvs2; h += `<circle cx="${X(cur.T / 2)}" cy="${Y(z1)}" r="5" fill="none" stroke="var(--text)" stroke-width="2"/><circle cx="${X(cur.T)}" cy="${Y(z2)}" r="5" fill="none" stroke="var(--text)" stroke-width="2"/><text x="${fr.x1 + 10}" y="${yT + 46}">off S1: ${z1.toFixed(2)} A</text><text x="${fr.x1 + 10}" y="${yT + 62}">off S2: ${z2.toFixed(2)} A</text>`; }
+      if (k === rowsW.length - 1) { h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * cur.T)}" y="${yT + fr.h + 18}" text-anchor="middle">${(f * cur.T * 1e6).toFixed(1)}</text>`).join(''); h += `<text x="${(fr.x0 + fr.x1) / 2}" y="${yT + fr.h + 36}" text-anchor="middle">t (µs) — S1 on in the first half, S2 in the second</text>`; }
+    });
+    svg.innerHTML = h;
+    const vin = P[0].Vm * Math.sin(st.th * Math.PI / 180);
+    $('#wRead').innerHTML = `<b>${NAMES[st.mode]}</b>, P_o = ${st.Po} W: f<sub>s</sub> = ${(cur.op.fs / 1e3).toFixed(1)} kHz, V<sub>bus</sub> = ${cur.op.Vbus.toFixed(0)} V, v<sub>in</sub> = ${vin.toFixed(0)} V. Local input current <b>${cur.r.Iin.toFixed(3)} A</b>. Tank RMS in this period: ` +
+      S.map((s, i) => `<span style="color:${COL[i]}">${['B', 'A', 'C'][i]} ${Math.sqrt(s.r.irsq).toFixed(2)} A</span>`).join(' · ') + `. Switch-node RMS: ` + S.map((s, i) => `<span style="color:${COL[i]}">${['B', 'A', 'C'][i]} ${Math.sqrt(2 * s.r.swsq).toFixed(2)} A</span>`).join(' · ') + '.';
+    $('#lmBox').style.opacity = st.mode === 2 ? 1 : 0.45;
+  }
+  const setMode = (m) => { st.mode = m; ['#vB', '#vA', '#vC'].forEach((id, i) => $(id).setAttribute('aria-pressed', i === m)); drawW(); };
+  $('#vB').addEventListener('click', () => setMode(0)); $('#vA').addEventListener('click', () => setMode(1)); $('#vC').addEventListener('click', () => setMode(2));
+  $('#load').addEventListener('change', (e) => { st.Po = +e.target.value; drawW(); });
+  let raf = 0; const later = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawW); };
+  $('#th').addEventListener('input', (e) => { st.th = +e.target.value; $('#thOut').textContent = `${st.th}°`; later(); });
+  $('#lm').addEventListener('input', (e) => { st.Lm = +e.target.value * 1e-3; $('#lmOut').textContent = `${(+e.target.value).toFixed(2)} mH`; later(); });
+  drawW();
+})();
+</script>
