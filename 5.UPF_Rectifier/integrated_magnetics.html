@@ -1,0 +1,458 @@
+<title>Integrated Magnetics Design</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #faf9f7; --panel: #ffffff; --panel2: #f2f1ed;
+  --border: rgba(0,0,0,0.09); --text: #1a1a18; --text2: #55554f; --text3: #8c8c84;
+  --grid: rgba(0,0,0,0.07); --axis: rgba(0,0,0,0.35); --wire: #3a3a36;
+  --core: #d9d5cb; --core-edge: #a9a397;
+  --blue: #1a56db; --blue-dim: rgba(26,86,219,0.10);
+  --green: #0d7a4e; --green-dim: rgba(13,122,78,0.10);
+  --amber: #b76e0a; --amber-dim: rgba(183,110,10,0.12);
+  --purple: #8a3ffc; --purple-dim: rgba(138,63,252,0.10);
+  --red: #c0392b; --red-dim: rgba(192,57,43,0.10);
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+    --border: rgba(255,255,255,0.10); --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+    --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35); --wire: #b9b8b0;
+    --core: #3d3b36; --core-edge: #6a665d;
+    --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14);
+    --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+    --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+    --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+    --red: #ff6b5b; --red-dim: rgba(255,107,91,0.12);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+  --border: rgba(255,255,255,0.10); --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+  --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35); --wire: #b9b8b0;
+  --core: #3d3b36; --core-edge: #6a665d;
+  --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14);
+  --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+  --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+  --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+  --red: #ff6b5b; --red-dim: rgba(255,107,91,0.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15.5px/1.65 var(--sans); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 70px; display: grid; gap: 30px; }
+header { display: grid; gap: 10px; max-width: 76ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+h1 { margin: 0; font-size: clamp(25px, 3.6vw, 33px); line-height: 1.22; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 20px; font-weight: 600; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font: 600 13px/1 var(--mono); color: var(--blue); background: var(--blue-dim); padding: 5px 8px; border-radius: 5px; }
+h3 { margin: 0; font-size: 15.5px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--text2); font-size: 16.5px; }
+section { display: grid; gap: 14px; }
+.prose { display: grid; gap: 12px; max-width: 76ch; }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 5px; }
+.m { font-family: var(--mono); font-size: 0.92em; white-space: nowrap; }
+.eq { font-family: var(--mono); font-size: 14px; background: var(--panel2); border-radius: 8px; padding: 12px 16px; overflow-x: auto; white-space: pre; line-height: 1.8; max-width: 100%; }
+.eq.key { background: var(--green-dim); border-left: 4px solid var(--green); border-radius: 0 8px 8px 0; }
+.live { font: 500 13px/1.6 var(--mono); color: var(--text); background: var(--blue-dim); border-radius: 6px; padding: 8px 12px; max-width: 76ch; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+.note { border-left: 4px solid var(--amber); background: var(--amber-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 76ch; }
+.key { border-left: 4px solid var(--green); background: var(--green-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 76ch; }
+.fig { padding: 12px; display: grid; gap: 8px; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig .scroll { overflow-x: auto; }
+.fig .scroll svg { min-width: 640px; }
+.two .fig .scroll svg { min-width: 0; }
+figcaption { font-size: 13.5px; color: var(--text2); padding: 0 4px; }
+figcaption b { color: var(--text); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl { overflow-x: auto; padding: 4px 0; }
+.tbl table { min-width: 640px; }
+.controls { display: grid; gap: 10px; padding: 12px 16px; }
+.ctl-row { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.slider { display: grid; gap: 2px; min-width: 150px; flex: 1 1 150px; }
+.slider label, .sel label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text2); }
+.slider output { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--blue); }
+.sel { display: grid; gap: 4px; min-width: 170px; }
+select { font: 500 13px var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.seg button { font: 500 12.5px/1 var(--sans); color: var(--text2); background: var(--panel2); border: 0; padding: 8px 11px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #0e1320; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #0e1320; } }
+input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+@media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--panel); padding: 10px 12px; display: grid; gap: 2px; align-content: start; }
+.tile .k { font: 500 11.5px/1.2 var(--mono); color: var(--text3); letter-spacing: 0.04em; }
+.tile .v { font: 600 17px/1.25 var(--mono); font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12px; color: var(--text2); }
+.pill { display: inline-block; font: 600 12px/1 var(--mono); padding: 4px 7px; border-radius: 999px; }
+.pill.ok { background: var(--green-dim); color: var(--green); }
+.pill.bad { background: var(--red-dim); color: var(--red); }
+svg text { font-family: var(--mono); font-size: 12px; fill: var(--text2); }
+svg .t-title { fill: var(--text); font-weight: 600; font-size: 13px; }
+svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
+.ax { stroke: var(--axis); stroke-width: 1; }
+.gr { stroke: var(--grid); stroke-width: 1; }
+.ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.tip { pointer-events: none; }
+.tip rect { fill: var(--panel); stroke: var(--border); }
+.wire { stroke: var(--wire); stroke-width: 1.6; fill: none; }
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">5.UPF_Rectifier · single-stage converter · magnetic design</div>
+    <h1>One core for the coupled inductor, the LLC transformer and Lr</h1>
+    <p class="lede">The single-stage converter (Dornbirn rectifier + half-bridge LLC on S1–S2) has three magnetic parts: the coupled inductor L1–L2, the LLC transformer and the resonant inductor Lr. This page first reduces the coupled inductor to what its job really needs. Then it puts it on the same E-core as the transformer, using two flux modes that do not couple, and solves for turns, air gaps, shunts, flux density and losses. The electrical values come from the single-stage design: 230 V<sub>ac</sub>, 48 V / 60 W, bus 380 V at full load, f<sub>s</sub> = 100 kHz, nk = 4.</p>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span>What the coupled inductor really is</h2>
+    <div class="prose"><p>A coupled inductor (L1, L2, M) is equivalent to an ideal transformer N1:N2 with a magnetizing inductance on one side and a leakage inductance on the other. Put all leakage on the input side W1 and choose the turns ratio N1/N2 = nk:</p></div>
+    <div class="eq">L1 = nk²·L2 + Lσ1        M = nk·L2        nk = M/L2 = N1/N2
+Lσ1 = L1 − M²/L2 = L1·(1 − k²) = det/L2        (det = L1·L2 − M²)</div>
+    <div class="prose"><p>Now rewrite every rectifier formula of the ECCE paper with these two parameters. Γ<sub>11</sub> = L2/det = 1/Lσ1 and Γ<sub>12</sub> = −M/det = −nk/Lσ1, so:</p></div>
+    <div class="eq key">input slope:        di1/dt = (V1 − nk·V2) / Lσ1
+input resistance:   R_in = 8·fs·√(L1·L2)·(1 − k²)/k = 8·fs·det/M = 8·fs·Lσ1 / nk
+input current:      I_in = nk·T·v_in / (8·Lσ1)
+IRCM condition:     v_in < (nk − 2)·V_C          (only nk)
+magnetizing side:   d(i2 + nk·i1)/dt = V2 / L2</div>
+    <div class="prose">
+      <p><b>The result: the whole input side depends only on Lσ1 and nk. L2 does not appear.</b> L2 only sets how much triangular current i<sub>2</sub> circulates in the half bridge (ZVS current and RMS loss). So for magnetic design there are three separate jobs: a leakage inductance Lσ1 that carries the line current, a turns ratio nk, and a magnetizing inductance L2 that you can choose freely.</p>
+      <p><b>Cross-check with the PCIM paper.</b> Its topology uses a separate buffer inductor L<sub>f</sub> and two coupled windings L<sub>C2</sub>, L<sub>C3</sub> of ratio n<sub>C</sub> each, one in each line. That is exactly this equivalent circuit, with L<sub>f</sub> = Lσ1 and total ratio nk = 2·n<sub>C</sub>. Substituting into I<sub>in</sub> = nk·T·v<sub>in</sub>/(8·Lσ1) gives <span class="m">I = n_C·T·V_in/(4·L_f)</span>, which is the PCIM paper's eq. 14 exactly. The two papers describe the same mechanism.</p>
+    </div>
+    <div class="live" id="live1"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>The flux each part must carry</h2>
+    <div class="prose"><p>A winding's flux linkage λ = N·Φ sets the turns and core area. All three parts have closed forms:</p></div>
+    <div class="eq">coupled inductor, magnetizing path (W1 + W2):
+   λo(t) = L2·(i2 + nk·i1) = nk·L2·i_in(t)  +  triangle of peak V_C/(4·fs)
+   λo,pk = nk·L2·I_in,pk + V_C/(4·fs)              I_in,pk = V_m/R_in   (50 Hz part + switching part)
+
+input leakage Lσ1 (line current):
+   λσ1,pk = Lσ1·i1,pk
+
+LLC transformer, magnetizing (at resonance, full load):
+   λc,pk = N·V_o/(4·fs)          i_m,pk = N·V_o/(4·fs·Lm)</div>
+    <div class="prose"><p>The 50 Hz term in λ<sub>o</sub> exists because the local average of i<sub>2</sub> is zero, while i<sub>1</sub> carries the line current. So the coupled inductor carries a line-frequency flux bias, like a PFC choke. The transformer flux has no DC or 50 Hz part. Lowering L2 shrinks the 50 Hz term but raises the i<sub>2</sub> ripple <span class="m">ΔI2 = V_C/(4·fs·L2)</span>, so there is an optimum.</p></div>
+    <div class="live" id="live2"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>One E-core, two flux modes that do not see each other</h2>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="coreSvg" viewBox="0 0 1000 430" role="img" aria-label="E-core with transformer windings on the center leg and split coupled-inductor windings on the outer legs"></svg></div>
+      <figcaption><b>Winding arrangement.</b> Center leg: the LLC transformer N<sub>p</sub>, N<sub>s</sub>, with a gapped shunt between them for Lr. Outer legs: W1 and W2 of the coupled inductor, each split in two equal halves, one per outer leg, with the halves connected in anti-series. <span style="color:var(--blue)">Blue</span>: center mode (transformer flux Φ<sub>c</sub>, returns half through each outer leg). <span style="color:var(--green)">Green</span>: circulating mode (coupled-inductor flux Φ<sub>o</sub>, goes up one outer leg and down the other, never through the center).</figcaption>
+    </figure>
+    <div class="prose"><p><b>Why the two modes are decoupled.</b> By symmetry (equal outer legs and gaps):</p></div>
+    <div class="eq">transformer flux seen by an anti-series outer pair:   (N/2)·dΦc/2/dt − (N/2)·dΦc/2/dt = 0
+circulating flux through the center leg:              Φo,center = 0   (equal and opposite MMF paths)
+→ mutual inductance between the coupled inductor and the transformer = 0</div>
+    <div class="prose"><p>The two parts share the outer legs, so their fluxes add in one outer leg and subtract in the other. That is the one constraint the design must respect:</p></div>
+    <div class="eq key">center leg:   Bc = Φc / Ac
+outer legs:   Bo = (Φc/2 ± Φo) / Ao        worst leg:  Φc,pk/2 + Φo,pk ≤ Bmax·Ao</div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>Design equations</h2>
+    <div class="eq">1. transformer turns:    Np ≥ λc,pk / (Bc,target·Ac),   Ns = Np / N  (integer pair closest to N)
+2. coupled turns:        N2 ≥ λo,eff / (Bmax·Ao − Φc,pk/2),   N1 = nk·N2
+                         λo,eff = λo,pk                        (option A: Lσ1 as a separate choke)
+                         λo,eff = λo,pk + Lσ1·i1,pk/nk         (option B: Lσ1 by shunts on the same core)
+3. outer gaps (L2):      R_o = N2² / (2·L2),        g_o = μ0·Ao·(R_o − R_fe,o)
+4. center gap (Lm):      Lm = Np² / (R_c + R_o/2),  g_c = μ0·Ac·(Np²/Lm − R_o/2 − R_fe,c)   (needs g_c ≥ 0)
+5. Lr shunt:             Lr = Np² / R_sh,           g_r = μ0·A_sh·Np² / Lr
+6. Lσ1 shunts (B only):  Lσ1 = N1² / (2·R_s1),      g_s1 = μ0·Ao·N1² / (2·Lσ1)
+7. core loss:            Pv = 70 kW/m³ · (f/100 kHz)^1.3 · (B_ac/0.1 T)^2.5        (ferrite, ~100 °C, approx.)
+8. copper:               Aw,needed = Σ N·I_rms / (J·k_fill),   P_cu = ρ·J·MLT·Σ N·I_rms</div>
+    <div class="prose"><p>R<sub>fe</sub> is the small ferrite part of each path (μ<sub>r</sub> ≈ 2000). Fringing at the gaps is neglected, which makes real gaps slightly larger than computed. Option A keeps Lσ1 as a separate small choke, exactly like the PCIM prototype's L<sub>f</sub>. Option B also puts Lσ1 on the core through two symmetric shunts. Their leakage flux enters the center leg with opposite signs from the two halves, so it cancels there too.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>Solve it</h2>
+    <div class="panel controls" aria-label="Design inputs">
+      <div class="ctl-row">
+        <div class="sel"><label for="core">Core (ETD, ferrite)</label><select id="core"></select></div>
+        <span class="seg" role="group" aria-label="Integration option">
+          <button type="button" id="optA" aria-pressed="true">A: Lσ1 as separate choke</button>
+          <button type="button" id="optB" aria-pressed="false">B: everything on one core</button>
+        </span>
+      </div>
+      <div class="ctl-row">
+        <div class="slider"><label for="l2"><span>L2 (free choice)</span><output id="l2Out">0.50 mH</output></label><input id="l2" type="range" min="0.15" max="1.5" step="0.05" value="0.5"></div>
+        <div class="slider"><label for="bmax"><span>B<sub>max</sub> outer legs</span><output id="bmaxOut">0.30 T</output></label><input id="bmax" type="range" min="0.2" max="0.38" step="0.01" value="0.3"></div>
+        <div class="slider"><label for="bc"><span>B<sub>c</sub> target (center, AC)</span><output id="bcOut">0.12 T</output></label><input id="bc" type="range" min="0.05" max="0.25" step="0.01" value="0.12"></div>
+        <div class="slider"><label for="j"><span>Current density J</span><output id="jOut">4.0 A/mm²</output></label><input id="j" type="range" min="2" max="7" step="0.5" value="4"></div>
+      </div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="panel tbl"><table id="sol"></table></div>
+    <div class="two">
+      <figure class="panel fig"><div class="scroll"><svg id="figL2" viewBox="0 0 520 320" role="img" aria-label="Total loss against L2"></svg></div>
+        <figcaption><b>Choosing L2.</b> Core plus copper loss of the integrated core against L2, for the selected core and option. Small L2 means fewer turns but more i<sub>2</sub> RMS current. The ring marks your setting, the dot the minimum.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figB" viewBox="0 0 520 320" role="img" aria-label="Peak flux density per leg"></svg></div>
+        <figcaption><b>Peak flux density per leg</b>, split into its parts: transformer, coupled-inductor 50 Hz bias, coupled-inductor switching part and (option B) leakage shunt flux. The dashed line is B<sub>max</sub>.</figcaption></figure>
+    </div>
+    <div class="key" id="verdict"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>What is gained, and what still has to be proven</h2>
+    <ul class="prose">
+      <li><b>Part count:</b> coupled inductor + transformer + Lr (three cores) become one core with two outer gaps, one center gap and one or three shunts. Option A keeps one small choke for Lσ1. Its size follows from the area product <span class="m">AP = Lσ1·i1,pk·i1,rms/(Bmax·J·k_fill)</span>, shown in the table.</li>
+      <li><b>Shared iron:</b> in a separate transformer the outer legs only return Φ<sub>c</sub>/2. Here the same legs also carry the coupled-inductor flux, so iron that was half used now does two jobs.</li>
+      <li><b>Novelty and paper potential:</b> the reduction in section 1 (R<sub>in</sub> = 8·f<sub>s</sub>·Lσ1/nk, with L2 free) and the decoupled two-mode core give a design method specific to IRCM rectifiers. The L2 optimum and the flux-sharing limit are design results you can publish together with a prototype.</li>
+      <li><b>Limits of this model:</b> reluctances are lumped, fringing is ignored, the core-loss law is approximate, the leakage shunts are idealized and the ETD window and MLT values are approximate. The next steps are a 3-D FEM check of decoupling, shunt reluctances and the flux split, then a prototype measurement of L1, L2, M, Lm and Lr.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const MU0 = 4e-7 * Math.PI, MUR = 2000, RHO = 2.3e-8, FILL = 0.35;
+  // electrical design (single-stage defaults)
+  const E = { Vm: 230 * Math.SQRT2, fs: 100e3, Vc: 190, Vo: 48, Io: 1.25, nk: 4, Pin: 60 / 0.9 + 2, Lm: 1.863e-3, Lr: 232.8e-6, Nt: 190 / 48 };
+  E.Rin = E.Vm * E.Vm / (2 * E.Pin); E.Ls1 = E.Rin * E.nk / (8 * E.fs); E.IinPk = E.Vm / E.Rin;
+  // ETD cores (Ae, le, Ve from common datasheets; window Aw and MLT approximate)
+  const CORES = [
+    { name: 'ETD29', Ac: 76e-6, le: 72e-3, Ve: 5.47e-6, Aw: 90e-6, MLT: 52.8e-3 },
+    { name: 'ETD34', Ac: 97.1e-6, le: 78.6e-3, Ve: 7.64e-6, Aw: 123e-6, MLT: 60.9e-3 },
+    { name: 'ETD39', Ac: 125e-6, le: 92.2e-3, Ve: 11.5e-6, Aw: 177e-6, MLT: 69e-3 },
+    { name: 'ETD44', Ac: 173e-6, le: 103e-3, Ve: 17.8e-6, Aw: 214e-6, MLT: 77.3e-3 },
+    { name: 'ETD49', Ac: 211e-6, le: 114e-3, Ve: 24e-6, Aw: 273e-6, MLT: 85.6e-3 },
+  ];
+  CORES.forEach((c) => { c.Ao = c.Ac / 2; });
+  const st = { core: 'auto', opt: 'A', L2: 0.5e-3, Bmax: 0.3, Bc: 0.12, J: 4e6 };
+
+  // ---------- rectifier currents (Dornbirn interval model, zero-average i2) ----------
+  function coupled(L2) { const M = E.nk * L2, L1 = E.nk * E.nk * L2 + E.Ls1, det = L1 * L2 - M * M; return { L1, L2, M, det, G11: L2 / det, G12: -M / det, G22: L1 / det, k: M / Math.sqrt(L1 * L2) }; }
+  function cycStats(d, vin) {
+    const T = 1 / E.fs, h = T / 2, Vc = E.Vc, { G11, G12, G22 } = d;
+    const s1 = (V1, V2) => G11 * V1 + G12 * V2, s2 = (V1, V2) => G12 * V1 + G22 * V2;
+    const a1 = s1(vin + 2 * Vc, -Vc), a2 = s1(vin - 2 * Vc, -Vc), a3 = s1(vin - 2 * Vc, Vc), a4 = s1(vin + 2 * Vc, Vc);
+    const p = a2 / a1, q = a4 / a3;
+    let Ia = h * (a2 + p * a4) / (1 - p * q), Ib = h * (a4 + q * a2) / (1 - p * q), tb = -Ib / a1, ta = -Ia / a3, dcm = false;
+    if (!(a4 < 0) || Ib > 0 || tb < 0) { dcm = true; Ib = 0; tb = 0; Ia = a2 * h; ta = -Ia / a3; }
+    const iv = [];
+    if (tb > 0) iv.push({ a: 0, b: tb, Vx: -2 * Vc, V2: -Vc, i1: Ib, s: a1 });
+    iv.push({ a: tb, b: h, Vx: 2 * Vc, V2: -Vc, i1: 0, s: a2 });
+    iv.push({ a: h, b: h + Math.min(ta, h), Vx: 2 * Vc, V2: Vc, i1: Ia, s: a3 });
+    if (!dcm) iv.push({ a: h + ta, b: T, Vx: -2 * Vc, V2: Vc, i1: 0, s: a4 });
+    else if (h + ta < T) iv.push({ a: h + ta, b: T, Vx: vin - E.nk * Vc, V2: Vc, i1: 0, s: 0 });
+    let i2 = 0, area = 0;
+    iv.forEach((v) => { const dt = v.b - v.a; v.s2 = s2(vin - v.Vx, v.V2); v.i2 = i2; area += i2 * dt + 0.5 * v.s2 * dt * dt; i2 += v.s2 * dt; });
+    iv.forEach((v) => { v.i2 -= area / T; });
+    // exact integrals of squares of linear segments
+    let q1 = 0, q2 = 0, i1max = 0;
+    iv.forEach((v) => { const dt = v.b - v.a, a1v = v.i1, b1 = v.i1 + v.s * dt, a2v = v.i2, b2 = v.i2 + v.s2 * dt;
+      q1 += dt * (a1v * a1v + a1v * b1 + b1 * b1) / 3; q2 += dt * (a2v * a2v + a2v * b2 + b2 * b2) / 3; i1max = Math.max(i1max, a1v, b1); });
+    return { i1sq: q1 / T, i2sq: q2 / T, i1max };
+  }
+  const statCache = new Map();
+  function rectStats(L2) {
+    const key = L2.toFixed(6); if (statCache.has(key)) return statCache.get(key);
+    const d = coupled(L2); let s1 = 0, s2 = 0, pk = 0; const N = 60;
+    for (let j = 0; j < N; j++) { const th = Math.PI / 2 * (j + 0.5) / N, r = cycStats(d, E.Vm * Math.sin(th)); s1 += r.i1sq / N; s2 += r.i2sq / N; pk = Math.max(pk, r.i1max); }
+    const out = { d, i1rms: Math.sqrt(s1), i2rms: Math.sqrt(s2), i1pk: pk };
+    statCache.set(key, out); return out;
+  }
+
+  // ---------- magnetic solver ----------
+  const Pv = (B) => 70e3 * (Math.abs(B) / 0.1) ** 2.5;      // W/m³ at 100 kHz (approx. ferrite, 100 °C)
+  function solve(core, L2, opt) {
+    const r = rectStats(L2), c = core;
+    const lamC = (n) => n * E.Vo / (4 * E.fs);
+    // 1. transformer turns
+    let Ns = 1, Np = 0;
+    for (Ns = 1; Ns < 200; Ns++) { Np = Math.round(E.Nt * Ns); if (lamC(Np / Ns) / Np <= st.Bc * c.Ac) break; }
+    let res = null;
+    for (let tries = 0; tries < 400; tries++) {
+      const N = Np / Ns, lc = lamC(N), Phic = lc / Np;
+      const lamO = E.nk * L2 * E.IinPk + E.Vc / (4 * E.fs);
+      const lamEff = lamO + (opt === 'B' ? E.Ls1 * r.i1pk / E.nk : 0);
+      const room = st.Bmax * c.Ao - Phic / 2;
+      if (room <= 0) return { ok: false, why: 'transformer flux alone fills the outer legs' };
+      const N2 = Math.ceil(lamEff / room), N1 = Math.round(E.nk * N2);
+      const RfeO = (c.le / 2) / (MU0 * MUR * c.Ao), RfeC = (c.le / 2) / (MU0 * MUR * c.Ac);
+      const Ro = N2 * N2 / (2 * L2), go = MU0 * c.Ao * (Ro - RfeO);
+      const Rc = Np * Np / E.Lm - Ro / 2, gc = MU0 * c.Ac * (Rc - RfeC);
+      if (gc < 0.05e-3) { Ns += 1; Np = Math.round(E.Nt * Ns); continue; }   // Lm not reachable: more primary turns
+      const gr = MU0 * c.Ac * Np * Np / E.Lr;
+      const ImPk = N * E.Vo / (4 * E.fs * E.Lm), IloadP = Math.PI * E.Io / (2 * Math.SQRT2 * N);
+      const Iprms = Math.sqrt(IloadP ** 2 + ImPk ** 2 / 3), Ippk = Math.SQRT2 * IloadP + ImPk, Isrms = Math.PI * E.Io / (2 * Math.SQRT2);
+      const PhiR = E.Lr * Ippk / Np, Br = PhiR / c.Ac;
+      const gs1 = opt === 'B' ? MU0 * c.Ao * N1 * N1 / (2 * E.Ls1) : null;
+      const PhiS = opt === 'B' ? E.Ls1 * r.i1pk / N1 : 0;
+      const PhiO_lf = E.nk * L2 * E.IinPk / N2, PhiO_hf = E.Vc / (4 * E.fs) / N2;
+      const Bc = Phic / c.Ac, BoMax = (Phic / 2 + PhiO_lf + PhiO_hf + PhiS) / c.Ao;
+      const BoAcP = (Phic / 2 + PhiO_hf) / c.Ao, BoAcM = Math.abs(Phic / 2 - PhiO_hf) / c.Ao;
+      const Pcore = Pv(Bc) * c.Ve / 2 + (Pv(BoAcP) + Pv(BoAcM)) * c.Ve / 4;
+      const AT = N1 * r.i1rms + N2 * r.i2rms + Np * Iprms + Ns * Isrms;
+      const AwNeed = AT / (st.J * FILL), Pcu = RHO * st.J * c.MLT * AT;
+      const chokeAP = E.Ls1 * r.i1pk * r.i1rms / (st.Bmax * st.J * FILL);
+      res = { ok: AwNeed <= c.Aw, why: AwNeed <= c.Aw ? '' : 'windings do not fit the window', core: c, opt, L2, r, N, Np, Ns, N1, N2, Phic, lamO, lamEff,
+        go, gc, gr, gs1, Br, PhiS, PhiO_lf, PhiO_hf, Bc, BoMax, BoAcP, BoAcM, Pcore, Pcu, AwNeed, Iprms, Isrms, chokeAP, Vbus: 2 * N * E.Vo };
+      break;
+    }
+    return res || { ok: false, why: 'no gap solution' };
+  }
+  function pickCore(L2, opt) {
+    if (st.core !== 'auto') return CORES.find((c) => c.name === st.core);
+    return CORES.find((c) => { const s = solve(c, L2, opt); return s.ok; }) || CORES[CORES.length - 1];
+  }
+
+  // ---------- drawing helpers ----------
+  const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const poly = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  function ticks(lo, hi, n) { const span = hi - lo, raw = span / n, mag = 10 ** Math.floor(Math.log10(raw)); const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10; const o = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) o.push(+v.toFixed(10)); return o; }
+  const mm = (x) => (x * 1e3).toFixed(2) + ' mm';
+  const fmtL = (x) => (x >= 1e-3 ? (x * 1e3).toFixed(2) + ' mH' : (x * 1e6).toFixed(0) + ' µH');
+
+  function drawCore() {
+    const svg = $('#coreSvg');
+    const X0 = 260, W = 480, Y0 = 40, H = 340, t = 48;    // outer box, wall thickness
+    const xl = X0, xr = X0 + W - t, xc = X0 + W / 2 - t;   // left leg, right leg, center leg x
+    const wc = 2 * t;
+    const coreRects = [
+      [X0, Y0, W, t], [X0, Y0 + H - t, W, t],            // yokes
+      [xl, Y0, t, H / 2 - 6], [xl, Y0 + H / 2 + 6, t, H / 2 - 6],   // left leg with gap
+      [xr, Y0, t, H / 2 - 6], [xr, Y0 + H / 2 + 6, t, H / 2 - 6],   // right leg with gap
+      [xc, Y0, wc, H / 2 - 9], [xc, Y0 + H / 2 + 9, wc, H / 2 - 9], // center leg with larger gap
+    ];
+    const coil = (x, y, w, h, color, label, side) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-width="1.4"/>
+      <text x="${side === 'l' ? x - 6 : x + w + 6}" y="${y + h / 2 + 4}" text-anchor="${side === 'l' ? 'end' : 'start'}" class="lbl">${label}</text>`;
+    const arrowV = (x, y1, y2, c) => `<path d="M${x},${y1} V${y2}" stroke="${c}" stroke-width="2.4" fill="none" marker-end="url(#ah-${c === 'var(--blue)' ? 'b' : 'g'})"/>`;
+    svg.innerHTML = `
+      <defs>
+        <marker id="ah-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--blue)"/></marker>
+        <marker id="ah-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--green)"/></marker>
+      </defs>
+      ${coreRects.map(([x, y, w, h]) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--core)" stroke="var(--core-edge)"/>`).join('')}
+      <text x="${xc + wc / 2}" y="${Y0 + H / 2 + 4}" text-anchor="middle" style="fill:var(--red)">g_c</text>
+      <text x="${xl + t / 2}" y="${Y0 + H / 2 + 4}" text-anchor="middle" style="fill:var(--red);font-size:11px">g_o</text>
+      <text x="${xr + t / 2}" y="${Y0 + H / 2 + 4}" text-anchor="middle" style="fill:var(--red);font-size:11px">g_o</text>
+      ${coil(xc - 26, Y0 + t + 14, wc + 52, 70, 'var(--blue)', 'Np', 'r')}
+      <rect x="${xc - 30}" y="${Y0 + t + 92}" width="${wc + 60}" height="7" fill="var(--purple)"/>
+      <text x="${xc + wc + 36}" y="${Y0 + t + 100}" style="fill:var(--purple)">Lr shunt (g_r)</text>
+      ${coil(xc - 26, Y0 + t + 106, wc + 52, 56, 'var(--blue)', 'Ns', 'r')}
+      ${coil(xl - 24, Y0 + t + 14, t + 48, 60, 'var(--amber)', 'W1/2', 'l')}
+      ${coil(xl - 24, Y0 + t + 94, t + 48, 60, 'var(--green)', 'W2/2', 'l')}
+      ${coil(xr - 24, Y0 + t + 14, t + 48, 60, 'var(--amber)', 'W1/2 (anti-series)', 'r')}
+      ${coil(xr - 24, Y0 + t + 94, t + 48, 60, 'var(--green)', 'W2/2 (anti-series)', 'r')}
+      <rect x="${xl - 28}" y="${Y0 + t + 79}" width="${t + 56}" height="6" fill="var(--purple)" fill-opacity="0.5" stroke="var(--purple)" stroke-dasharray="3 2"/>
+      <rect x="${xr - 28}" y="${Y0 + t + 79}" width="${t + 56}" height="6" fill="var(--purple)" fill-opacity="0.5" stroke="var(--purple)" stroke-dasharray="3 2"/>
+      <text x="${X0 - 30}" y="${Y0 + t + 86}" text-anchor="end" style="fill:var(--purple)">Lσ1 shunt (B)</text>
+      ${arrowV(xc + wc / 2, Y0 + H - t - 10, Y0 + t + 10, 'var(--blue)')}
+      <path d="M${xc + wc / 2},${Y0 + t / 2} H${xl + t / 2 + 12}" stroke="var(--blue)" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+      <path d="M${xc + wc / 2},${Y0 + t / 2} H${xr + t / 2 - 12}" stroke="var(--blue)" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+      <text x="${xc + wc / 2 + 10}" y="${Y0 + H - t - 18}" style="fill:var(--blue)">Φc</text>
+      <text x="${(xl + xc) / 2 + 10}" y="${Y0 + t / 2 - 6}" style="fill:var(--blue)">Φc/2</text>
+      <text x="${(xr + xc) / 2 + 20}" y="${Y0 + t / 2 - 6}" style="fill:var(--blue)">Φc/2</text>
+      ${arrowV(xl + 10, Y0 + H - t - 10, Y0 + t + 6, 'var(--green)')}
+      ${arrowV(xr + t - 10, Y0 + t + 6, Y0 + H - t - 10, 'var(--green)')}
+      <path d="M${xl + 10},${Y0 + H - t / 2 + 10} H${xr + t - 10}" stroke="var(--green)" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+      <text x="${xl + 14}" y="${Y0 + H - t - 18}" style="fill:var(--green)">Φo</text>
+      <text x="${(xl + xr) / 2}" y="${Y0 + H + 22}" text-anchor="middle" style="fill:var(--green)">circulating mode returns through the bottom yoke, not the center</text>`;
+  }
+
+  // ---------- render ----------
+  function render() {
+    const core = pickCore(st.L2, st.opt), s = solve(core, st.L2, st.opt);
+    const r = rectStats(st.L2), d = r.d;
+    $('#live1').textContent = `Here: R_in = ${E.Rin.toFixed(1)} Ω at ${E.fs / 1e3} kHz (P_in = ${E.Pin.toFixed(1)} W), nk = ${E.nk} → Lσ1 = R_in·nk/(8·fs) = ${fmtL(E.Ls1)}. With L2 = ${fmtL(st.L2)}: L1 = ${fmtL(d.L1)}, M = ${fmtL(d.M)}, k = ${d.k.toFixed(3)}. Checked against the interval model for L2 from 0.3 to 1.06 mH: the input current (peak ${r.i1pk.toFixed(3)} A, RMS ${r.i1rms.toFixed(3)} A) does not change.`;
+    const lamO = E.nk * st.L2 * E.IinPk + E.Vc / (4 * E.fs);
+    $('#live2').textContent = `Here: λo,pk = ${E.nk}·${fmtL(st.L2)}·${E.IinPk.toFixed(3)} A + ${E.Vc}/(4·${E.fs / 1e3}k) = ${(E.nk * st.L2 * E.IinPk * 1e3).toFixed(3)} + ${(E.Vc / (4 * E.fs) * 1e3).toFixed(3)} = ${(lamO * 1e3).toFixed(3)} mWb·turn;  λσ1,pk = ${(E.Ls1 * r.i1pk * 1e3).toFixed(3)} mWb·turn;  λc,pk = ${(E.Nt * E.Vo / (4 * E.fs) * 1e3).toFixed(3)} mWb·turn;  ΔI2 = ${(E.Vc / (4 * E.fs * st.L2)).toFixed(2)} A, i2 RMS ${r.i2rms.toFixed(2)} A.`;
+
+    if (!s || !s.Np) { $('#tiles').innerHTML = `<div class="tile"><span class="k">Result</span><span class="v"><span class="pill bad">no solution</span></span><span class="s">${s ? s.why : ''}</span></div>`; $('#sol').innerHTML = ''; return; }
+    $('#tiles').innerHTML = [
+      ['Core', s.core.name + (st.core === 'auto' ? ' (auto)' : ''), `Ve ${(s.core.Ve * 1e6).toFixed(1)} cm³`],
+      ['Fits?', `<span class="pill ${s.ok ? 'ok' : 'bad'}">${s.ok ? 'yes' : 'no'}</span>`, s.ok ? `window ${(s.AwNeed * 1e6).toFixed(0)} of ${(s.core.Aw * 1e6).toFixed(0)} mm²` : s.why],
+      ['Turns W1 : W2 : Np : Ns', `${s.N1} : ${s.N2} : ${s.Np} : ${s.Ns}`, `N = ${s.N.toFixed(3)} → bus ${s.Vbus.toFixed(0)} V at full load`],
+      ['Peak B center · outer', `${s.Bc.toFixed(3)} · ${s.BoMax.toFixed(3)} T`, `limit ${st.Bmax.toFixed(2)} T`],
+      ['Loss core + copper', `${(s.Pcore + s.Pcu).toFixed(2)} W`, `core ${s.Pcore.toFixed(2)} W, copper ${s.Pcu.toFixed(2)} W (DC, approx.)`],
+    ].map(([k, v, t]) => `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${t}</span></div>`).join('');
+    const rows = [
+      ['Center gap g_c (sets Lm)', mm(s.gc), `Lm = ${fmtL(E.Lm)} = Np²/(R_c + R_o/2)`],
+      ['Outer gaps g_o, each (sets L2)', mm(s.go), `L2 = ${fmtL(st.L2)} = N2²/(2·R_o)`],
+      ['Lr shunt gap g_r', mm(s.gr), `Lr = ${fmtL(E.Lr)} = Np²/R_sh, shunt area = Ac; shunt B = ${s.Br.toFixed(3)} T`],
+      [st.opt === 'B' ? 'Lσ1 shunt gaps g_s1, each' : 'Lσ1 separate choke', st.opt === 'B' ? mm(s.gs1) : fmtL(E.Ls1), st.opt === 'B' ? `Lσ1 = N1²/(2·R_s1); shunt flux adds ${(s.PhiS / s.core.Ao).toFixed(3)} T to the outer legs` : `area product AP = ${(s.chokeAP * 1e12).toFixed(0)} mm⁴ (an ETD29 has about ${(76 * 90).toFixed(0)} mm⁴)`],
+      ['Flux: transformer Φc,pk', `${(s.Phic * 1e6).toFixed(2)} µWb`, `B_c = ${s.Bc.toFixed(3)} T in the center leg`],
+      ['Flux: coupled, 50 Hz + switching', `${(s.PhiO_lf * 1e6).toFixed(2)} + ${(s.PhiO_hf * 1e6).toFixed(2)} µWb`, `outer-leg AC swing ${s.BoAcP.toFixed(3)} T (adding leg) and ${s.BoAcM.toFixed(3)} T (subtracting leg)`],
+      ['RMS currents W1 · W2 · Np · Ns', `${s.r.i1rms.toFixed(2)} · ${s.r.i2rms.toFixed(2)} · ${s.Iprms.toFixed(2)} · ${s.Isrms.toFixed(2)} A`, 'W1, W2 from the interval model; Np, Ns at resonance, full load'],
+      ['Copper needed', `${(s.AwNeed * 1e6).toFixed(0)} mm²`, `Σ N·I_rms/(J·${FILL}), J = ${(st.J / 1e6).toFixed(1)} A/mm²`],
+    ];
+    $('#sol').innerHTML = `<thead><tr><th>Design quantity</th><th>Value</th><th>From</th></tr></thead><tbody>${rows.map((q) => `<tr><td>${q[0]}</td><td class="num">${q[1]}</td><td>${q[2]}</td></tr>`).join('')}</tbody>`;
+
+    // L2 sweep
+    const pts = [];
+    for (let L = 0.15e-3; L <= 1.5e-3 + 1e-9; L += 0.05e-3) { const q = solve(s.core, L, st.opt); if (q && q.Np) pts.push({ L, P: q.Pcore + q.Pcu, ok: q.ok }); }
+    const best = pts.reduce((b, c) => (c.P < b.P ? c : b), pts[0]);
+    const svg = $('#figL2'), fr = { x0: 58, x1: 505, y0: 28, y1: 260 };
+    const X = lin(0.15, 1.5, fr.x0, fr.x1), Pmax = Math.max(...pts.map((p) => p.P)) * 1.1, Y = lin(0, Pmax, fr.y1, fr.y0);
+    svg.innerHTML = `${ticks(0, Pmax, 5).map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join('')}
+      ${[0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4].map((v) => `<text x="${X(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}</text>`).join('')}
+      <text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">L2 (mH)</text><text x="${fr.x0}" y="${fr.y0 - 12}" class="t-title">core + copper loss (W), ${s.core.name}</text>
+      <line class="ax" x1="${fr.x0}" y1="${fr.y1}" x2="${fr.x1}" y2="${fr.y1}"/>
+      <polyline class="ln" style="stroke:var(--blue)" points="${poly(pts.map((p) => [X(p.L * 1e3), Y(p.P)]))}"/>
+      ${pts.filter((p) => !p.ok).map((p) => `<circle cx="${X(p.L * 1e3)}" cy="${Y(p.P)}" r="3" fill="var(--red)"/>`).join('')}
+      <circle cx="${X(best.L * 1e3)}" cy="${Y(best.P)}" r="5" fill="var(--green)"/>
+      <text x="${X(best.L * 1e3)}" y="${Y(best.P) - 10}" text-anchor="middle" style="fill:var(--green)">min ${best.P.toFixed(2)} W @ ${(best.L * 1e3).toFixed(2)} mH</text>
+      <circle cx="${X(st.L2 * 1e3)}" cy="${Y(s.Pcore + s.Pcu)}" r="7" fill="none" stroke="var(--text)" stroke-width="2"/>
+      ${pts.some((p) => !p.ok) ? `<text x="${fr.x1}" y="${fr.y0 + 4}" text-anchor="end" style="fill:var(--red)">red: windings do not fit</text>` : ''}`;
+    // flux bars
+    const legs = [
+      { n: 'center', parts: [[s.Bc, 'var(--blue)', 'transformer']] },
+      { n: 'outer (adding)', parts: [[s.Phic / 2 / s.core.Ao, 'var(--blue)', 'transformer'], [s.PhiO_lf / s.core.Ao, 'var(--amber)', '50 Hz bias'], [s.PhiO_hf / s.core.Ao, 'var(--green)', 'switching'], [s.PhiS / s.core.Ao, 'var(--purple)', 'Lσ1 shunt']] },
+      { n: 'outer (subtracting)', parts: [[Math.abs(s.Phic / 2 / s.core.Ao - s.PhiO_hf / s.core.Ao), 'var(--blue)', 'transformer − switching'], [s.PhiO_lf / s.core.Ao, 'var(--amber)', '50 Hz bias'], [s.PhiS / s.core.Ao, 'var(--purple)', 'Lσ1 shunt']] },
+    ];
+    const svgB = $('#figB'), fb = { x0: 58, x1: 505, y0: 28, y1: 250 }, Bt = Math.max(st.Bmax * 1.15, ...legs.map((l) => l.parts.reduce((a, p) => a + p[0], 0) * 1.1)), YB = lin(0, Bt, fb.y1, fb.y0);
+    const bw = (fb.x1 - fb.x0) / 3;
+    let body = `${ticks(0, Bt, 5).map((v) => `<line class="gr" x1="${fb.x0}" y1="${YB(v)}" x2="${fb.x1}" y2="${YB(v)}"/><text x="${fb.x0 - 8}" y="${YB(v) + 4}" text-anchor="end">${v.toFixed(2)}</text>`).join('')}
+      <text x="${fb.x0}" y="${fb.y0 - 12}" class="t-title">peak B (T)</text><line class="ax" x1="${fb.x0}" y1="${fb.y1}" x2="${fb.x1}" y2="${fb.y1}"/>
+      <line x1="${fb.x0}" y1="${YB(st.Bmax)}" x2="${fb.x1}" y2="${YB(st.Bmax)}" style="stroke:var(--red);stroke-dasharray:5 4"/><text x="${fb.x1 - 4}" y="${YB(st.Bmax) - 5}" text-anchor="end" style="fill:var(--red)">B_max</text>`;
+    legs.forEach((l, j) => {
+      let acc = 0; const x = fb.x0 + j * bw + bw * 0.25, w = bw * 0.5;
+      l.parts.forEach(([v, c, lab]) => { if (v <= 1e-6) return; const y0 = YB(acc + v), h = YB(acc) - YB(acc + v); body += `<rect x="${x}" y="${y0}" width="${w}" height="${Math.max(0, h - 2)}" fill="${c}"><title>${l.n}: ${lab} ${v.toFixed(3)} T</title></rect>`; acc += v; });
+      body += `<text x="${x + w / 2}" y="${fb.y1 + 18}" text-anchor="middle">${l.n}</text><text x="${x + w / 2}" y="${YB(acc) - 6}" text-anchor="middle" style="fill:var(--text)">${acc.toFixed(3)}</text>`;
+    });
+    body += `<text x="${fb.x0}" y="${fb.y1 + 40}" style="fill:var(--blue)">■ transformer</text><text x="${fb.x0 + 110}" y="${fb.y1 + 40}" style="fill:var(--amber)">■ 50 Hz bias</text><text x="${fb.x0 + 215}" y="${fb.y1 + 40}" style="fill:var(--green)">■ switching</text><text x="${fb.x0 + 315}" y="${fb.y1 + 40}" style="fill:var(--purple)">■ Lσ1 shunt</text>`;
+    svgB.innerHTML = body;
+
+    $('#verdict').innerHTML = s.ok
+      ? `<b>Solution (${st.opt === 'A' ? 'option A' : 'option B'}):</b> ${s.core.name}, W1 = ${s.N1} turns and W2 = ${s.N2} turns as two equal anti-series halves on the outer legs, Np = ${s.Np} and Ns = ${s.Ns} turns on the center leg. Gaps: center ${mm(s.gc)}, each outer ${mm(s.go)}, Lr shunt ${mm(s.gr)}${st.opt === 'B' ? `, Lσ1 shunts ${mm(s.gs1)}` : `, plus a ${fmtL(E.Ls1)} input choke`}. Peak flux ${s.BoMax.toFixed(2)} T in the worst outer leg. Estimated loss ${(s.Pcore + s.Pcu).toFixed(2)} W. The loss-optimal L2 for this core is ${(best.L * 1e3).toFixed(2)} mH.`
+      : `<b>No fit on ${s.core.name}:</b> ${s.why}. Choose a larger core, raise J, or switch to option A.`;
+  }
+
+  // ---------- controls ----------
+  const sel = $('#core');
+  sel.innerHTML = `<option value="auto">auto: smallest that fits</option>` + CORES.map((c) => `<option value="${c.name}">${c.name}</option>`).join('');
+  sel.addEventListener('change', (e) => { st.core = e.target.value; render(); });
+  const setOpt = (o) => { st.opt = o; $('#optA').setAttribute('aria-pressed', o === 'A'); $('#optB').setAttribute('aria-pressed', o === 'B'); render(); };
+  $('#optA').addEventListener('click', () => setOpt('A'));
+  $('#optB').addEventListener('click', () => setOpt('B'));
+  const bind = (id, key, out, conv, show) => $(id).addEventListener('input', (e) => { st[key] = conv(+e.target.value); $(out).textContent = show(+e.target.value); render(); });
+  bind('#l2', 'L2', '#l2Out', (v) => v * 1e-3, (v) => `${v.toFixed(2)} mH`);
+  bind('#bmax', 'Bmax', '#bmaxOut', (v) => v, (v) => `${v.toFixed(2)} T`);
+  bind('#bc', 'Bc', '#bcOut', (v) => v, (v) => `${v.toFixed(2)} T`);
+  bind('#j', 'J', '#jOut', (v) => v * 1e6, (v) => `${v.toFixed(1)} A/mm²`);
+  drawCore();
+  render();
+})();
+</script>
