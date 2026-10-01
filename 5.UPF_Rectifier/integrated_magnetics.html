@@ -110,6 +110,8 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
 .tip { pointer-events: none; }
 .tip rect { fill: var(--panel); stroke: var(--border); }
 .wire { stroke: var(--wire); stroke-width: 1.6; fill: none; }
+.solid { fill: var(--wire); }
+.term { fill: var(--panel); stroke: var(--wire); stroke-width: 1.6; }
 </style>
 
 <main class="wrap">
@@ -120,10 +122,22 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
   </header>
 
   <section>
+    <h2><span class="n">0</span>The circuit, and where each winding sits</h2>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="schemSvg" viewBox="0 0 1230 490" role="img" aria-label="Single-stage schematic with the integrated magnetics: coupled-inductor windings split over the outer legs, transformer and Lr on the center leg"></svg></div>
+      <figcaption><b>Single-stage converter with integrated magnetics.</b> It is the same circuit as the single-stage page (Dornbirn rectifier + half-bridge LLC on S1–S2). Only the magnetic parts are redrawn to show where they sit on one E-core. <span style="color:var(--green)">Green</span>: W1 and W2 are each split into two halves (a on the left outer leg, b on the right). The halves of one winding are in series electrically, and wound so that they drive the circulating flux Φ<sub>o</sub> and cancel the center flux. <span style="color:var(--blue)">Blue</span>: N<sub>p</sub>, N<sub>s</sub> and L<sub>m</sub> (set by the center gap) are on the center leg. <span style="color:var(--purple)">Purple, dashed</span>: inductances made by gapped shunts, not by a separate part. L<sub>r</sub> is always made this way; Lσ1 too in option B. <span style="color:var(--amber)">Amber</span>: in option A, Lσ1 is a separate small choke. Dots mark W1–W2 polarity. Turn counts follow the solver in section 5. A half with an odd count (e.g. 59/2) is rounded to an even total in practice.</figcaption>
+    </figure>
+  </section>
+
+  <section>
     <h2><span class="n">1</span>What the coupled inductor really is</h2>
     <div class="prose"><p>A coupled inductor (L1, L2, M) is equivalent to an ideal transformer N1:N2 with a magnetizing inductance on one side and a leakage inductance on the other. Put all leakage on the input side W1 and choose the turns ratio N1/N2 = nk:</p></div>
     <div class="eq">L1 = nk²·L2 + Lσ1        M = nk·L2        nk = M/L2 = N1/N2
 Lσ1 = L1 − M²/L2 = L1·(1 − k²) = det/L2        (det = L1·L2 − M²)</div>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="eqSvg" viewBox="0 0 700 290" role="img" aria-label="Equivalent circuit of the coupled inductor: series leakage Lσ1, ideal transformer nk to 1, magnetizing L2 on the W2 side"></svg></div>
+      <figcaption><b>Equivalent circuit of the coupled inductor.</b> Port 1 is W1 in the AC line, port 2 is W2 between the capacitor midpoint and the switch node. Leave port 2 open and port 1 sees Lσ1 + nk²·L2 = L1. The mutual inductance is nk·L2 = M. So this circuit is exact, not an approximation. The ideal transformer carries nk·i<sub>1</sub>, and L2 carries the sum i<sub>2</sub> + nk·i<sub>1</sub>. That is why the 50 Hz line current shows up as a flux bias in the core.</figcaption>
+    </figure>
     <div class="prose"><p>Now rewrite every rectifier formula of the ECCE paper with these two parameters. Γ<sub>11</sub> = L2/det = 1/Lσ1 and Γ<sub>12</sub> = −M/det = −nk/Lσ1, so:</p></div>
     <div class="eq key">input slope:        di1/dt = (V1 − nk·V2) / Lσ1
 input resistance:   R_in = 8·fs·√(L1·L2)·(1 − k²)/k = 8·fs·det/M = 8·fs·Lσ1 / nk
@@ -373,8 +387,120 @@ outer legs:   Bo = (Φc/2 ± Φo) / Ao        worst leg:  Φc,pk/2 + Φo,pk ≤ 
   }
 
   // ---------- render ----------
+  // ---------- schematics ----------
+  const coilH = (x0, y, nb) => `M${x0},${y} ` + Array.from({ length: nb }, () => 'a9,9 0 0 1 18,0').join(' ');
+  const coilV = (x, y0, nb, right) => `M${x},${y0} ` + Array.from({ length: nb }, () => `a9,9 0 0 ${right ? 1 : 0} 0,18`).join(' ');
+  const cstyle = (col, dash) => `stroke:${col};stroke-width:2.4${dash ? ';stroke-dasharray:5 3' : ''}`;
+  const halfN = (n) => (n ? (n % 2 ? `${n}/2` : `${n / 2}`) : '?');
+  function drawSchem(s) {
+    const ok = s && s.Np, TOP = 60, BOT = 390, MID = 225, YT = MID - 70, YB = MID + 70;
+    const XS = 50, XP = 350, XN = 420, XC = 510, XH = 700;
+    const XCR = 770, XLR0 = 810, XTX = 950, XSEC = 986, XDA = 1050, XDB = 1110, XCO = 1160;
+    const G = 'var(--green)', B = 'var(--blue)', P = 'var(--purple)', A = 'var(--amber)';
+    const optB = st.opt === 'B', sCol = optB ? P : A;
+    const diode = (x, yc, lab) => `<polygon class="solid" points="${x - 9},${yc + 8} ${x + 9},${yc + 8} ${x},${yc - 8}"/><path class="wire" d="M${x - 9},${yc - 8} H${x + 9}"/><text x="${x + 13}" y="${yc + 4}">${lab}</text>`;
+    const cap = (x, yc, lab, sub) => `<path class="wire" style="stroke-width:3" d="M${x - 16},${yc - 5} H${x + 16} M${x - 16},${yc + 5} H${x + 16}"/><text x="${x + 22}" y="${yc - 2}" class="lbl">${lab}</text><text x="${x + 22}" y="${yc + 15}">${sub}</text>`;
+    const fet = (x, yc, lab) => {
+      const xt = x - 14;
+      return `<path class="wire" d="M${x},${yc - 40} V${yc - 22} H${xt} V${yc - 14} M${xt},${yc + 14} V${yc + 22} H${x} V${yc + 40} M${xt - 8},${yc - 15} V${yc + 15} M${xt - 14},${yc - 11} V${yc + 11} M${xt - 14},${yc} H${xt - 26}"/>
+        <polygon class="solid" points="${x + 12},${yc - 6} ${x + 22},${yc - 6} ${x + 17},${yc + 4}"/><path class="wire" d="M${x},${yc - 22} H${x + 17} V${yc + 22} H${x} M${x + 12},${yc + 4} H${x + 22}"/>
+        <text x="${xt - 30}" y="${yc + 5}" text-anchor="end" class="lbl">${lab}</text>`;
+    };
+    // a coloured horizontal winding with name above and two tag lines below
+    const wind = (x0, y, col, dash, name, t1, t2, dot) => `<path class="wire" style="${cstyle(col, dash)}" d="${coilH(x0, y, 3)}"/>
+      ${dot ? `<circle cx="${x0 + 5}" cy="${y + 11}" r="3" fill="${col}"/>` : ''}
+      <text x="${x0 + 27}" y="${y - 18}" text-anchor="middle" class="lbl" style="fill:${col}">${name}</text>
+      <text x="${x0 + 27}" y="${y + 30}" text-anchor="middle" style="fill:${col}">${t1}</text>
+      <text x="${x0 + 27}" y="${y + 45}" text-anchor="middle">${t2}</text>`;
+    const n1 = ok ? halfN(s.N1) : '?', n2 = ok ? halfN(s.N2) : '?';
+    const leg = [[25, G, 'outer legs: W1a, W2a (left) and W1b, W2b (right), circulating flux Φo'], [645, B, 'center leg: Np, Ns, Lm via gap g_c, flux Φc']];
+    const leg2 = [[25, P, 'dashed: made by a gapped shunt, no separate part'], [645, A, 'separate choke (option A only)']];
+    $('#schemSvg').innerHTML = `
+      <path class="wire" d="M${XS},${YT} V${MID - 22} M${XS},${MID + 22} V${YB}"/>
+      <circle class="wire" cx="${XS}" cy="${MID}" r="22"/><path class="wire" d="M${XS - 12},${MID} c4,-11 8,-11 12,0 s8,11 12,0"/>
+      <text x="${XS - 30}" y="${MID + 5}" text-anchor="end" class="lbl">v<tspan dy="3" font-size="10">in</tspan></text>
+      <path class="wire" d="M${XS},${YT} H92 M146,${YT} H176 M230,${YT} H254 M308,${YT} H${XP}"/>
+      ${wind(92, YT, sCol, optB, 'Lσ1', optB ? 'W1 shunts' : 'choke', ok ? fmtL(E.Ls1) : '', false)}
+      ${wind(176, YT, G, false, 'W1a', 'left leg', `${n1} t`, true)}
+      ${wind(254, YT, G, false, 'W1b', 'right leg', `${n1} t`, true)}
+      <text x="329" y="${YT - 8}" text-anchor="middle" style="fill:var(--text)">i₁→</text>
+      <path class="wire" d="M${XS},${YB} H${XP - 6} a6,6 0 0 1 12,0 H${XN}"/>
+      <path class="wire" d="M${XP},${TOP} V${BOT} M${XN},${TOP} V${BOT} M${XP},${TOP} H${XH} M${XP},${BOT} H${XH}"/>
+      ${diode(XP, 105, 'D1')}${diode(XN, 105, 'D2')}${diode(XP, 330, 'D3')}${diode(XN, 330, 'D4')}
+      <path class="wire" d="M${XC},${TOP} V${MID - 95} M${XC},${MID - 85} V${MID + 85} M${XC},${MID + 95} V${BOT}"/>
+      ${cap(XC, MID - 90, 'Cb1', 'V<tspan dy="3" font-size="9">C</tspan>')}${cap(XC, MID + 90, 'Cb2', 'V<tspan dy="3" font-size="9">C</tspan>')}
+      <path class="wire" d="M${XH},${TOP} V${MID - 105} M${XH},${MID - 25} V${MID + 25} M${XH},${MID + 105} V${BOT}"/>
+      ${fet(XH, MID - 65, 'S1')}${fet(XH, MID + 65, 'S2')}
+      <path class="wire" d="M${XC},${MID} H522 M576,${MID} H604 M658,${MID} H${XH}"/>
+      ${wind(522, MID, G, false, 'W2a', 'left leg', `${n2} t`, true)}
+      ${wind(604, MID, G, false, 'W2b', 'right leg', `${n2} t`, true)}
+      <text x="676" y="${MID - 8}" text-anchor="middle" style="fill:var(--text)">i₂→</text>
+      <circle class="solid" cx="${XC}" cy="${MID}" r="3.5"/><circle class="solid" cx="${XH}" cy="${MID}" r="3.5"/>
+      <text x="${XC - 8}" y="${MID + 18}" text-anchor="end">mid</text><text x="${XH + 8}" y="${MID - 8}">sw</text>
+      <path class="wire" d="M${XH},${MID} H${XCR - 5} M${XCR + 5},${MID} H${XLR0} M${XLR0 + 72},${MID} H${XTX}"/>
+      <path class="wire" style="stroke-width:3" d="M${XCR - 5},${MID - 15} V${MID + 15} M${XCR + 5},${MID - 15} V${MID + 15}"/>
+      <text x="${XCR}" y="${MID - 22}" text-anchor="middle" class="lbl">Cr</text>
+      <path class="wire" style="${cstyle(P, true)}" d="${coilH(XLR0, MID, 4)}"/>
+      <text x="${XLR0 + 36}" y="${MID - 18}" text-anchor="middle" class="lbl" style="fill:${P}">Lr</text>
+      <text x="${XLR0 + 36}" y="${MID + 30}" text-anchor="middle" style="fill:${P}">shunt g_r</text>
+      <text x="${XLR0 + 36}" y="${MID + 45}" text-anchor="middle">${ok ? mm(s.gr) : ''}</text>
+      <text x="916" y="${MID - 8}" text-anchor="middle" style="fill:var(--text)">i<tspan dy="3" font-size="9">r</tspan><tspan dy="-3">→</tspan></text>
+      <path class="wire" style="${cstyle(B)}" d="${coilV(XTX, MID, 4, true)}"/>
+      <path class="wire" d="M${XTX},${MID + 72} H${XH + 6} a6,6 0 0 0 -12,0 H${XC + 12} V${MID}"/><circle class="solid" cx="${XC + 12}" cy="${MID}" r="3.5"/>
+      <path class="wire" d="M${XTX - 30},${MID} V${MID + 72} M${XTX - 30},${MID} H${XTX} M${XTX - 30},${MID + 72} H${XTX}"/>
+      <path class="wire" style="${cstyle(B)}" d="${coilV(XTX - 30, MID, 4, false)}"/>
+      <text x="${XTX - 44}" y="${MID + 40}" text-anchor="end" class="lbl" style="fill:${B}">Lm</text>
+      <path class="wire" style="stroke:${B}" d="M${XTX + 16},${MID - 6} V${MID + 78} M${XTX + 20},${MID - 6} V${MID + 78}"/>
+      <path class="wire" style="${cstyle(B)}" d="${coilV(XSEC, MID, 4, false)}"/>
+      <text x="${(XTX + XSEC) / 2}" y="${MID + 100}" text-anchor="middle" style="fill:${B}">Np : Ns = ${ok ? `${s.Np} : ${s.Ns}` : '?'}</text>
+      <text x="${(XTX + XSEC) / 2}" y="${MID + 116}" text-anchor="middle">center leg</text>
+      <path class="wire" d="M${XSEC},${MID} H${XDA} M${XSEC},${MID + 72} H${XDA - 6} a6,6 0 0 1 12,0 H${XDB} M${XDA},${TOP + 40} V${BOT - 40} M${XDB},${TOP + 40} V${BOT - 40} M${XDA},${TOP + 40} H${XCO + 30} M${XDA},${BOT - 40} H${XCO + 30} M${XCO},${TOP + 40} V${MID + 30} M${XCO},${MID + 42} V${BOT - 40}"/>
+      ${diode(XDA, 140, '')}${diode(XDB, 140, '')}${diode(XDA, 330, '')}${diode(XDB, 330, '')}
+      <path class="wire" style="stroke-width:3" d="M${XCO - 14},${MID + 30} H${XCO + 14} M${XCO - 14},${MID + 42} H${XCO + 14}"/>
+      <text x="${XCO}" y="${MID + 14}" text-anchor="middle" class="lbl">Co</text>
+      <text x="${XCO + 20}" y="${TOP + 30}" text-anchor="middle" class="lbl">48 V</text>
+      <text x="${XC}" y="${BOT + 28}" text-anchor="middle">V<tspan dy="3" font-size="9">bus</tspan><tspan dy="-3"> = 2V</tspan><tspan dy="3" font-size="9">C</tspan></text>
+      <text x="${XH}" y="${BOT + 28}" text-anchor="middle" style="fill:var(--text)">${ok ? `one ${s.core.name} core${optB ? ', nothing else' : ' + Lσ1 choke'}` : ''}</text>
+      ${[...leg.map(([x, c, t]) => [x, 450, c, t, false]), ...leg2.map(([x, c, t]) => [x, 474, c, t, c === P])].map(([x, y, c, t, d]) => `<path style="${cstyle(c, d)};fill:none" d="M${x},${y - 4} H${x + 26}"/><text x="${x + 34}" y="${y}">${t}</text>`).join('')}`;
+  }
+  function drawEq() {
+    const y1 = 70, y2 = 200, xa = 40, xL = 100, xT1 = 280, xT2 = 316, xL2 = 470, xb = 610, yc = 99;
+    const A = 'var(--amber)', G = 'var(--green)';
+    $('#eqSvg').innerHTML = `
+      <circle class="term" cx="${xa}" cy="${y1}" r="4.5"/><circle class="term" cx="${xa}" cy="${y2}" r="4.5"/>
+      <text x="${xa}" y="${(y1 + y2) / 2 + 5}" text-anchor="middle" class="lbl">v₁</text>
+      <text x="${xa - 10}" y="${y1 - 14}" class="lbl">W1</text>
+      <text x="72" y="${y1 - 8}" text-anchor="middle" style="fill:var(--text)">i₁→</text>
+      <path class="wire" d="M${xa + 4.5},${y1} H${xL} M${xL + 72},${y1} H${xT1} V${yc} M${xT1},${yc + 72} V${y2} H${xa + 4.5}"/>
+      <path class="wire" style="${cstyle(A)}" d="${coilH(xL, y1, 4)}"/>
+      <text x="${xL + 36}" y="${y1 - 22}" text-anchor="middle" class="lbl" style="fill:${A}">Lσ1 = L1(1−k²)</text>
+      <text x="${xL + 36}" y="${y1 + 24}" text-anchor="middle">${fmtL(E.Ls1)}</text>
+      <path class="wire" d="${coilV(xT1, yc, 4, true)}"/>
+      <path class="wire" d="M${xT1 + 16},${yc - 6} V${yc + 78} M${xT1 + 20},${yc - 6} V${yc + 78}"/>
+      <path class="wire" d="${coilV(xT2, yc, 4, false)}"/>
+      <circle class="solid" cx="${xT1 - 13}" cy="${yc + 4}" r="3"/><circle class="solid" cx="${xT2 + 13}" cy="${yc + 4}" r="3"/>
+      <text x="${(xT1 + xT2) / 2}" y="${y2 + 24}" text-anchor="middle" class="lbl">nk : 1 = ${E.nk} : 1</text>
+      <text x="${(xT1 + xT2) / 2}" y="${y2 + 40}" text-anchor="middle">ideal</text>
+      <path class="wire" d="M${xT2},${yc} V${y1} H${xb - 4.5} M${xT2},${yc + 72} V${y2} H${xb - 4.5} M${xL2},${y1} V${yc} M${xL2},${yc + 72} V${y2}"/>
+      <text x="${(xT2 + xL2) / 2}" y="${y1 - 8}" text-anchor="middle" style="fill:var(--text)">nk·i₁→</text>
+      <path class="wire" style="${cstyle(G)}" d="${coilV(xL2, yc, 4, true)}"/>
+      <circle class="solid" cx="${xL2}" cy="${y1}" r="3.5"/><circle class="solid" cx="${xL2}" cy="${y2}" r="3.5"/>
+      <text x="${xL2 + 22}" y="${yc + 26}" class="lbl" style="fill:${G}">L2</text>
+      <text x="${xL2 + 22}" y="${yc + 44}">${fmtL(st.L2)}</text>
+      <text x="${xL2 + 22}" y="${yc + 62}" style="fill:${G}">↓ i₂ + nk·i₁</text>
+      <text x="${(xL2 + xb) / 2 + 10}" y="${y1 - 8}" text-anchor="middle" style="fill:var(--text)">←i₂</text>
+      <circle class="term" cx="${xb}" cy="${y1}" r="4.5"/><circle class="term" cx="${xb}" cy="${y2}" r="4.5"/>
+      <text x="${xb}" y="${(y1 + y2) / 2 + 5}" text-anchor="middle" class="lbl">v₂</text>
+      <text x="${xb - 10}" y="${y1 - 14}" class="lbl">W2</text>
+      <text x="${xL + 36}" y="${y2 + 58}" text-anchor="middle" style="fill:${A}">sets R_in = 8·fs·Lσ1/nk</text>
+      <text x="${xL + 36}" y="${y2 + 74}" text-anchor="middle">→ PF and THD</text>
+      <text x="${xL2 + 40}" y="${y2 + 58}" text-anchor="middle" style="fill:${G}">free choice</text>
+      <text x="${xL2 + 40}" y="${y2 + 74}" text-anchor="middle">only sets i₂ ripple / ZVS</text>`;
+  }
+
   function render() {
     const core = pickCore(st.L2, st.opt), s = solve(core, st.L2, st.opt);
+    drawSchem(s); drawEq();
     const r = rectStats(st.L2), d = r.d;
     $('#live1').textContent = `Here: R_in = ${E.Rin.toFixed(1)} Ω at ${E.fs / 1e3} kHz (P_in = ${E.Pin.toFixed(1)} W), nk = ${E.nk} → Lσ1 = R_in·nk/(8·fs) = ${fmtL(E.Ls1)}. With L2 = ${fmtL(st.L2)}: L1 = ${fmtL(d.L1)}, M = ${fmtL(d.M)}, k = ${d.k.toFixed(3)}. Checked against the interval model for L2 from 0.3 to 1.06 mH: the input current (peak ${r.i1pk.toFixed(3)} A, RMS ${r.i1rms.toFixed(3)} A) does not change.`;
     const lamO = E.nk * st.L2 * E.IinPk + E.Vc / (4 * E.fs);
