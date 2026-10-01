@@ -1,0 +1,335 @@
+<title>Vx in the DCM Gap</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital@0;1&display=swap">
+<style>
+:root {
+  --bg: #faf9f7; --panel: #ffffff; --panel2: #f2f1ed;
+  --border: rgba(0,0,0,0.09); --text: #1a1a18; --text2: #55554f; --text3: #8c8c84;
+  --grid: rgba(0,0,0,0.07); --axis: rgba(0,0,0,0.35);
+  --blue: #1a56db; --blue-dim: rgba(26,86,219,0.10);
+  --green: #0d7a4e; --green-dim: rgba(13,122,78,0.10);
+  --amber: #b76e0a; --amber-dim: rgba(183,110,10,0.12);
+  --purple: #8a3ffc; --purple-dim: rgba(138,63,252,0.10);
+  --red: #c0392b; --red-dim: rgba(192,57,43,0.10);
+  --gap: rgba(183,110,10,0.09);
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --serif: 'IBM Plex Serif', 'Cambria Math', Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+    --border: rgba(255,255,255,0.10); --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+    --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35);
+    --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14);
+    --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+    --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+    --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+    --red: #ff6b5b; --red-dim: rgba(255,107,91,0.12); --gap: rgba(201,128,31,0.12);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131412; --panel: #1b1c1a; --panel2: #242522;
+  --border: rgba(255,255,255,0.10); --text: #ecebe6; --text2: #b0afa7; --text3: #7d7c75;
+  --grid: rgba(255,255,255,0.07); --axis: rgba(255,255,255,0.35);
+  --blue: #5b86e6; --blue-dim: rgba(91,134,230,0.14);
+  --green: #2fa574; --green-dim: rgba(47,165,116,0.14);
+  --amber: #c9801f; --amber-dim: rgba(201,128,31,0.16);
+  --purple: #9570e6; --purple-dim: rgba(149,112,230,0.14);
+  --red: #ff6b5b; --red-dim: rgba(255,107,91,0.12); --gap: rgba(201,128,31,0.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15.5px/1.65 var(--sans); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 70px; display: grid; gap: 30px; }
+header { display: grid; gap: 10px; max-width: 74ch; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+h1 { margin: 0; font-size: clamp(25px, 3.6vw, 33px); line-height: 1.22; font-weight: 600; text-wrap: balance; }
+h2 { margin: 0; font-size: 20px; font-weight: 600; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font: 600 13px/1 var(--mono); color: var(--blue); background: var(--blue-dim); padding: 5px 8px; border-radius: 5px; }
+h3 { margin: 0; font-size: 15.5px; font-weight: 600; }
+p { margin: 0; }
+.lede { color: var(--text2); font-size: 16.5px; }
+section { display: grid; gap: 14px; }
+.prose { display: grid; gap: 12px; max-width: 74ch; }
+ul, ol { margin: 0; padding-left: 22px; display: grid; gap: 5px; }
+.m { font-family: var(--mono); font-size: 0.92em; white-space: nowrap; }
+.eq { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; padding: 12px 18px; overflow-x: auto; display: grid; gap: 8px; }
+.eq.key { border-left-color: var(--green); background: var(--green-dim); }
+.eq.bad { border-left-color: var(--red); background: var(--red-dim); }
+.eq .why { font-size: 13.5px; color: var(--text2); }
+.eq .live { font: 500 13px/1.6 var(--mono); color: var(--text); }
+math { font-family: var(--serif); font-size: 1.12em; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+.fig { padding: 12px; display: grid; gap: 8px; }
+.fig svg { display: block; width: 100%; height: auto; }
+.fig .scroll { overflow-x: auto; }
+.fig .scroll svg { min-width: 640px; }
+figcaption { font-size: 13.5px; color: var(--text2); padding: 0 4px; }
+figcaption b { color: var(--text); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl { overflow-x: auto; }
+.tbl table { min-width: 700px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 12px 16px; }
+.slider { display: grid; gap: 2px; min-width: 150px; flex: 1 1 150px; }
+.slider label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text2); }
+.slider output { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--blue); }
+input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.note { border-left: 4px solid var(--amber); background: var(--amber-dim); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 74ch; }
+svg text { font-family: var(--mono); font-size: 12px; fill: var(--text2); }
+svg .t-title { fill: var(--text); font-weight: 600; font-size: 13px; }
+.ax { stroke: var(--axis); stroke-width: 1; }
+.gr { stroke: var(--grid); stroke-width: 1; }
+.ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.tip { pointer-events: none; }
+.tip rect { fill: var(--panel); stroke: var(--border); }
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">5.UPF_Rectifier · companion to the interval animation</div>
+    <h1>What V<sub>x</sub> does when all four bridge diodes are off</h1>
+    <p class="lede">In DCM, the input current i<sub>1</sub> reaches zero and both diode pairs block. A natural guess is that the bridge voltage V<sub>x</sub> just keeps its last value, +2V<sub>C</sub>. This page shows step by step, with the paper's own equations, why it cannot: the coupled inductor forces V<sub>x</sub> to a new level, <b>V<sub>x</sub> = v<sub>in</sub> − nk·V<sub>2</sub></b>. In a real circuit, the diode capacitance makes V<sub>x</sub> ring into that level rather than jump. Every number below updates with the sliders.</p>
+  </header>
+
+  <section class="panel controls" aria-label="Operating point">
+    <div class="slider"><label for="th"><span>Mains angle θ</span><output id="thOut">90°</output></label><input id="th" type="range" min="10" max="90" step="1" value="90"></div>
+    <div class="slider"><label for="nk"><span>nk = M/L2</span><output id="nkOut">2.40</output></label><input id="nk" type="range" min="2.1" max="4" step="0.05" value="2.4"></div>
+    <div class="slider"><label for="vc"><span>V<sub>C</sub></span><output id="vcOut">200 V</output></label><input id="vc" type="range" min="165" max="300" step="5" value="200"></div>
+    <div class="slider"><label for="cx"><span>Bridge-node capacitance C<sub>x</sub></span><output id="cxOut">40 pF</output></label><input id="cx" type="range" min="10" max="1000" step="10" value="40"></div>
+    <div class="slider"><label for="z"><span>Damping ratio ζ</span><output id="zOut">0.25</output></label><input id="z" type="range" min="0.02" max="1" step="0.01" value="0.25"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span>The two equations everything comes from</h2>
+    <div class="prose"><p>Winding L1 carries the input current i<sub>1</sub>, and winding L2 carries i<sub>2</sub>. Their voltages are coupled through the mutual inductance M (paper eqs. 1–2):</p></div>
+    <div class="eq">
+      <math display="block"><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><msub><mi>L</mi><mn>1</mn></msub><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>+</mo><mi>M</mi><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mspace width="2em"/><msub><mi>V</mi><mn>2</mn></msub><mo>=</mo><mi>M</mi><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>+</mo><msub><mi>L</mi><mn>2</mn></msub><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac></math>
+      <div class="why">Solved for the slopes (paper eq. 3), with det = L1·L2 − M²:</div>
+      <math display="block"><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><msub><mi>L</mi><mn>2</mn></msub><msub><mi>V</mi><mn>1</mn></msub><mo>−</mo><mi>M</mi><msub><mi>V</mi><mn>2</mn></msub></mrow><mi>det</mi></mfrac><mspace width="2em"/><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><msub><mi>L</mi><mn>1</mn></msub><msub><mi>V</mi><mn>2</mn></msub><mo>−</mo><mi>M</mi><msub><mi>V</mi><mn>1</mn></msub></mrow><mi>det</mi></mfrac></math>
+      <div class="why">and the two loop equations that connect them to the circuit:</div>
+      <math display="block"><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><msub><mi>V</mi><mi>x</mi></msub><mspace width="2em"/><msub><mi>V</mi><mn>2</mn></msub><mo>=</mo><mo>−</mo><msub><mi>V</mi><mi>C</mi></msub><mtext> (S1 on) </mtext><mspace width="0.5em"/><mtext>or</mtext><mspace width="0.5em"/><mo>+</mo><msub><mi>V</mi><mi>C</mi></msub><mtext> (S2 on)</mtext></math>
+      <div class="live" id="liveL"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>Who sets V<sub>x</sub>, interval by interval</h2>
+    <div class="prose"><p>V<sub>2</sub> is always set by the half bridge. V<sub>x</sub> is set by whichever diode pair conducts. When a pair conducts it connects the bridge input to the bus, and V<sub>x</sub> is clamped to ±2V<sub>C</sub>. When no pair conducts, nothing clamps V<sub>x</sub>, and it is set by the only other thing connected to it: winding L1.</p></div>
+    <div class="panel tbl"><table id="tblModes"></table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>Derivation: V<sub>x</sub> in the gap</h2>
+    <div class="prose"><p>In the gap, i<sub>1</sub> = 0 and stays 0 until a diode pair turns on again. A current that stays constant has zero slope, so di<sub>1</sub>/dt = 0. Put that into the first slope equation:</p></div>
+    <div class="eq">
+      <math display="block"><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mn>0</mn><mspace width="1em"/><mo>⇒</mo><mspace width="1em"/><msub><mi>L</mi><mn>2</mn></msub><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><mi>M</mi><msub><mi>V</mi><mn>2</mn></msub><mspace width="1em"/><mo>⇒</mo><mspace width="1em"/><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><mfrac><mi>M</mi><msub><mi>L</mi><mn>2</mn></msub></mfrac><msub><mi>V</mi><mn>2</mn></msub><mo>=</mo><mi>n</mi><mi>k</mi><mo>·</mo><msub><mi>V</mi><mn>2</mn></msub></math>
+      <div class="why">L1 still has a voltage across it even with no current: the voltage induced by the changing i<sub>2</sub>. The second winding equation, with di<sub>1</sub>/dt = 0, gives that change:</div>
+      <math display="block"><msub><mi>V</mi><mn>2</mn></msub><mo>=</mo><msub><mi>L</mi><mn>2</mn></msub><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mspace width="1em"/><mo>⇒</mo><mspace width="1em"/><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><msub><mi>V</mi><mn>2</mn></msub><msub><mi>L</mi><mn>2</mn></msub></mfrac><mspace width="1em"/><mtext>and</mtext><mspace width="1em"/><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><mi>M</mi><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mi>n</mi><mi>k</mi><mo>·</mo><msub><mi>V</mi><mn>2</mn></msub><mspace width="0.6em"/><mtext>(same result)</mtext></math>
+      <div class="why">Finally, the loop equation turns V<sub>1</sub> into V<sub>x</sub>:</div>
+    </div>
+    <div class="eq key">
+      <math display="block"><msub><mi>V</mi><mi>x</mi></msub><mo>=</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mi>n</mi><mi>k</mi><mo>·</mo><msub><mi>V</mi><mn>2</mn></msub><mspace width="1.5em"/><mtext>(positive half cycle, S2 on:</mtext><mspace width="0.4em"/><msub><mi>V</mi><mi>x</mi></msub><mo>=</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mi>n</mi><mi>k</mi><mo>·</mo><msub><mi>V</mi><mi>C</mi></msub><mtext>)</mtext></math>
+      <div class="live" id="liveVe"></div>
+    </div>
+    <div class="prose"><p>Nothing in this expression changes during the gap: v<sub>in</sub> is constant over one switching period, and V<sub>C</sub> and V<sub>2</sub> are fixed. So V<sub>x</sub> is <b>constant</b> through the gap, but at this new level, not at +2V<sub>C</sub>.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>Check by contradiction: what if V<sub>x</sub> stayed at +2V<sub>C</sub>?</h2>
+    <div class="eq bad">
+      <math display="block"><msub><mi>V</mi><mi>x</mi></msub><mo>=</mo><mo>+</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mspace width="1em"/><mo>⇒</mo><mspace width="1em"/><msub><mi>V</mi><mn>1</mn></msub><mo>=</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mspace width="1em"/><mo>⇒</mo><mspace width="1em"/><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><msub><mi>L</mi><mn>2</mn></msub><mo stretchy="false">(</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mo stretchy="false">)</mo><mo>−</mo><mi>M</mi><msub><mi>V</mi><mi>C</mi></msub></mrow><mi>det</mi></mfrac><mo>=</mo><mfrac><mrow><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>+</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub></mrow><msub><mi>L</mi><mi>σ</mi></msub></mfrac></math>
+      <div class="live" id="liveContra"></div>
+      <div class="why">This slope is negative (in DCM, v<sub>in</sub> &lt; (nk+2)·V<sub>C</sub>, always true because 2V<sub>C</sub> &gt; V<sub>m</sub>). Starting from i<sub>1</sub> = 0, a negative slope means i<sub>1</sub> must go negative at once. That needs D2 and D3 to conduct, which needs V<sub>x</sub> = −2V<sub>C</sub>, but we assumed +2V<sub>C</sub>. The assumption contradicts itself, so V<sub>x</sub> cannot stay at +2V<sub>C</sub>.</div>
+    </div>
+    <div class="prose"><p>Here L<sub>σ</sub> = det/L2 = L1·(1 − k²) is the leakage inductance seen from the input winding. It shows up because <span class="m">L2·V1 − M·V2 = L2·(V1 − nk·V2)</span>, so <span class="m">di1/dt = (V1 − nk·V2)/Lσ</span>. In words: i<sub>1</sub> only changes when V<sub>1</sub> differs from nk·V<sub>2</sub>. That is the cleanest way to see the whole story: <b>holding i<sub>1</sub> = 0 needs V<sub>1</sub> = nk·V<sub>2</sub> exactly</b>.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>Why both diode pairs stay off</h2>
+    <div class="eq">
+      <math display="block"><mo>−</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mo>&lt;</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mi>n</mi><mi>k</mi><mo>·</mo><msub><mi>V</mi><mi>C</mi></msub><mo>&lt;</mo><mo>+</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mspace width="1.2em"/><mo>⟺</mo><mspace width="1.2em"/><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub><mo>&lt;</mo><msub><mi>v</mi><mi>in</mi></msub><mo>&lt;</mo><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>+</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub></math>
+      <div class="why">The left inequality is exactly the DCM condition, the opposite of the paper's IRCM condition (18). The right one always holds. So whenever the converter is in DCM, the level V<sub>x</sub> = v<sub>in</sub> − nk·V<sub>C</sub> automatically lies between the two clamps, and the gap is self-consistent.</div>
+      <div class="live" id="liveBounds"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>The fingerprint in the paper's Fig. 3a: the kink in i<sub>2</sub></h2>
+    <div class="prose"><p>Compare the slope of i<sub>2</sub> just before the gap (interval 3, D1·D4 on, S2 on) and inside the gap:</p></div>
+    <div class="eq">
+      <math display="block"><msub><mrow><mo>(</mo><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>)</mo></mrow><mtext>before</mtext></msub><mo>=</mo><mfrac><mrow><msub><mi>L</mi><mn>1</mn></msub><msub><mi>V</mi><mi>C</mi></msub><mo>−</mo><mi>M</mi><mo stretchy="false">(</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mo stretchy="false">)</mo></mrow><mi>det</mi></mfrac><mspace width="2em"/><msub><mrow><mo>(</mo><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>2</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>)</mo></mrow><mtext>gap</mtext></msub><mo>=</mo><mfrac><msub><mi>V</mi><mi>C</mi></msub><msub><mi>L</mi><mn>2</mn></msub></mfrac></math>
+      <math display="block"><mtext>before − gap</mtext><mo>=</mo><mfrac><mi>M</mi><mi>det</mi></mfrac><mo>·</mo><mo stretchy="false">[</mo><mo stretchy="false">(</mo><mi>n</mi><mi>k</mi><mo>+</mo><mn>2</mn><mo stretchy="false">)</mo><msub><mi>V</mi><mi>C</mi></msub><mo>−</mo><msub><mi>v</mi><mi>in</mi></msub><mo stretchy="false">]</mo><mo>&gt;</mo><mn>0</mn></math>
+      <div class="why">(Uses L1/det − 1/L2 = M²/(L2·det).) The difference is positive, so i<sub>2</sub> rises <b>more slowly</b> after the gap starts: a kink at t<sub>3</sub>. That is exactly what the paper's Fig. 3a shows. If V<sub>x</sub> stayed at +2V<sub>C</sub>, V<sub>1</sub> and V<sub>2</sub> would not change at t<sub>3</sub>, so neither could the slope of i<sub>2</sub>, and there would be no kink.</div>
+      <div class="live" id="liveKink"></div>
+    </div>
+    <div class="prose"><p>The same bracket also gives the size of the V<sub>x</sub> step at t<sub>3</sub>: <span class="m">ΔVx = (vin − nk·VC) − 2VC = −[(nk+2)·VC − vin]</span>. One quantity sets both the voltage jump and the slope kink.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>A real circuit: V<sub>x</sub> rings into the new level</h2>
+    <div class="prose"><p>The bridge input node always has some capacitance C<sub>x</sub>: diode junction capacitance plus winding and layout capacitance. With it, i<sub>1</sub> is no longer exactly zero in the gap. It charges C<sub>x</sub>. Combine <span class="m">Cx·dVx/dt = i1</span> with the leakage form of the first equation:</p></div>
+    <div class="eq">
+      <math display="block"><msub><mi>L</mi><mi>σ</mi></msub><mfrac><mrow><mi>d</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><mrow><mi>d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><msub><mi>v</mi><mi>in</mi></msub><mo>−</mo><msub><mi>V</mi><mi>x</mi></msub><mo>−</mo><mi>n</mi><mi>k</mi><mo>·</mo><msub><mi>V</mi><mn>2</mn></msub><mo>=</mo><msub><mi>V</mi><mi>e</mi></msub><mo>−</mo><msub><mi>V</mi><mi>x</mi></msub><mspace width="1.5em"/><mo>⇒</mo><mspace width="1.5em"/><msub><mi>L</mi><mi>σ</mi></msub><msub><mi>C</mi><mi>x</mi></msub><mfrac><mrow><msup><mi>d</mi><mn>2</mn></msup><msub><mi>V</mi><mi>x</mi></msub></mrow><mrow><mi>d</mi><msup><mi>t</mi><mn>2</mn></msup></mrow></mfrac><mo>=</mo><msub><mi>V</mi><mi>e</mi></msub><mo>−</mo><msub><mi>V</mi><mi>x</mi></msub></math>
+      <div class="why">A simple LC oscillator around V<sub>e</sub> = v<sub>in</sub> − nk·V<sub>2</sub>. Starting from V<sub>x</sub> = +2V<sub>C</sub> with i<sub>1</sub> = 0, and with damping ratio ζ:</div>
+      <math display="block"><msub><mi>V</mi><mi>x</mi></msub><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>≈</mo><msub><mi>V</mi><mi>e</mi></msub><mo>+</mo><mo stretchy="false">(</mo><mn>2</mn><msub><mi>V</mi><mi>C</mi></msub><mo>−</mo><msub><mi>V</mi><mi>e</mi></msub><mo stretchy="false">)</mo><mo>·</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>ζ</mi><msub><mi>ω</mi><mn>0</mn></msub><mi>t</mi></mrow></msup><mi>cos</mi><mo stretchy="false">(</mo><msub><mi>ω</mi><mn>0</mn></msub><mi>t</mi><mo stretchy="false">)</mo><mo>,</mo><mspace width="1.2em"/><msub><mi>ω</mi><mn>0</mn></msub><mo>=</mo><mfrac><mn>1</mn><msqrt><mrow><msub><mi>L</mi><mi>σ</mi></msub><msub><mi>C</mi><mi>x</mi></msub></mrow></msqrt></mfrac><mo>,</mo><mspace width="1em"/><msub><mi>L</mi><mi>σ</mi></msub><mo>=</mo><msub><mi>L</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msup><mi>k</mi><mn>2</mn></msup><mo stretchy="false">)</mo></math>
+      <div class="live" id="liveRing"></div>
+    </div>
+    <div class="prose"><p>So on a scope, V<sub>x</sub> neither holds at +2V<sub>C</sub> nor jumps cleanly: it starts at +2V<sub>C</sub> and rings around V<sub>e</sub> until the ringing dies out. The undamped swing reaches 2V<sub>e</sub> − 2V<sub>C</sub>. If that goes below −2V<sub>C</sub> (whenever V<sub>e</sub> &lt; 0), D2·D3 clip the first swing and pass a short pulse of reverse current. As C<sub>x</sub> → 0 the ringing gets infinitely fast and the ideal step of section 3 is the limit.</p></div>
+    <figure class="panel fig">
+      <div class="scroll"><svg id="fig" viewBox="0 0 1000 600" role="img" aria-label="Vx, i1 and i2 over one switching period, ideal and with node capacitance"></svg></div>
+      <figcaption><b>One switching period</b> at the chosen mains angle. Dashed: ideal model (V<sub>x</sub> steps to V<sub>e</sub>). Solid: with C<sub>x</sub> and damping ζ (V<sub>x</sub> rings into V<sub>e</sub>). The shaded band is the DCM gap of the ideal model. The dotted purple line marks the +2V<sub>C</sub> level the guess would hold. Hover to read values.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="n">8</span>Summary</h2>
+    <div class="note">During the gap there is no diode to clamp V<sub>x</sub>, so it is set by L1. Holding i<sub>1</sub> = 0 requires L1's voltage to equal the voltage induced from L2: V<sub>1</sub> = nk·V<sub>2</sub>. Therefore V<sub>x</sub> = v<sub>in</sub> − nk·V<sub>2</sub>, constant during the gap but different from the ±2V<sub>C</sub> of the previous interval. The paper's Fig. 3a shows the consequence as a kink in i<sub>2</sub>. On real hardware the node capacitance turns the step into a decaying ring around the same level.</div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const NS = 'http://www.w3.org/2000/svg';
+  const st = { th: 90, nk: 2.4, Vc: 200, Cx: 40e-12, z: 0.25 };
+  const VM = 230 * Math.SQRT2, FS = 100e3, P = 70, K = 0.9;
+  function design() {
+    const Rin = VM * VM / (2 * P), L2 = Rin * K * K / (8 * FS * st.nk * (1 - K * K)), n = st.nk / K, L1 = n * n * L2, M = st.nk * L2, det = L1 * L2 - M * M;
+    return { L1, L2, M, det, G11: L2 / det, G12: -M / det, G22: L1 / det, Ls: det / L2, T: 1 / FS };
+  }
+  // ideal interval model (vin >= 0), start t0 = S1 on; DCM gap uses Vx = vin − nk·Vc
+  function ideal(d, vin) {
+    const Vc = st.Vc, T = d.T, h = T / 2, { G11, G12, G22 } = d;
+    const s1 = (V1, V2) => G11 * V1 + G12 * V2, s2 = (V1, V2) => G12 * V1 + G22 * V2;
+    const a1 = s1(vin + 2 * Vc, -Vc), a2 = s1(vin - 2 * Vc, -Vc), a3 = s1(vin - 2 * Vc, Vc), a4 = s1(vin + 2 * Vc, Vc);
+    const p = a2 / a1, q = a4 / a3;
+    let Ia = h * (a2 + p * a4) / (1 - p * q), Ib = h * (a4 + q * a2) / (1 - p * q), tb = -Ib / a1, ta = -Ia / a3, mode = 'IRCM';
+    if (!(a4 < 0) || Ib > 0 || tb < 0) { mode = 'DCM'; Ib = 0; tb = 0; Ia = a2 * h; ta = -Ia / a3; }
+    const iv = [];
+    if (tb > 0) iv.push({ a: 0, b: tb, Vx: -2 * Vc, V2: -Vc, i1s: Ib, s1: a1, name: 'D2·D3, S1' });
+    iv.push({ a: tb, b: h, Vx: 2 * Vc, V2: -Vc, i1s: 0, s1: a2, name: 'D1·D4, S1' });
+    iv.push({ a: h, b: h + Math.min(ta, h), Vx: 2 * Vc, V2: Vc, i1s: Ia, s1: a3, name: 'D1·D4, S2' });
+    if (mode === 'IRCM') iv.push({ a: h + ta, b: T, Vx: -2 * Vc, V2: Vc, i1s: 0, s1: a4, name: 'D2·D3, S2' });
+    else if (h + ta < T) iv.push({ a: h + ta, b: T, Vx: vin - st.nk * Vc, V2: Vc, i1s: 0, s1: 0, name: 'none, S2', gap: true });
+    let i2 = 0, area = 0;
+    iv.forEach((v) => { const dt = v.b - v.a; v.s2 = s2(vin - v.Vx, v.V2); v.i2s = i2; area += i2 * dt + 0.5 * v.s2 * dt * dt; i2 += v.s2 * dt; });
+    iv.forEach((v) => { v.i2s -= area / T; });
+    return { iv, mode, T };
+  }
+  function withCx(d, vin) {
+    const Vc = st.Vc, T = d.T, N = 8000, dt = T / N, { G11, G12, G22 } = d;
+    const R = 2 * st.z * Math.sqrt(d.Ls / st.Cx);
+    let i1 = 0, i2 = 0, Vx = 2 * Vc; const out = [];
+    for (let c = 0; c < 30; c++) {
+      for (let j = 0; j < N; j++) {
+        // damping acts only while the node is free (the ringing loop), not while a diode pair clamps it
+        const t = j * dt, V2 = t < T / 2 ? -Vc : Vc, free = !((Vx >= 2 * Vc && i1 > 0) || (Vx <= -2 * Vc && i1 < 0));
+        const V1 = vin - Vx - (free ? R * i1 : 0);
+        i1 += (G11 * V1 + G12 * V2) * dt; i2 += (G12 * V1 + G22 * V2) * dt;
+        if (Vx >= 2 * Vc && i1 > 0) Vx = 2 * Vc;
+        else if (Vx <= -2 * Vc && i1 < 0) Vx = -2 * Vc;
+        else Vx = Math.max(-2 * Vc, Math.min(2 * Vc, Vx + i1 / st.Cx * dt));
+        if (c === 29 && j % 8 === 0) out.push({ t, Vx, i1, i2 });
+      }
+    }
+    const avg = out.reduce((s, o) => s + o.i2, 0) / out.length; out.forEach((o) => { o.i2 -= avg; });
+    return out;
+  }
+  const f = (x, dg = 1) => (x < 0 ? '−' : '') + Math.abs(x).toFixed(dg);
+  const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+  const poly = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  function ticks(lo, hi, n) { const span = hi - lo, raw = span / n, mag = 10 ** Math.floor(Math.log10(raw)); const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10; const o = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) o.push(+v.toFixed(10)); return o; }
+
+  function render() {
+    const d = design(), vin = VM * Math.sin(st.th * Math.PI / 180), Vc = st.Vc, nk = st.nk;
+    const Ve = vin - nk * Vc, dcm = vin > (nk - 2) * Vc;
+    const id = ideal(d, vin), gap = id.iv.find((v) => v.gap);
+    $('#liveL').textContent = `Here: L1 = ${(d.L1 * 1e3).toFixed(2)} mH, L2 = ${(d.L2 * 1e3).toFixed(3)} mH, M = ${(d.M * 1e3).toFixed(3)} mH (nk = M/L2 = ${nk.toFixed(2)}, k = 0.9), v_in = ${vin.toFixed(0)} V, V_C = ${Vc} V.`;
+    $('#liveVe').textContent = dcm
+      ? `Here: V_x = ${vin.toFixed(0)} − ${nk.toFixed(2)}·${Vc} = ${f(Ve, 0)} V, while the previous interval had +2V_C = ${2 * Vc} V. The step at the start of the gap is ${f(Ve - 2 * Vc, 0)} V.`
+      : `Here v_in = ${vin.toFixed(0)} V ≤ (nk−2)·V_C = ${((nk - 2) * Vc).toFixed(0)} V: the converter is in IRCM at this angle, so there is no gap (D2·D3 take over at once). Move θ up or nk down to see DCM.`;
+    const slopeIf = (vin - (nk + 2) * Vc) / d.Ls;
+    $('#liveContra').textContent = `Here: (${vin.toFixed(0)} − ${(nk + 2).toFixed(2)}·${Vc}) / ${(d.Ls * 1e3).toFixed(2)} mH = ${f(slopeIf / 1e3, 1)} A/ms, so i₁ would reach ${f(slopeIf * 1e-6 * 1e3, 1)} mA within 1 µs, through diodes that are reverse biased.`;
+    $('#liveBounds').textContent = `Here: (nk−2)·V_C = ${((nk - 2) * Vc).toFixed(0)} V < v_in = ${vin.toFixed(0)} V < (nk+2)·V_C = ${((nk + 2) * Vc).toFixed(0)} V  →  ${dcm ? 'DCM, and −' + 2 * Vc + ' V < V_x = ' + f(Ve, 0) + ' V < +' + 2 * Vc + ' V' : 'not DCM at this angle'}.`;
+    const before = (d.L1 * Vc - d.M * (vin - 2 * Vc)) / d.det, after = Vc / d.L2;
+    $('#liveKink').textContent = `Here: before = ${(before / 1e3).toFixed(1)} A/ms, gap = ${(after / 1e3).toFixed(1)} A/ms, difference = ${((before - after) / 1e3).toFixed(1)} A/ms (formula: ${((d.M / d.det) * ((nk + 2) * Vc - vin) / 1e3).toFixed(1)} A/ms).`;
+    const w0 = 1 / Math.sqrt(d.Ls * st.Cx);
+    $('#liveRing').textContent = `Here: Lσ = ${(d.Ls * 1e3).toFixed(2)} mH, C_x = ${(st.Cx * 1e12).toFixed(0)} pF → f0 = ${(w0 / 2 / Math.PI / 1e3).toFixed(0)} kHz (period ${(2 * Math.PI / w0 * 1e6).toFixed(2)} µs, switching period 10 µs). Undamped swing ${2 * Vc} V ↔ ${f(2 * Ve - 2 * Vc, 0)} V${2 * Ve - 2 * Vc < -2 * Vc ? ', so D2·D3 clip it at −' + 2 * Vc + ' V' : ''}.`;
+
+    // mode table
+    const rows = [
+      ['Interval', 'Diodes', 'V<sub>x</sub> set by', 'V<sub>x</sub>', 'V<sub>1</sub> = v<sub>in</sub> − V<sub>x</sub>', 'V<sub>2</sub>', 'di<sub>1</sub>/dt'],
+      ...id.iv.map((v) => [v.gap ? 'DCM gap' : v.name.includes('S1') ? (v.name.startsWith('D2') ? 'j = 1' : 'j = 2') : (v.name.startsWith('D1') ? 'j = 3' : 'j = 4'), v.name.split(',')[0], v.gap ? 'L1 (coupled to L2)' : 'diode clamp', `${f(v.Vx, 0)} V`, `${f(vin - v.Vx, 0)} V`, `${f(v.V2, 0)} V`, v.gap ? '0 (held)' : `${f(v.s1 / 1e3, 1)} A/ms`]),
+    ];
+    $('#tblModes').innerHTML = `<thead><tr>${rows[0].map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map((r) => `<tr>${r.map((c, j) => `<td${j >= 3 ? ' class="num"' : ''}>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+    // figure
+    const cx = withCx(d, vin), T = d.T;
+    const svg = $('#fig');
+    const fV = { x0: 70, x1: 980, y0: 26, y1: 230 }, f1 = { x0: 70, x1: 980, y0: 280, y1: 400 }, f2 = { x0: 70, x1: 980, y0: 450, y1: 560 };
+    const X = lin(0, T * 1e6, fV.x0, fV.x1);
+    const YV = lin(-2.3 * Vc, 2.3 * Vc, fV.y1, fV.y0);
+    const i1s = cx.map((o) => o.i1).concat(id.iv.flatMap((v) => [v.i1s, v.i1s + v.s1 * (v.b - v.a)]));
+    const i1lo = Math.min(0, ...i1s) * 1.15 - 0.02, i1hi = Math.max(...i1s) * 1.15 + 0.02, Y1 = lin(i1lo, i1hi, f1.y1, f1.y0);
+    const i2s = cx.map((o) => o.i2).concat(id.iv.flatMap((v) => [v.i2s, v.i2s + v.s2 * (v.b - v.a)]));
+    const i2lo = Math.min(...i2s) * 1.15, i2hi = Math.max(...i2s) * 1.15, Y2 = lin(i2lo, i2hi, f2.y1, f2.y0);
+    const idV = id.iv.flatMap((v) => [[X(v.a * 1e6), YV(v.Vx)], [X(v.b * 1e6), YV(v.Vx)]]);
+    const idI1 = id.iv.flatMap((v) => [[X(v.a * 1e6), Y1(v.i1s)], [X(v.b * 1e6), Y1(v.i1s + v.s1 * (v.b - v.a))]]);
+    const idI2 = id.iv.flatMap((v) => [[X(v.a * 1e6), Y2(v.i2s)], [X(v.b * 1e6), Y2(v.i2s + v.s2 * (v.b - v.a))]]);
+    const grid = (fr, Y, tv, u) => tv.map((v) => `<line class="gr" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${u(v)}</text>`).join('');
+    const hl = (fr, Y, v, lab, c, dash) => `<line x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}" style="stroke:${c};stroke-dasharray:${dash}"/><text x="${fr.x1 - 4}" y="${Y(v) - 5}" text-anchor="end" style="fill:${c}">${lab}</text>`;
+    svg.innerHTML = `
+      ${gap ? `<rect x="${X(gap.a * 1e6)}" y="${fV.y0}" width="${X(gap.b * 1e6) - X(gap.a * 1e6)}" height="${f2.y1 - fV.y0}" fill="var(--gap)"/><text x="${(X(gap.a * 1e6) + X(gap.b * 1e6)) / 2}" y="${fV.y1 - 4}" text-anchor="middle" style="fill:var(--amber)">DCM gap</text>` : ''}
+      <line x1="${X(T * 5e5)}" y1="${fV.y0}" x2="${X(T * 5e5)}" y2="${f2.y1}" class="ax" style="stroke-dasharray:2 3"/>
+      <text x="${X(T * 2.5e5)}" y="${f2.y1 + 34}" text-anchor="middle">time (µs) · S1 on (V₂ = −V_C)</text><text x="${X(T * 7.5e5)}" y="${f2.y1 + 34}" text-anchor="middle">S2 on (V₂ = +V_C)</text>
+      ${grid(fV, YV, [-2 * Vc, -Vc, 0, Vc, 2 * Vc], (v) => (v === 0 ? '0' : `${v > 0 ? '+' : '−'}${Math.abs(v / Vc)}V_C`))}
+      ${grid(f1, Y1, ticks(i1lo, i1hi, 4), (v) => v.toFixed(2))}
+      ${grid(f2, Y2, ticks(i2lo, i2hi, 4), (v) => v.toFixed(1))}
+      ${ticks(0, T * 1e6, 10).map((v) => `<text x="${X(v)}" y="${f2.y1 + 16}" text-anchor="middle">${v}</text>`).join('')}
+      
+      <text x="${fV.x0}" y="${fV.y0 - 8}" class="t-title">V_x</text>
+      <text x="${f1.x0}" y="${f1.y0 - 8}" class="t-title">i₁ (A)</text>
+      <text x="${f2.x0}" y="${f2.y0 - 8}" class="t-title">i₂ (A)</text>
+      ${gap ? hl(fV, YV, Ve, `V_e = v_in − nk·V_C = ${f(Ve, 0)} V`, 'var(--green)', '5 4') : ''}
+      ${hl(fV, YV, 2 * Vc, 'guess: +2V_C held', 'var(--purple)', '2 3')}
+      <polyline class="ln" style="stroke:var(--blue);stroke-width:1.6;stroke-dasharray:6 4" points="${poly(idV)}"/>
+      <polyline class="ln" style="stroke:var(--blue)" points="${poly(cx.map((o) => [X(o.t * 1e6), YV(o.Vx)]))}"/>
+      <line class="ax" x1="${f1.x0}" y1="${Y1(0)}" x2="${f1.x1}" y2="${Y1(0)}"/>
+      <polyline class="ln" style="stroke:var(--amber);stroke-width:1.6;stroke-dasharray:6 4" points="${poly(idI1)}"/>
+      <polyline class="ln" style="stroke:var(--amber)" points="${poly(cx.map((o) => [X(o.t * 1e6), Y1(o.i1)]))}"/>
+      <line class="ax" x1="${f2.x0}" y1="${Y2(0)}" x2="${f2.x1}" y2="${Y2(0)}"/>
+      <polyline class="ln" style="stroke:var(--green);stroke-width:1.6;stroke-dasharray:6 4" points="${poly(idI2)}"/>
+      <polyline class="ln" style="stroke:var(--green)" points="${poly(cx.map((o) => [X(o.t * 1e6), Y2(o.i2)]))}"/>`;
+    const all = { x0: fV.x0, x1: fV.x1, y0: fV.y0, y1: f2.y1 };
+    const tip = document.createElementNS(NS, 'g'); tip.setAttribute('class', 'tip'); svg.appendChild(tip);
+    const hit = document.createElementNS(NS, 'rect');
+    Object.entries({ x: all.x0, y: all.y0, width: all.x1 - all.x0, height: all.y1 - all.y0, fill: 'transparent' }).forEach(([k, v]) => hit.setAttribute(k, v));
+    svg.appendChild(hit);
+    const mv = (e) => {
+      const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const x = Math.max(all.x0, Math.min(all.x1, q.x)), t = (x - all.x0) / (all.x1 - all.x0) * T;
+      const o = cx[Math.min(cx.length - 1, Math.round(t / T * cx.length))], v = id.iv.find((w) => t <= w.b) || id.iv[id.iv.length - 1];
+      const lines = [`t = ${(t * 1e6).toFixed(2)} µs`, `V_x ideal ${f(v.Vx, 0)} V`, `V_x with C_x ${f(o.Vx, 0)} V`, `i₁ with C_x ${(o.i1 * 1000).toFixed(1)} mA`];
+      const w = 10 + 7.3 * Math.max(...lines.map((l) => l.length)), bx = x + 12 + w > all.x1 ? x - 12 - w : x + 12;
+      tip.innerHTML = `<line x1="${x}" y1="${all.y0}" x2="${x}" y2="${all.y1}" class="ax" style="stroke-dasharray:3 3"/><rect x="${bx}" y="${all.y0 + 4}" width="${w}" height="${12 + 17 * lines.length}" rx="5"/>` + lines.map((l, j) => `<text x="${bx + 8}" y="${all.y0 + 21 + j * 17}" style="fill:var(--text)">${l}</text>`).join('');
+    };
+    hit.addEventListener('pointermove', mv); hit.addEventListener('pointerdown', mv); hit.addEventListener('pointerleave', () => { tip.innerHTML = ''; });
+  }
+  let pend = false;
+  const sched = () => { if (!pend) { pend = true; requestAnimationFrame(() => { pend = false; render(); }); } };
+  const bind = (id, key, out, conv, show) => $(id).addEventListener('input', (e) => { st[key] = conv(+e.target.value); $(out).textContent = show(+e.target.value); sched(); });
+  bind('#th', 'th', '#thOut', (v) => v, (v) => `${v}°`);
+  bind('#nk', 'nk', '#nkOut', (v) => v, (v) => v.toFixed(2));
+  bind('#vc', 'Vc', '#vcOut', (v) => v, (v) => `${v} V`);
+  bind('#cx', 'Cx', '#cxOut', (v) => v * 1e-12, (v) => `${v} pF`);
+  bind('#z', 'z', '#zOut', (v) => v, (v) => v.toFixed(2));
+  render();
+})();
+</script>
