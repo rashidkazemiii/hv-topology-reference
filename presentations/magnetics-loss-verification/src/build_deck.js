@@ -82,6 +82,12 @@ function iconDisc(slide, x, y, d, fill, data, name) {
   const s = d * 0.58;
   slide.addImage({ data, x: x + (d - s) / 2, y: y + (d - s) / 2, w: s, h: s, altText: name, objectName: name + " icon" });
 }
+function arrow(slide, x1, y1, x2, y2, color, name, dash = "solid", width = 2) {
+  slide.addShape(pres.shapes.LINE, {
+    x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1), flipH: x2 < x1, flipV: y2 < y1,
+    line: { color, width, dashType: dash, endArrowType: "triangle" }, objectName: name,
+  });
+}
 const text = (slide, value, opts) => slide.addText(value, { isTextBox: true, margin: 0, ...opts });
 const sub = (t) => ({ text: t, options: { subscript: true } });
 const r4 = (v) => Math.round(v * 1e4) / 1e4;
@@ -129,6 +135,10 @@ async function build() {
     check: await icon("TbCircleCheck", "FFFFFF"),
     alert: await icon("TbAlertTriangle", "FFFFFF"),
     ruler: await icon("TbRulerMeasure", "FFFFFF"),
+    wave: await icon("TbWaveSine", "FFFFFF"),
+    join: await icon("TbArrowsJoin", "FFFFFF"),
+    clock: await icon("TbClock", "FFFFFF"),
+    arrowR: await icon("TbArrowRight", "1F2D36"),
   };
 
   // ============================================================ 1. Title + core idea
@@ -208,27 +218,25 @@ async function build() {
     text(s, st.d, { x: 1.3, y: y + 0.36, w: 5.9, h: 0.62, fontSize: 12.5, color: C.text1, valign: "top", objectName: `Workflow text ${i + 1}` });
   });
 
-  // FFT illustration (own computation): the 10 sinusoidal sources of a triangular ripple current
+  // why couple two tools: what each one sees
   const rx = 7.55, rw = 5.18;
-  card(s, rx, 1.7, rw, 3.42, C.background2, "FFT card");
-  text(s, "FFT step: the 10 sinusoidal sources", { x: rx + 0.25, y: 1.8, w: rw - 0.5, h: 0.32, fontSize: 14, bold: true, color: C.text2, objectName: "FFT title" });
-  const harm = Array.from({ length: 10 }, (_, k) => 2 * k + 1);
-  const fsw = 0.4; // MHz
-  const amp = harm.map((n) => Math.round(1000 / (n * n)) / 10); // % of fundamental, I_n ~ 1/n^2
-  const tail = 1 - (8 / (Math.PI * Math.PI)) * harm.reduce((a, n) => a + 1 / (n * n), 0); // max error of the 10-term sum, rel. to peak
-  s.addChart(pres.charts.BAR, [
-    { name: "amplitude (% of fundamental)", labels: harm.map((n) => (n * fsw).toFixed(1)), values: amp },
+  card(s, rx, 1.7, rw, 3.42, C.background2, "Two tools card");
+  text(s, "Why two tools? Each sees half of the physics", { x: rx + 0.25, y: 1.8, w: rw - 0.5, h: 0.32, fontSize: 14, bold: true, color: C.text2, objectName: "Two tools title" });
+  const th = (t) => ({ text: t, options: { bold: true, color: C.background1, fill: { color: C.text2 }, fontSize: 10.5 } });
+  const tk = (t) => ({ text: t, options: { bold: true, color: C.text2 } });
+  s.addTable([
+    [th(""), th("PLECS (circuit)"), th("Ansys Maxwell 2D (FEM)")],
+    [tk("models"), "whole converter, switching", "fields in core and winding"],
+    [tk("inductor"), "ideal inductance L", "real core, air gap, layers, wire"],
+    [tk("delivers"), "current waveform i(t)", "core + winding losses"],
+    [tk("speed"), "fast", "slow (mesh, small time steps)"],
   ], {
-    x: rx + 0.1, y: 2.15, w: rw - 0.2, h: 2.3, objectName: "FFT spectrum chart",
-    altText: "Bar chart of the ten sinusoidal source amplitudes of a triangular 400 kHz ripple current: 100 % at 0.4 MHz, 11 % at 1.2 MHz, 4 % at 2.0 MHz, falling to 0.3 % at 7.6 MHz.",
-    barDir: "col", barGapWidthPct: 45, chartColors: [HEX.accent1],
-    valAxisMinVal: 0, valAxisMaxVal: 120, valAxisMajorUnit: 20, valAxisLabelFormatCode: "0",
-    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "General", dataLabelFontSize: 9, dataLabelColor: HEX.dk1,
-    showCatAxisTitle: true, catAxisTitle: "source frequency (MHz)", showValAxisTitle: true, valAxisTitle: "amplitude (%)",
-    showLegend: false, ...chartFont, ...chartFrame,
+    x: rx + 0.2, y: 2.22, w: rw - 0.4, colW: [0.85, 1.85, 2.08], rowH: 0.4,
+    fontSize: 10.5, color: C.text1, fill: { color: C.background1 }, align: "left", valign: "middle", margin: [0.03, 0.06, 0.03, 0.06],
+    border: { type: "solid", pt: 0.75, color: GRID }, objectName: "Two tools table",
   });
-  text(s, `Own illustration (ideal triangular ripple at 400${NB}kHz, D = 0.5): amplitudes fall with 1/n\u00b2 (100, 11, 4, 2 \u2026 0.3 %), so these 10 sources rebuild the current within ${(100 * tail).toFixed(0)}${NB}% of its peak \u2014 \u201cgood results and acceptable simulation time\u201d (poster).`, {
-    x: rx + 0.25, y: 4.5, w: rw - 0.5, h: 0.52, fontSize: 9.5, color: C.accent3, valign: "top", objectName: "FFT footnote",
+  text(s, "\u2192 PLECS supplies the current; the FEM turns it into losses.", {
+    x: rx + 0.25, y: 4.42, w: rw - 0.5, h: 0.55, fontSize: 12, bold: true, color: C.accent1, valign: "middle", objectName: "Two tools conclusion",
   });
 
   card(s, rx, 5.3, rw, 1.55, C.background2, "Case study card");
@@ -250,10 +258,197 @@ async function build() {
     "4) The 10 most dominant frequency components become parallel sinusoidal sources for the Ansys Maxwell simulation - good results at acceptable simulation time. The layer stack / winding structure and the material are assigned (litz or solid); core size and material, insulation thicknesses and air gaps are set.\n" +
     "5) Example: RM14LP core, solid wire, 400 kHz, around 880 W. Total inductor losses: 6.75 W with solid wire and 6.70 W with litz wire.\n\n" +
     "Physics behind it: a magnetic component has core losses (hysteresis and eddy currents in the ferrite, depending on frequency, flux density and waveform) and winding losses (DC resistance plus high-frequency skin and proximity effect, which litz wire reduces) [9-11]. Because the converter current is not sinusoidal, it is decomposed into sinusoids that a frequency-domain FEM solver can handle.\n\n" +
-    "The chart is our own illustration of the FFT step, not taken from the poster: for an ideal triangular ripple at 400 kHz the harmonic amplitudes fall with 1/n^2, so the ten sinusoidal sources (0.4 to 7.6 MHz) rebuild the current within about 2 % of its peak."
+    "Why two tools: PLECS is fast and simulates the whole converter, but treats the inductor as an ideal inductance without losses. The FEM knows the real geometry and materials and computes the fields - and therefore the losses - but is far too slow to simulate the switching converter itself. The workflow therefore lets each tool do what it is good at; slides 3-5 explain how the two are connected."
   );
 
-  // ============================================================ 3. Thermal side: calorimetric set-up
+  // ============================================================ 3. PLECS -> FEM: what is passed between the tools
+  s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Method" });
+  s.addText("From PLECS to FEM: what is passed between the tools", { placeholder: "title" });
+  s.addText("A one-way chain: the circuit simulation supplies the current, the FEM turns it into losses", { placeholder: "message" });
+  const stages = [
+    { t: "PLECS", st: "circuit simulation", in: [{ text: "topology, V" }, sub("in"), { text: `, load, f` }, sub("s"), { text: ` = 400${NB}kHz; inductor = ideal L` }], out: [{ text: "i" }, sub("L"), { text: "(t) over one steady-state period" }], c: C.accent1 },
+    { t: "Python FFT", st: "frequency spectrum", in: [{ text: "sampled i" }, sub("L"), { text: "(t)" }], out: [{ text: "amplitude Î" }, sub("n"), { text: " and phase φ" }, sub("n"), { text: " at f" }, sub("n"), { text: " = n·f" }, sub("s"), { text: "; the 10 largest are kept" }], c: C.accent1 },
+    { t: "Ansys Maxwell 2D", st: "finite elements (FEM)", in: [{ text: "10 parallel sinusoidal current sources + core, air gap, insulation, winding (solid / litz)" }], out: [{ text: "flux density B in the core, current density J in every wire" }], c: C.accent1 },
+    { t: "Python", st: "loss evaluation", in: [{ text: "field solution B, J" }], out: [{ text: "P" }, sub("core"), { text: " + P" }, sub("winding"), { text: ` = P` }, sub("inductor"), { text: ` (6.75${NB}W solid, 6.70${NB}W litz)` }], c: C.accent2 },
+  ];
+  const sw = 2.62, sg = (12.13 - 4 * sw) / 3, sy0 = 2.15, sh = 2.5;
+  stages.forEach((k, i) => {
+    const x = 0.6 + i * (sw + sg);
+    card(s, x, sy0, sw, sh, C.background2, `Stage card ${i + 1}`);
+    numberDisc(s, x + 0.18, sy0 + 0.2, 0.42, k.c, i + 1, 13, `Stage ${i + 1}`);
+    text(s, k.t, { x: x + 0.7, y: sy0 + 0.15, w: sw - 0.8, h: 0.3, fontSize: 14, bold: true, color: C.text2, valign: "middle", objectName: `Stage title ${i + 1}` });
+    text(s, k.st, { x: x + 0.7, y: sy0 + 0.44, w: sw - 0.8, h: 0.22, fontSize: 10.5, color: C.accent3, valign: "middle", objectName: `Stage subtitle ${i + 1}` });
+    text(s, [{ text: "IN  ", options: { bold: true, color: C.accent2 } }, ...k.in], { x: x + 0.18, y: sy0 + 0.82, w: sw - 0.33, h: 0.72, fontSize: 10.5, color: C.text1, valign: "top", objectName: `Stage in ${i + 1}` });
+    text(s, [{ text: "OUT  ", options: { bold: true, color: C.accent1 } }, ...k.out], { x: x + 0.18, y: sy0 + 1.58, w: sw - 0.33, h: 0.85, fontSize: 10.5, color: C.text1, valign: "top", objectName: `Stage out ${i + 1}` });
+    if (i < 3) {
+      arrow(s, x + sw + 0.06, sy0 + sh / 2, x + sw + sg - 0.06, sy0 + sh / 2, C.accent3, `Stage arrow ${i + 1}`);
+      text(s, [[{ text: "i" }, sub("L"), { text: "(t)" }], [{ text: "Î" }, sub("n"), { text: ", φ" }, sub("n")], [{ text: "B, J" }]][i],
+        { x: x + sw - 0.1, y: sy0 + sh / 2 - 0.36, w: sg + 0.2, h: 0.26, fontSize: 9.5, bold: true, color: C.accent3, align: "center", objectName: `Stage data ${i + 1}` });
+    }
+  });
+  // optional feedback path (not part of the poster's workflow)
+  const xFirst = 0.6 + sw / 2, xLast = 0.6 + 3 * (sw + sg) + sw / 2, yFb = 1.86;
+  s.addShape(pres.shapes.LINE, { x: xLast, y: yFb, w: 0, h: sy0 - yFb, line: { color: C.accent3, width: 1.5, dashType: "dash" }, objectName: "Feedback up" });
+  s.addShape(pres.shapes.LINE, { x: xFirst, y: yFb, w: xLast - xFirst, h: 0, line: { color: C.accent3, width: 1.5, dashType: "dash" }, objectName: "Feedback across" });
+  arrow(s, xFirst, yFb, xFirst, sy0 - 0.02, C.accent3, "Feedback down", "dash", 1.5);
+  text(s, "optional feedback (L, temperature) — NOT part of the poster’s workflow, see slide 5", {
+    x: xFirst + 0.6, y: yFb - 0.28, w: xLast - xFirst - 1.2, h: 0.24, fontSize: 10, italic: true, color: C.accent3, align: "center", fill: { color: C.background1 }, objectName: "Feedback label",
+  });
+  // branch: switch losses + loss budget
+  card(s, 0.6, 4.85, 5.9, 0.8, C.background2, "Switch loss card");
+  text(s, [{ text: "Same PLECS operating point → Infineon SPICE: ", options: { bold: true, color: C.text2 } }, { text: `switch losses ≈${NB}6.8${NB}W per switch (conduction + switching)` }],
+    { x: 0.8, y: 4.9, w: 5.55, h: 0.7, fontSize: 11.5, color: C.text1, valign: "middle", objectName: "Switch loss text" });
+  card(s, 6.83, 4.85, 5.9, 0.8, C.background2, "Budget card");
+  text(s, [{ text: "Loss budget of the converter: ", options: { bold: true, color: C.text2 } }, { text: "switch losses (SPICE) + inductor losses (FEM) — each tool computes what it models best" }],
+    { x: 7.03, y: 4.9, w: 5.55, h: 0.7, fontSize: 11.5, color: C.text1, valign: "middle", objectName: "Budget text" });
+  card(s, 0.6, 5.85, 12.13, 1.0, C.text2, "Key point card");
+  iconDisc(s, 0.85, 6.1, 0.5, C.accent4, ico.arrowR, "Key point icon");
+  text(s, [
+    { text: "No recursion in the poster’s workflow. ", options: { bold: true, color: C.accent4 } },
+    { text: "Information flows forward only: PLECS → FFT → FEM → losses. Nothing from the FEM is fed back into PLECS; the chain runs once per design (solid wire, litz wire)." },
+  ], { x: 1.55, y: 5.92, w: 10.95, h: 0.86, fontSize: 13, color: C.background1, valign: "middle", objectName: "Key point text" });
+  s.addNotes(
+    "WHAT IS PASSED BETWEEN PLECS AND THE FEM\n" +
+    "1) PLECS simulates the whole converter in the time domain. In PLECS the inductor is just an ideal inductance L - PLECS knows nothing about the core material, the air gap or the wire, so it cannot compute the inductor's losses. What PLECS delivers is the inductor current i_L(t) in steady state (one switching period, 2.5 us at 400 kHz).\n" +
+    "2) Python takes the sampled i_L(t) and computes an FFT: every periodic waveform is a sum of sinusoids at multiples of the switching frequency (Fourier series). For each harmonic n we get amplitude, phase and frequency n*f_s. Only the 10 most dominant components are kept.\n" +
+    "3) Ansys Maxwell 2D gets these 10 components as 10 sinusoidal current sources connected in parallel to the winding of the 2D model (poster figure). Because parallel current sources add, the winding carries the same current as in PLECS. The model contains the real geometry: RM14LP core size and material, air gap, insulation thicknesses, layer stack, solid or litz wire. The FEM solves Maxwell's equations and yields the flux density B in the core and the current density J in every conductor - including eddy-current effects (skin, proximity, air-gap fringing).\n" +
+    "4) From B and J the losses are evaluated: core loss from B and the ferrite's loss data, winding loss from J (ohmic loss). Result: 6.75 W (solid) and 6.70 W (litz).\n" +
+    "In parallel, the same operating point is used in the Infineon SPICE solver for the switch losses (about 6.8 W per switch).\n\n" +
+    "IMPORTANT: the poster describes a sequential, one-way chain. There is no recursive or iterative loop between PLECS and the FEM: the FEM results (losses, a possibly different inductance) are not fed back into PLECS. Slide 5 explains when such a loop would be needed."
+  );
+
+  // ============================================================ 4. From waveform to FEM excitation
+  s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Method" });
+  s.addText("From PLECS waveform to FEM excitation", { placeholder: "title" });
+  s.addText("Fourier series: the current is split into sinusoids, and parallel sources add them back up in the FEM", { placeholder: "message" });
+  const fftH = 4.8, fftW = fftH / (await aspect(path.join(ASSETS, "fft_sources.png")));
+  s.addImage({
+    path: path.join(ASSETS, "fft_sources.png"), x: 0.6, y: 1.6, w: fftW, h: fftH,
+    altText: "The PLECS inductor current (DC plus triangular ripple) is decomposed by FFT into a DC part and sinusoids at 0.4, 1.2, 2.0 ... 7.6 MHz; each drives a current source, the sources are in parallel and their summed current feeds the winding of the 2D FEM model.",
+    objectName: "FFT to sources figure",
+  });
+  text(s, [
+    { text: "i" }, sub("L"), { text: "(t) = I" }, sub("DC"), { text: " + Σ Î" }, sub("n"), { text: "·sin(2π·n·f" }, sub("s"), { text: "·t + φ" }, sub("n"), { text: ")      →      i" }, sub("winding"), { text: "(t) = Σ i" }, sub("source,n"), { text: "(t)" },
+  ], { x: 0.6, y: 6.45, w: 6.6, h: 0.4, fontSize: 14, color: C.text2, align: "center", valign: "middle", objectName: "Fourier equation" });
+
+  const fx = 7.45, fw = 5.28;
+  card(s, fx, 1.6, fw, 2.6, C.background2, "Spectrum card");
+  text(s, "Amplitudes of the 10 ripple components", { x: fx + 0.25, y: 1.68, w: fw - 0.5, h: 0.3, fontSize: 13, bold: true, color: C.text2, objectName: "Spectrum title" });
+  const harm = Array.from({ length: 10 }, (_, k) => 2 * k + 1);
+  const amp = harm.map((n) => Math.round(1000 / (n * n)) / 10); // % of fundamental, I_n ~ 1/n^2
+  const tail = 1 - (8 / (Math.PI * Math.PI)) * harm.reduce((a, n) => a + 1 / (n * n), 0); // max error of the 10-term sum, rel. to peak
+  s.addChart(pres.charts.BAR, [
+    { name: "amplitude (% of fundamental)", labels: harm.map((n) => (n * 0.4).toFixed(1)), values: amp },
+  ], {
+    x: fx + 0.1, y: 1.98, w: fw - 0.2, h: 2.15, objectName: "FFT spectrum chart",
+    altText: "Bar chart of the ten sinusoidal source amplitudes of a triangular 400 kHz ripple current: 100 % at 0.4 MHz, 11 % at 1.2 MHz, 4 % at 2.0 MHz, falling to 0.3 % at 7.6 MHz.",
+    barDir: "col", barGapWidthPct: 45, chartColors: [HEX.accent1],
+    valAxisMinVal: 0, valAxisMaxVal: 120, valAxisMajorUnit: 40, valAxisLabelFormatCode: "0",
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "General", dataLabelFontSize: 9, dataLabelColor: HEX.dk1,
+    showCatAxisTitle: true, catAxisTitle: "source frequency (MHz)", showValAxisTitle: true, valAxisTitle: "amplitude (%)",
+    showLegend: false, ...chartFont, ...chartFrame,
+  });
+  [
+    { t: "Why sinusoids?", d: "Skin and proximity effect depend on frequency. Split into sinusoids, the FEM sees exactly the frequency content the winding carries.", i: ico.wave },
+    { t: "Why in parallel?", d: [{ text: "Parallel current sources add their currents (Kirchhoff), so the winding carries i(t) = \u03a3 i" }, sub("n"), { text: "(t): the PLECS current." }], i: ico.join },
+    { t: "Why only 10?", d: `Amplitudes fall as 1/n²: 10 components rebuild the ripple within ~${(100 * tail).toFixed(0)}${NB}%. More would add higher frequencies (7.6${NB}MHz: δ≈${NB}24${NB}µm in copper), i.e. finer mesh and smaller time steps.`, i: ico.clock },
+  ].forEach((k, i) => {
+    const y = 4.42 + i * 0.82;
+    iconDisc(s, fx, y, 0.42, C.accent1, k.i, `Why FFT icon ${i + 1}`);
+    text(s, k.t, { x: fx + 0.55, y: y - 0.03, w: fw - 0.55, h: 0.28, fontSize: 12.5, bold: true, color: C.text2, valign: "middle", objectName: `Why FFT title ${i + 1}` });
+    text(s, k.d, { x: fx + 0.55, y: y + 0.24, w: fw - 0.55, h: 0.56, fontSize: 10.5, color: C.text1, valign: "top", objectName: `Why FFT text ${i + 1}` });
+  });
+  s.addNotes(
+    "HOW THE PLECS CURRENT BECOMES THE FEM EXCITATION\n" +
+    "The inductor current of a buck converter is a DC value (the load current) plus a triangular ripple at the switching frequency. Any periodic waveform can be written as a Fourier series: i_L(t) = I_DC + sum of I_n * sin(2*pi*n*f_s*t + phi_n). The FFT gives these amplitudes and phases.\n\n" +
+    "In the FEM, each retained component is represented by one sinusoidal current source. The sources are connected in parallel to the winding, and because the currents of parallel current sources add (Kirchhoff's current law), the winding carries the sum - the same current PLECS computed, minus the small part in the discarded components. The poster shows exactly this: a row of 10 sinusoidal sources feeding the winding, and a plot comparing the original and the reconstructed current.\n\n" +
+    "Why frequency matters: the winding loss of a conductor depends strongly on frequency (skin effect, proximity effect), and so does the core loss. A 400 kHz component and a 7.6 MHz component of the same amplitude cause very different losses - so the FEM must know the frequency content, not only the RMS value.\n\n" +
+    "Why only 10 components: for a triangular ripple the amplitudes fall as 1/n^2 (100 %, 11 %, 4 %, 2 % ... 0.3 % at 7.6 MHz), so 10 components reproduce the waveform within about 2 % of its peak (our calculation for an ideal triangle with D = 0.5). Each extra component adds a higher frequency; at 7.6 MHz the skin depth in copper is only about 24 um, which forces a fine mesh near the conductor surfaces and small time steps. That is the trade-off behind the poster's statement 'good results and acceptable simulation time'.\n\n" +
+    "Figure and chart are our own illustrations, not copied from the poster."
+  );
+
+  // ============================================================ 5. Inside the FEM, and when a loop would be needed
+  s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Method" });
+  s.addText("Inside the FEM — and when a loop would be needed", { placeholder: "title" });
+  s.addText("The FEM turns fields into losses once per design; iterating only pays off when the results change the inputs", { placeholder: "message" });
+  card(s, 0.6, 1.6, 6.0, 5.25, C.background2, "Fields to losses card");
+  text(s, "From fields to losses", { x: 0.85, y: 1.68, w: 5.5, h: 0.32, fontSize: 13.5, bold: true, color: C.text2, objectName: "Fields title" });
+  const lossBlocks = [
+    {
+      t: "Winding (copper)", c: C.accent2,
+      eq: [{ text: "P" }, sub("w"), { text: " = (l/T)·∫∫ J²/σ dA dt  =  Σ R" }, sub("ac"), { text: "(f" }, sub("n"), { text: ")·I" }, sub("n,rms"), { text: "²" }],
+      d: "J comes from the FEM and already contains skin, proximity and air-gap fringing effects. This is where solid and litz wire differ.",
+    },
+    {
+      t: "Core (ferrite)", c: C.accent1,
+      eq: [{ text: "P" }, sub("core"), { text: " = ∫ p" }, sub("v"), { text: " dV,   e.g. p" }, sub("v"), { text: " = k·f" }, { text: "α", options: { superscript: true } }, { text: "·B̂" }, { text: "β", options: { superscript: true } }],
+      d: "The loss density follows from the local flux density B in every mesh element and the material's loss data (Steinmetz-type).",
+    },
+    {
+      t: "2D model", c: C.accent3,
+      eq: [{ text: "3D loss ≈ 2D loss per metre × effective length" }],
+      d: "A 2D cross-section is fast but does not resolve end turns and corners of the RM core.",
+    },
+  ];
+  lossBlocks.forEach((b, i) => {
+    const y = 2.12 + i * 1.55;
+    disc(s, 0.85, y + 0.06, 0.18, b.c, `Loss dot ${i + 1}`);
+    text(s, b.t, { x: 1.15, y, w: 5.2, h: 0.3, fontSize: 12.5, bold: true, color: C.text2, valign: "middle", objectName: `Loss title ${i + 1}` });
+    text(s, b.eq, { x: 1.15, y: y + 0.33, w: 5.3, h: 0.4, fontSize: 13, color: C.text2, valign: "middle", objectName: `Loss equation ${i + 1}` });
+    text(s, b.d, { x: 1.15, y: y + 0.76, w: 5.3, h: 0.66, fontSize: 10.5, color: C.text1, valign: "top", objectName: `Loss text ${i + 1}` });
+  });
+
+  const lx = 6.85, lwid = 5.88;
+  card(s, lx, 1.6, lwid, 5.25, C.background2, "Loop card");
+  text(s, "One-way chain vs. iterative (recursive) loop", { x: lx + 0.25, y: 1.68, w: lwid - 0.5, h: 0.32, fontSize: 13.5, bold: true, color: C.text2, objectName: "Loop title" });
+  text(s, "Poster: one-way, run once per design", { x: lx + 0.25, y: 2.05, w: lwid - 0.5, h: 0.25, fontSize: 10.5, bold: true, color: C.accent5, objectName: "One-way label" });
+  const chainBoxes = ["PLECS", "FFT", "FEM", "losses"];
+  chainBoxes.forEach((t, i) => {
+    const bx2 = lx + 0.25 + i * 1.42;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: bx2, y: 2.36, w: 1.05, h: 0.42, rectRadius: 0.06, fill: { color: i === 3 ? C.accent5 : C.text2 }, line: { type: "none" }, objectName: `Chain box ${i + 1}` });
+    text(s, t, { x: bx2, y: 2.36, w: 1.05, h: 0.42, fontSize: 11, bold: true, color: C.background1, align: "center", valign: "middle", objectName: `Chain label ${i + 1}` });
+    if (i < 3) arrow(s, bx2 + 1.08, 2.57, bx2 + 1.39, 2.57, C.accent3, `Chain arrow ${i + 1}`);
+  });
+  text(s, "General method, not used on the poster: iterate until nothing changes", { x: lx + 0.25, y: 2.98, w: lwid - 0.5, h: 0.25, fontSize: 10.5, bold: true, color: C.accent2, objectName: "Loop label" });
+  const loop = [
+    { t: "PLECS (L, T)", x: lx + 0.45, y: 3.32 },
+    { t: "FFT", x: lx + lwid - 2.0, y: 3.32 },
+    { t: "FEM", x: lx + lwid - 2.0, y: 4.6 },
+    { t: "thermal model", x: lx + 0.45, y: 4.6 },
+  ];
+  const lb = { w: 1.55, h: 0.46 };
+  loop.forEach((b, i) => {
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: b.x, y: b.y, w: lb.w, h: lb.h, rectRadius: 0.06, fill: { color: C.background1 }, line: { color: C.accent2, width: 1.5 }, objectName: `Loop box ${i + 1}` });
+    text(s, b.t, { x: b.x, y: b.y, w: lb.w, h: lb.h, fontSize: 11, bold: true, color: C.text2, align: "center", valign: "middle", objectName: `Loop box label ${i + 1}` });
+  });
+  const L0 = loop[0], L1 = loop[1], L2 = loop[2], L3 = loop[3];
+  arrow(s, L0.x + lb.w + 0.05, L0.y + lb.h / 2, L1.x - 0.05, L1.y + lb.h / 2, C.accent2, "Loop arrow 1");
+  arrow(s, L1.x + lb.w / 2, L1.y + lb.h + 0.04, L2.x + lb.w / 2, L2.y - 0.04, C.accent2, "Loop arrow 2");
+  arrow(s, L2.x - 0.05, L2.y + lb.h / 2, L3.x + lb.w + 0.05, L3.y + lb.h / 2, C.accent2, "Loop arrow 3");
+  arrow(s, L3.x + lb.w / 2, L3.y - 0.04, L0.x + lb.w / 2, L0.y + lb.h + 0.04, C.accent2, "Loop arrow 4");
+  const lbl = (t, x, y, w, name) => text(s, t, { x, y, w, h: 0.24, fontSize: 9.5, color: C.accent3, align: "center", objectName: name });
+  lbl([{ text: "i" }, sub("L"), { text: "(t)" }], L0.x + lb.w, L0.y + lb.h / 2 + 0.04, L1.x - L0.x - lb.w, "Loop data 1");
+  lbl([{ text: "Î" }, sub("n"), { text: ", φ" }, sub("n")], L1.x + lb.w / 2 + 0.08, L1.y + lb.h + 0.28, 0.9, "Loop data 2");
+  lbl([{ text: "P" }, sub("loss"), { text: ", L" }, sub("FEM")], L3.x + lb.w, L2.y + lb.h / 2 - 0.3, L2.x - L3.x - lb.w, "Loop data 3");
+  lbl("T", L0.x + lb.w / 2 - 0.55, L3.y - 0.55, 0.5, "Loop data 4");
+  text(s, [{ text: "repeat until L and P" }, sub("loss"), { text: " change by < 1\u00a0%" }], { x: L0.x + lb.w + 0.1, y: 3.95, w: L1.x - L0.x - lb.w - 0.2, h: 0.5, fontSize: 10.5, italic: true, color: C.text2, align: "center", valign: "middle", objectName: "Loop criterion" });
+  text(s, [
+    { text: "A loop is only needed when the results change the inputs:", options: { bold: true, color: C.text2, breakLine: true } },
+    { text: "•  the inductance from the FEM (air gap, DC bias, saturation) differs from the L used in PLECS → different ripple", options: { breakLine: true } },
+    { text: "•  self-heating raises the copper resistance (+0.39 %/K) and changes the ferrite loss → different losses" },
+  ], { x: lx + 0.25, y: 5.3, w: lwid - 0.5, h: 1.45, fontSize: 10.5, color: C.text1, valign: "top", paraSpaceAfter: 3, objectName: "Loop conditions" });
+  s.addNotes(
+    "WHAT THE FEM DOES WITH THE CURRENT\n" +
+    "Winding loss: the FEM computes the current density J in every part of every conductor. The ohmic loss is the integral of J^2/sigma over the conductor area and one period, multiplied by the length (2D model: loss per metre times effective length). Because J is computed from the fields, skin effect, proximity effect and air-gap fringing are included automatically. For linear copper this equals the sum over frequencies of R_ac(f_n) * I_n,rms^2. This is where solid and litz wire differ.\n" +
+    "Core loss: the FEM gives the flux density B in every mesh element of the ferrite. A material loss model (typically Steinmetz-type coefficients from the ferrite datasheet) converts B and frequency into a loss density, which is integrated over the core volume.\n" +
+    "2D model: the RM core is represented by a cross-section. This is fast but cannot resolve 3D details such as end turns or the core corners.\n\n" +
+    "ONE-WAY CHAIN VS. ITERATIVE (RECURSIVE) LOOP\n" +
+    "The poster runs the chain once: PLECS -> FFT -> FEM -> losses. Nothing is fed back. This is justified when the FEM result does not change the circuit waveform noticeably.\n" +
+    "A recursive/iterative loop (general co-simulation practice, NOT described on the poster) would be: run PLECS with an inductance L and temperature T, compute FFT and FEM, take the inductance and the losses from the FEM, compute the temperature with a thermal model, update L and T (and temperature-dependent copper resistance and core loss) in the next PLECS run, and repeat until L and the losses stop changing (e.g. less than 1 %). It is needed when (a) the real inductance differs from the value used in PLECS - e.g. because of air-gap fringing, DC bias or saturation - which changes the ripple and therefore the losses, or (b) self-heating is significant: copper resistance rises about 0.39 %/K and ferrite losses depend on temperature.\n" +
+    "Possible link to the results (our interpretation): the one-way 2D chain at a fixed temperature does not capture 3D end-turn effects or self-heating - candidates for why the solid-wire losses are under-predicted."
+  );
+
+  // ============================================================ 6. Thermal side: calorimetric set-up
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Method" });
   s.addText("Thermal side: measuring the losses as heat", { placeholder: "title" });
   s.addText("Near-adiabatic calorimeter: the inductor’s losses heat a stirred liquid of known heat capacity", { placeholder: "message" });
@@ -310,7 +505,7 @@ async function build() {
     "The schematic is our own drawing; numbers 1-7 match the set-up list."
   );
 
-  // ============================================================ 4. Thermal model and calibration
+  // ============================================================ 7. Thermal model and calibration
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Method" });
   s.addText("Thermal model and calibration", { placeholder: "title" });
   s.addText("Known heater powers turn the temperature slope into watts — under the same thermal conditions as the DUT", { placeholder: "message" });
@@ -398,7 +593,7 @@ async function build() {
     "The calibration chart is idealised (relative slope); it shows the principle, not the poster's measured data."
   );
 
-  // ============================================================ 5. Results
+  // ============================================================ 8. Results
   pres.addSection({ title: "Results" });
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Results" });
   s.addText("Results: simulated vs. thermally measured losses", { placeholder: "title" });
@@ -476,7 +671,7 @@ async function build() {
     "Background for discussion (not on the poster): solid round wire is much more sensitive to high-frequency eddy-current effects (skin and proximity effect, air-gap fringing fields) than litz wire [10]; these effects are the natural place to look for the missing loss."
   );
 
-  // ============================================================ 6. References
+  // ============================================================ 9. References
   pres.addSection({ title: "References" });
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "References" });
   s.addText("References", { placeholder: "title" });
@@ -502,9 +697,9 @@ async function build() {
   card(s, 6.78, 5.15, 5.95, 1.7, C.background2, "Reference map card");
   text(s, "HOW THE REFERENCES CONNECT TO THE SLIDES", { x: 7.0, y: 5.25, w: 5.5, h: 0.25, fontSize: 10, bold: true, color: C.accent2, charSpacing: 1, objectName: "Reference map title" });
   text(s, [
-    { text: "Thermal measurement (slides 3\u20134): ", options: { bold: true, color: C.text2 } }, { text: "[2] same group\u2019s fluid calorimeter, [3] transient calorimetry, [4]\u2013[8] other loss-measurement methods", options: { breakLine: true } },
-    { text: "Magnetic simulation (slide 2): ", options: { bold: true, color: C.text2 } }, { text: "[9]\u2013[11] winding and core loss models, [13]\u2013[15] automated FEM workflows", options: { breakLine: true } },
-    { text: "Litz vs. solid wire (slide 5): ", options: { bold: true, color: C.text2 } }, { text: "[10] winding loss, [12] winding thermal model" },
+    { text: "Thermal measurement (slides 6\u20137): ", options: { bold: true, color: C.text2 } }, { text: "[2] same group\u2019s fluid calorimeter, [3] transient calorimetry, [4]\u2013[8] other loss-measurement methods", options: { breakLine: true } },
+    { text: "Magnetic simulation (slides 2\u20135): ", options: { bold: true, color: C.text2 } }, { text: "[9]\u2013[11] winding and core loss models, [13]\u2013[15] automated FEM workflows", options: { breakLine: true } },
+    { text: "Litz vs. solid wire (slide 8): ", options: { bold: true, color: C.text2 } }, { text: "[10] winding loss, [12] winding thermal model" },
   ], { x: 7.0, y: 5.55, w: 5.55, h: 1.2, fontSize: 10, color: C.text1, valign: "top", paraSpaceAfter: 4, objectName: "Reference map" });
   s.addNotes(
     "[1] is the poster itself. [2] is the reference printed on the poster: J. Reynvaan, M. Pajnic and J. Krenn, 'Evaluating Fluid Based Transient Calorimetric Method for Measurement of the Ferrite Core Losses', ICPE 2023-ECCE Asia, doi: 10.23919/ICPE2023-ECCEAsia54778.2023.10213808 - the same group's work on the fluid-based transient calorimeter used here.\n" +
