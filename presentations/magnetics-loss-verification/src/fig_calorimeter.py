@@ -69,7 +69,7 @@ def build():
 <!-- instrument tags (cables end at their lower edge) -->
 {tag(200, 350, "converter", "#F6E6DA", COPPER, COPPER_DK)}
 {tag(360, 460, "Arduino", "#DCEFF1", "#0F7C86", "#0B5D64")}
-{tag(470, 590, "DC supply", "#F6E6DA", COPPER, COPPER_DK)}
+{tag(470, 590, "LV supply", "#F6E6DA", COPPER, COPPER_DK)}
 {tag(600, 820, "DAQ970A", "#E7ECEF", SLATE, INK)}
 
 <!-- Dewar flask: vacuum jacket between outer and inner wall -->

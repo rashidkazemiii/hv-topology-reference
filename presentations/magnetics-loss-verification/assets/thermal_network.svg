@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="466" viewBox="0 0 960 466" font-family="Carlito, Calibri, Arial, sans-serif">
+<!-- reference (ground) and rails -->
+<line x1="110" y1="360" x2="880" y2="360" stroke="#2A3640" stroke-width="3"/>
+<line x1="110" y1="110" x2="350" y2="110" stroke="#2A3640" stroke-width="3"/>
+<line x1="500" y1="110" x2="660" y2="110" stroke="#2A3640" stroke-width="3"/>
+<line x1="800" y1="110" x2="880" y2="110" stroke="#2A3640" stroke-width="3"/>
+<polyline points="350,110 356.2,124 368.8,96 381.2,124 393.8,96 406.2,124 418.8,96 431.2,124 443.8,96 456.2,124 468.8,96 481.2,124 493.8,96 500,110" fill="none" stroke="#5B6B77" stroke-width="3.5" stroke-linejoin="round"/>
+<polyline points="660,110 665.8,124 677.5,96 689.2,124 700.8,96 712.5,124 724.2,96 735.8,124 747.5,96 759.2,124 770.8,96 782.5,124 794.2,96 800,110" fill="none" stroke="#2A3640" stroke-width="3.5" stroke-linejoin="round"/>
+
+<!-- heat source: the DUT's loss -->
+<line x1="110" y1="110" x2="110" y2="198" stroke="#2A3640" stroke-width="3"/>
+<line x1="110" y1="282" x2="110" y2="360" stroke="#2A3640" stroke-width="3"/>
+<circle cx="110" cy="240" r="42" fill="#FBEFE6" stroke="#C46A2B" stroke-width="4"/>
+<path d="M110,266 V218 M99,230 L110,214 L121,230" fill="none" stroke="#C46A2B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="162" y="300" font-size="28" fill="#7E3F14" text-anchor="start" font-weight="bold" font-style="italic">P<tspan dy="6" font-size="19">loss</tspan></text>
+
+<!-- heat capacities -->
+<line x1="270" y1="110" x2="270" y2="222" stroke="#2A3640" stroke-width="3"/><line x1="240" y1="222" x2="300" y2="222" stroke="#C46A2B" stroke-width="7"/><line x1="240" y1="240" x2="300" y2="240" stroke="#C46A2B" stroke-width="7"/><line x1="270" y1="240" x2="270" y2="360" stroke="#2A3640" stroke-width="3"/>
+<line x1="590" y1="110" x2="590" y2="222" stroke="#2A3640" stroke-width="3"/><line x1="560" y1="222" x2="620" y2="222" stroke="#0F7C86" stroke-width="7"/><line x1="560" y1="240" x2="620" y2="240" stroke="#0F7C86" stroke-width="7"/><line x1="590" y1="240" x2="590" y2="360" stroke="#2A3640" stroke-width="3"/>
+<text x="312" y="238" font-size="27" fill="#2A3640" text-anchor="start" font-weight="normal">C<tspan dy="6" font-size="18">DUT</tspan></text>
+<text x="548" y="226" font-size="27" fill="#2A3640" text-anchor="end" font-weight="normal">C<tspan dy="6" font-size="18">liquid</tspan></text>
+<text x="548" y="260" font-size="27" fill="#2A3640" text-anchor="end" font-weight="normal">+ C<tspan dy="6" font-size="18">enclosure</tspan></text>
+
+<!-- ambient temperature source -->
+<line x1="880" y1="110" x2="880" y2="210" stroke="#2A3640" stroke-width="3"/>
+<line x1="880" y1="270" x2="880" y2="360" stroke="#2A3640" stroke-width="3"/>
+<circle cx="880" cy="240" r="30" fill="#EEF2F4" stroke="#2A3640" stroke-width="3"/>
+<text x="880" y="232" font-size="20" text-anchor="middle" fill="#2A3640">+</text>
+<text x="880" y="262" font-size="24" text-anchor="middle" fill="#2A3640">−</text>
+<text x="838" y="300" font-size="27" fill="#2A3640" text-anchor="end" font-weight="normal">T<tspan dy="6" font-size="18">amb</tspan></text>
+
+<!-- nodes and labels -->
+<circle cx="270" cy="110" r="7" fill="#2A3640"/><circle cx="590" cy="110" r="7" fill="#2A3640"/>
+<text x="270" y="76" font-size="27" fill="#2A3640" text-anchor="middle" font-weight="bold">T<tspan dy="6" font-size="18">DUT</tspan></text>
+<text x="590" y="76" font-size="27" fill="#0F7C86" text-anchor="middle" font-weight="bold">T<tspan dy="6" font-size="18">liquid</tspan></text>
+<text x="590" y="44" font-size="22" text-anchor="middle" fill="#0F7C86">measured by PT100</text>
+<text x="425" y="160" font-size="27" fill="#5B6B77" text-anchor="middle" font-weight="normal">R<tspan dy="6" font-size="18">th</tspan></text>
+<text x="425" y="194" font-size="22" text-anchor="middle" fill="#5B6B77">DUT → liquid</text>
+<text x="730" y="160" font-size="27" fill="#2A3640" text-anchor="middle" font-weight="normal">R<tspan dy="6" font-size="18">leak</tspan></text>
+<text x="730" y="194" font-size="22" text-anchor="middle" fill="#2A3640">Dewar + double lid</text>
+<text x="730" y="220" font-size="22" text-anchor="middle" fill="#2A3640" font-style="italic">→ very large</text>
+
+<!-- C_Th brace under both capacities -->
+<path d="M240,382 Q240,400 270,400 L418.0,400 L430.0,414 L442.0,400 L590,400 Q620,400 620,382" fill="none" stroke="#0F7C86" stroke-width="3"/>
+<text x="430.0" y="444" font-size="26" fill="#0F7C86" text-anchor="middle" font-weight="bold">C<tspan dy="6" font-size="18">Th</tspan></text>
+</svg>

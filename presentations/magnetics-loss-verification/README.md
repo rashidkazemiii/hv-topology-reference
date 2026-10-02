@@ -1,33 +1,35 @@
-# Poster digest: automated magnetics loss simulation vs. calorimetry
+# Poster digest: thermal verification of simulated magnetic-component losses
 
-This is a 6-slide PowerPoint deck explaining the poster *"Experimental verification of automated loss-simulation of magnetic components"* by P. Skoff, M. Stoiber, J. Reynvaan and W. Konrad (Silicon Austria Labs, with Infineon Technologies AG). The poster was shown at the Power Electronics for Energy Transition Symposium 2026.
+This folder holds a 6-slide PowerPoint deck explaining the poster *"Experimental verification of automated loss-simulation of magnetic components"*. The poster is by P. Skoff, M. Stoiber, J. Reynvaan and W. Konrad of Silicon Austria Labs, with Infineon Technologies AG. It was shown at the Power Electronics for Energy Transition Symposium in Vienna, 29–30 Sep 2026.
 
-| File | Content |
+**Concept.** A Python workflow simulates the losses of magnetic components (PLECS → FFT → Ansys Maxwell 2D). The poster then verifies them **thermally**: the inductor runs in a near-adiabatic, stirred liquid calorimeter, and the loss is P_loss = C_Th · dT/dt.
+
+| Slide | Content |
 |---|---|
-| `Automated_Magnetics_Loss_Verification.pptx` | The deck: concept, simulation workflow, calorimeter, calibration, results, references. Each slide has speaker notes. |
-| `REFERENCES.md` | The 20 references with DOIs or links and a note on why each is relevant |
-| `assets/` | Original figures made for the deck (none are taken from the poster) |
-| `src/` | Scripts that regenerate the figures and the deck |
+| 1 | Title and core idea (magnetic simulation ↔ thermal measurement) |
+| 2 | Magnetic side: the automated loss-simulation workflow and the buck-converter case |
+| 3 | Thermal side: the calorimetric set-up and its energy balance |
+| 4 | Thermal model of the calorimeter and the calibration procedure |
+| 5 | Results: simulated vs. thermally measured losses (solid 7.3/7.4/7.5 W, litz 6.7/6.7/6.6 W) |
+| 6 | References (the poster, the reference it cites, related work) |
 
-## What is original vs. taken from the poster
+Every slide has speaker notes. `REFERENCES.md` lists all references with DOIs and links.
 
-- **From the poster:** the workflow steps, the case-study numbers, the hardware list, the calibration procedure and the six measurement results.
-- **Made for this deck, and labelled as such on the slides:**
-  - the skin-effect heat-map (exact Bessel solution)
-  - the harmonic-truncation analysis on slide 2
-  - the first-order thermal-lag model on slide 4
-  - the calorimeter schematic
-  - the possible causes listed on slide 5
+## What comes from the poster and what was added
+
+All facts, numbers and procedure steps come from the poster. Four visuals were drawn or computed for this deck, and none is copied from the poster:
+
+- the calorimeter schematic
+- the lumped thermal network
+- the spectrum of the 10 sinusoidal sources, for an ideal triangular ripple
+- the idealised calibration line
 
 ## Rebuild
 
 ```bash
-pip install numpy scipy matplotlib
-npm install pptxgenjs react-icons react react-dom sharp   # in any folder; point NODE_PATH at its node_modules
+npm install pptxgenjs react-icons react react-dom sharp   # point NODE_PATH at this node_modules
 cd src
-python3 fig_skin_effect.py
 python3 fig_calorimeter.py && node render_svg.js ../assets/calorimeter_schematic.svg ../assets/calorimeter_schematic.png
+python3 fig_thermal_network.py && node render_svg.js ../assets/thermal_network.svg ../assets/thermal_network.png
 node build_deck.js
 ```
-
-The heat-map script uses the Carlito font (metric-compatible with Calibri) when it is installed.

@@ -1,7 +1,7 @@
 {
   "groups": [
     {
-      "group": "The poster and the authors' related work",
+      "group": "The poster and the reference it cites",
       "column": 1,
       "items": [
         {
@@ -10,8 +10,7 @@
           "title": "Experimental verification of automated loss-simulation of magnetic components",
           "pre": "poster, ",
           "venue": "Power Electronics for Energy Transition Symposium",
-          "details": " (AIT & SAL), Vienna, Austria, Sep. 29–30, 2026",
-          "url": "https://silicon-austria-labs.elsevierpure.com/en/organisations/coexistence-electromagnetic-compatibility-cemc/"
+          "details": ", Vienna, Austria, Sep. 29–30, 2026"
         },
         {
           "n": 2,
@@ -19,13 +18,12 @@
           "title": "Evaluating fluid based transient calorimetric method for measurement of the ferrite core losses",
           "pre": "in ",
           "venue": "Proc. ICPE 2023-ECCE Asia",
-          "details": ", Jeju, Korea, 2023, pp. 3308–3313",
-          "url": "https://silicon-austria-labs.elsevierpure.com/en/persons/jacob-reynvaan-4"
+          "details": ", Jeju, Korea, 2023, pp. 3308–3313, doi: 10.23919/ICPE2023-ECCEAsia54778.2023.10213808"
         }
       ]
     },
     {
-      "group": "Calorimetric loss measurement",
+      "group": "Thermal (calorimetric) loss measurement – similar concept",
       "column": 1,
       "items": [
         {
@@ -33,8 +31,7 @@
           "authors": "P. Papamanolis, T. Guillod, F. Krismer, and J. W. Kolar",
           "title": "Transient calorimetric measurement of ferrite core losses up to 50 MHz",
           "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 36, no. 3, pp. 2548–2563, 2021",
-          "url": "https://ieeexplore.ieee.org/document/9169835/"
+          "details": ", vol. 36, no. 3, pp. 2548–2563, 2021"
         },
         {
           "n": 4,
@@ -42,48 +39,40 @@
           "title": "Calorimetric power loss measurement for highly efficient converters",
           "pre": "in ",
           "venue": "Proc. IPEC 2010 (ECCE Asia)",
-          "details": ", Sapporo, Japan, 2010, pp. 1438–1445",
-          "doi": "10.1109/IPEC.2010.5544503",
-          "url": "https://www.ams-publications.ee.ethz.ch/uploads/tx_ethpublications/IPEC_2010_Badstuebner.pdf"
+          "details": ", Sapporo, Japan, 2010, pp. 1438–1445"
         },
         {
           "n": 5,
           "authors": "S. Weier, M. A. Shafi, and R. McMahon",
           "title": "Precision calorimetry for the accurate measurement of losses in power electronic devices",
           "venue": "IEEE Trans. Ind. Appl.",
-          "details": ", vol. 46, no. 1, pp. 278–284, 2010",
-          "url": "https://www.researchgate.net/publication/224083614_Precision_Calorimetry_for_the_Accurate_Measurement_of_Losses_in_Power_Electronic_Devices"
+          "details": ", vol. 46, no. 1, pp. 278–284, 2010"
         },
         {
           "n": 6,
           "authors": "C. Xiao, G. Chen, and W. G. H. Odendaal",
           "title": "Overview of power loss measurement techniques in power electronics systems",
           "venue": "IEEE Trans. Ind. Appl.",
-          "details": ", vol. 43, no. 3, pp. 657–664, 2007",
-          "url": "https://www.researchgate.net/publication/3173215_Overview_of_Power_Loss_Measurement_Techniques_in_Power_Electronics_Systems"
+          "details": ", vol. 43, no. 3, pp. 657–664, 2007"
         },
         {
           "n": 7,
-          "authors": "D. Rothmund, D. Bortis, and J. W. Kolar",
-          "title": "Accurate transient calorimetric measurement of soft-switching losses of 10-kV SiC MOSFETs and diodes",
-          "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 33, no. 6, pp. 5240–5250, 2018",
-          "doi": "10.1109/TPEL.2017.2729892",
-          "url": "https://ui.adsabs.harvard.edu/abs/2018ITPE...33.5240R/abstract"
+          "authors": "Z. Yi, Z. Liu, K. Sun, and B. Su",
+          "title": "A simple power loss evaluation method for high-frequency transformers based on surface temperature measurement within wide operation range",
+          "venue": "IEEE J. Emerg. Sel. Topics Power Electron.",
+          "details": ", vol. 12, no. 6, pp. 5437–5451, 2024"
         },
         {
           "n": 8,
           "authors": "L. Zhu, Z. Liu, Y. Dang, S. Zhang, G. Zhang, and S. Ji",
           "title": "A review of power loss measurement method for high-frequency transformer",
           "venue": "Renewable Energy System and Equipment",
-          "details": ", 2026",
-          "doi": "10.1016/j.rese.2026.05.002",
-          "url": "https://www.sciencedirect.com/science/article/pii/S2950208X26000062"
+          "details": ", 2026, doi: 10.1016/j.rese.2026.05.002"
         }
       ]
     },
     {
-      "group": "Loss modelling of windings and cores",
+      "group": "Magnetic loss and thermal modelling / simulation – similar concept",
       "column": 2,
       "items": [
         {
@@ -91,105 +80,51 @@
           "authors": "P. L. Dowell",
           "title": "Effects of eddy currents in transformer windings",
           "venue": "Proc. IEE",
-          "details": ", vol. 113, no. 8, pp. 1387–1394, 1966",
-          "doi": "10.1049/piee.1966.0236"
+          "details": ", vol. 113, no. 8, pp. 1387–1394, 1966"
         },
         {
           "n": 10,
-          "authors": "W. G. Hurley, E. Gath, and J. G. Breslin",
-          "title": "Optimizing the AC resistance of multilayer transformer windings with arbitrary current waveforms",
-          "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 15, no. 2, pp. 369–376, 2000",
-          "doi": "10.1109/63.838110"
-        },
-        {
-          "n": 11,
-          "authors": "C. R. Sullivan",
-          "title": "Optimal choice for number of strands in a litz-wire transformer winding",
-          "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 14, no. 2, pp. 283–291, 1999",
-          "url": "https://www.wcmagnetics.com/wp-content/uploads/2015/02/numberofstrands.pdf"
-        },
-        {
-          "n": 12,
           "authors": "R. P. Wojda and M. K. Kazimierczuk",
           "title": "Winding resistance and power loss of inductors with litz and solid-round wires",
           "venue": "IEEE Trans. Ind. Appl.",
-          "details": ", vol. 54, no. 4, pp. 3548–3557, 2018",
-          "doi": "10.1109/TIA.2018.2821647"
+          "details": ", vol. 54, no. 4, pp. 3548–3557, 2018"
         },
         {
-          "n": 13,
-          "authors": "W. A. Roshen",
-          "title": "Fringing field formulas and winding loss due to an air gap",
-          "venue": "IEEE Trans. Magn.",
-          "details": ", vol. 43, no. 8, pp. 3387–3394, 2007",
-          "doi": "10.1109/TMAG.2007.898908"
-        },
-        {
-          "n": 14,
-          "authors": "T. Ewald and J. Biela",
-          "title": "Analytical winding loss and inductance models for gapped inductors with litz or solid wires",
-          "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 37, pp. 15127–15139, 2022",
-          "url": "https://www.semanticscholar.org/paper/Analytical-Winding-Loss-and-Inductance-Models-for-Ewald-Biela/02ca895720d48f6a9aa638936d064823531eb3a6"
-        },
-        {
-          "n": 15,
-          "authors": "K. Venkatachalam, C. R. Sullivan, T. Abdallah, and H. Tacca",
-          "title": "Accurate prediction of ferrite core loss with nonsinusoidal waveforms using only Steinmetz parameters",
-          "pre": "in ",
-          "venue": "Proc. IEEE COMPEL",
-          "details": ", 2002, pp. 36–41",
-          "url": "https://www.researchgate.net/publication/4014009_Accurate_prediction_of_ferrite_core_loss_with_nonsinusoidal_waveforms_using_only_Steinmetz_parameters"
-        },
-        {
-          "n": 16,
+          "n": 11,
           "authors": "J. Mühlethäler, J. Biela, J. W. Kolar, and A. Ecklebe",
           "title": "Improved core-loss calculation for magnetic components employed in power electronic systems",
           "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 27, no. 2, pp. 964–973, 2012",
-          "doi": "10.1109/TPEL.2011.2162252"
-        }
-      ]
-    },
-    {
-      "group": "Automated and integrated simulation / design workflows",
-      "column": 2,
-      "items": [
-        {
-          "n": 17,
-          "authors": "N. Förster, T. Piepenbrock, P. Rehlaender, O. Wallscheid, F. Schafmeister, and J. Böcker",
-          "title": "An open-source FEM magnetics toolbox for power electronic magnetic components",
-          "pre": "in ",
-          "venue": "Proc. PCIM Europe",
-          "details": ", Nuremberg, Germany, 2022",
-          "url": "https://www.vde-verlag.de/proceedings-en/565822103.html"
+          "details": ", vol. 27, no. 2, pp. 964–973, 2012"
         },
         {
-          "n": 18,
+          "n": 12,
+          "authors": "P. A. Kyaw, M. Delhommais, J. Qiu, C. R. Sullivan, J.-L. Schanen, and C. Rigaud",
+          "title": "Thermal modeling of inductor and transformer windings including litz wire",
+          "venue": "IEEE Trans. Power Electron.",
+          "details": ", vol. 35, no. 1, pp. 867–881, 2020"
+        },
+        {
+          "n": 13,
+          "authors": "N. Förster et al.",
+          "title": "An open-source FEM magnetic toolbox for calculating electric and thermal behavior of power electronic magnetic components",
+          "pre": "in ",
+          "venue": "Proc. EPE'22 ECCE Europe",
+          "details": ", Hanover, Germany, 2022"
+        },
+        {
+          "n": 14,
           "authors": "N. Djekanovic, M. Luo, and D. Dujic",
           "title": "Integrated simulation approach to loss calculations of power converter systems",
           "pre": "in ",
           "venue": "Proc. PCIM Europe digital days",
-          "details": ", 2020, pp. 418–425",
-          "url": "https://ieeexplore.ieee.org/document/9178031/"
+          "details": ", 2020, pp. 418–425"
         },
         {
-          "n": 19,
+          "n": 15,
           "authors": "T. Guillod, P. Papamanolis, and J. W. Kolar",
           "title": "Artificial neural network (ANN) based fast and accurate inductor modeling and design",
           "venue": "IEEE Open J. Power Electron.",
-          "details": ", vol. 1, pp. 284–299, 2020",
-          "url": "https://www.ams-publications.ee.ethz.ch/uploads/tx_ethpublications/13_paper_ANN_guillod_ACCEPTED-VERSION.pdf"
-        },
-        {
-          "n": 20,
-          "authors": "H. Li et al.",
-          "title": "How MagNet: Machine learning framework for modeling power magnetic material characteristics",
-          "venue": "IEEE Trans. Power Electron.",
-          "details": ", vol. 38, no. 12, pp. 15829–15853, 2023",
-          "url": "https://collaborate.princeton.edu/en/publications/how-magnet-machine-learning-framework-for-modeling-power-magnetic/"
+          "details": ", vol. 1, pp. 284–299, 2020"
         }
       ]
     }
