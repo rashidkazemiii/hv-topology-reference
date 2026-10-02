@@ -220,9 +220,10 @@ async function build() {
     { name: "amplitude (% of fundamental)", labels: harm.map((n) => (n * fsw).toFixed(1)), values: amp },
   ], {
     x: rx + 0.1, y: 2.15, w: rw - 0.2, h: 2.3, objectName: "FFT spectrum chart",
-    altText: "Logarithmic bar chart of the ten sinusoidal source amplitudes of a triangular 400 kHz ripple current: 100 % at 0.4 MHz, 11 % at 1.2 MHz, 4 % at 2.0 MHz, falling to 0.3 % at 7.6 MHz.",
+    altText: "Bar chart of the ten sinusoidal source amplitudes of a triangular 400 kHz ripple current: 100 % at 0.4 MHz, 11 % at 1.2 MHz, 4 % at 2.0 MHz, falling to 0.3 % at 7.6 MHz.",
     barDir: "col", barGapWidthPct: 45, chartColors: [HEX.accent1],
-    valAxisLogScaleBase: 10, valAxisMinVal: 0.1, valAxisMaxVal: 100, valAxisLabelFormatCode: "General",
+    valAxisMinVal: 0, valAxisMaxVal: 120, valAxisMajorUnit: 20, valAxisLabelFormatCode: "0",
+    showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: "General", dataLabelFontSize: 9, dataLabelColor: HEX.dk1,
     showCatAxisTitle: true, catAxisTitle: "source frequency (MHz)", showValAxisTitle: true, valAxisTitle: "amplitude (%)",
     showLegend: false, ...chartFont, ...chartFrame,
   });
@@ -537,11 +538,28 @@ function styleSeries(xml, name, { noLine = false, noMarker = false, dash = null,
     return out;
   });
 }
+// pptxgenjs gives all scatter series one shared x list and writes missing y values as empty
+// points. Some viewers (notably on phones) pair x and y by position, not by index, and then
+// draw such series wrongly. Rewrite each series with only its own (x, y) pairs, numbered 0..n-1.
+function compactScatterSeries(xml) {
+  const pts = (block) => [...block.matchAll(/<c:pt idx="(\d+)"><c:v>([^<]*)<\/c:v><\/c:pt>/g)].map((m) => [Number(m[1]), m[2]]);
+  const cache = (list) => `<c:ptCount val="${list.length}"/>` + list.map((v, i) => `<c:pt idx="${i}"><c:v>${v}</c:v></c:pt>`).join("");
+  return xml.replace(/<c:ser>[\s\S]*?<\/c:ser>/g, (ser) => {
+    const xm = ser.match(/<c:xVal>[\s\S]*?<\/c:xVal>/), ym = ser.match(/<c:yVal>[\s\S]*?<\/c:yVal>/);
+    if (!xm || !ym) return ser;
+    const xs = new Map(pts(xm[0]));
+    const keep = pts(ym[0]).filter(([idx, v]) => v !== "" && xs.has(idx) && xs.get(idx) !== "");
+    const swap = (block, values) => block.replace(/<c:ptCount val="\d+"\/>[\s\S]*?(?=<\/c:numCache>)/, cache(values));
+    return ser
+      .replace(xm[0], swap(xm[0], keep.map(([idx]) => xs.get(idx))))
+      .replace(ym[0], swap(ym[0], keep.map(([, v]) => v)));
+  });
+}
 async function postProcessCharts(file) {
   const zip = await loadJSZip().loadAsync(fs.readFileSync(file));
   for (const name of Object.keys(zip.files).filter((n) => /^ppt\/charts\/chart\d+\.xml$/.test(n))) {
     let xml = await zip.file(name).async("string");
-    xml = xml.replace(/<c:pt idx="\d+"><c:v><\/c:v><\/c:pt>/g, "");
+    xml = compactScatterSeries(xml);
     if (xml.includes("<c:v>Heater calibration</c:v>")) {
       xml = styleSeries(xml, "Heater calibration", { noLine: true });
       xml = styleSeries(xml, "Proportional fit", { noMarker: true, dash: "dash" });

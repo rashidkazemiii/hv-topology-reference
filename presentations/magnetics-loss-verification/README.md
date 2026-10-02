@@ -15,6 +15,8 @@ This folder holds a 6-slide PowerPoint deck explaining the poster *"Experimental
 
 Every slide has speaker notes. `REFERENCES.md` lists all references with DOIs and links.
 
+`Automated_Magnetics_Loss_Verification.pdf` is the same deck as a PDF. Use it on phones, where PowerPoint viewers often draw native charts incompletely.
+
 ## What comes from the poster and what was added
 
 All facts, numbers and procedure steps come from the poster. Four visuals were drawn or computed for this deck, and none is copied from the poster:
