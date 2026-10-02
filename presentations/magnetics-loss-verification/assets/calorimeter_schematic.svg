@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="920" viewBox="0 0 880 920" font-family="Carlito, Calibri, Arial, sans-serif">
+<defs>
+  <pattern id="vac" width="12" height="12" patternUnits="userSpaceOnUse">
+    <rect width="12" height="12" fill="#F2F5F7"/><circle cx="6" cy="6" r="1.6" fill="#9AA8B2"/>
+  </pattern>
+  <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="10" height="10" fill="#D7DEE3"/><line x1="0" y1="0" x2="0" y2="10" stroke="#B3BEC6" stroke-width="3"/>
+  </pattern>
+  <linearGradient id="liq" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#D6F0F2"/><stop offset="1" stop-color="#A3D5DA"/>
+  </linearGradient>
+  <clipPath id="inner"><path d="M210,363 L210,820 Q210,870 260,870 L600,870 Q650,870 650,820 L650,363 Z"/></clipPath>
+  <clipPath id="heater"><rect x="500" y="600" width="60" height="130" rx="14"/></clipPath>
+  <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#C46A2B"/>
+  </marker>
+</defs>
+
+<!-- instrument tags (cables end at their lower edge) -->
+<rect x="200" y="40" width="150" height="40" rx="8" fill="#F6E6DA" stroke="#C46A2B" stroke-width="2"/><text x="275.0" y="67" text-anchor="middle" font-size="22" font-weight="bold" fill="#7E3F14">converter</text>
+<rect x="360" y="40" width="100" height="40" rx="8" fill="#DCEFF1" stroke="#0F7C86" stroke-width="2"/><text x="410.0" y="67" text-anchor="middle" font-size="22" font-weight="bold" fill="#0B5D64">Arduino</text>
+<rect x="470" y="40" width="120" height="40" rx="8" fill="#F6E6DA" stroke="#C46A2B" stroke-width="2"/><text x="530.0" y="67" text-anchor="middle" font-size="22" font-weight="bold" fill="#7E3F14">DC supply</text>
+<rect x="600" y="40" width="220" height="40" rx="8" fill="#E7ECEF" stroke="#5B6B77" stroke-width="2"/><text x="710.0" y="67" text-anchor="middle" font-size="22" font-weight="bold" fill="#2A3640">DAQ970A</text>
+
+<!-- Dewar flask: vacuum jacket between outer and inner wall -->
+<path d="M180,363 L180,830 Q180,900 250,900 L610,900 Q680,900 680,830 L680,363 Z" fill="url(#vac)" stroke="#2A3640" stroke-width="4"/>
+<path d="M210,363 L210,820 Q210,870 260,870 L600,870 Q650,870 650,820 L650,363 Z" fill="#FFFFFF" stroke="#2A3640" stroke-width="3"/>
+<rect x="210" y="430" width="440" height="450" fill="url(#liq)" clip-path="url(#inner)"/>
+<path d="M212,430 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0 q9,-6 18,0 t18,0" fill="none" stroke="#5FAAB2" stroke-width="2"/>
+<path d="M210,363 L210,820 Q210,870 260,870 L600,870 Q650,870 650,820 L650,363 Z" fill="none" stroke="#2A3640" stroke-width="3"/>
+
+<!-- cables and stirrer shaft pass through the lid -->
+<path d="M270,560 V80 M330,560 V80" stroke="#C46A2B" stroke-width="4" fill="none"/>
+<path d="M515,600 V80 M545,600 V80" stroke="#8A4A1E" stroke-width="3" fill="none"/>
+<path d="M430,170 V80" stroke="#0F7C86" stroke-width="3" fill="none"/>
+<path d="M615,260 V80 M790,290 V80" stroke="#2A3640" stroke-width="2.5" fill="none"/>
+
+<line x1="430" y1="260" x2="430" y2="820" stroke="#7B8A95" stroke-width="6"/>
+
+<!-- double lid with air gap -->
+<rect x="165" y="260" width="530" height="45" rx="4" fill="url(#hatch)" stroke="#2A3640" stroke-width="3"/>
+<rect x="165" y="318" width="530" height="45" rx="4" fill="url(#hatch)" stroke="#2A3640" stroke-width="3"/>
+
+<!-- stirrer: stepper motor, shaft, impeller -->
+<rect x="390" y="170" width="80" height="90" rx="8" fill="#4A5560" stroke="#2A3640" stroke-width="2"/>
+<path d="M400,192 H460 M400,208 H460 M400,224 H460 M400,240 H460" stroke="#6E7B86" stroke-width="3"/>
+<path d="M430,820 L382,808 L382,832 Z M430,820 L478,808 L478,832 Z" fill="#7B8A95" stroke="#2A3640" stroke-width="1.5"/>
+
+<!-- DUT: RM-type inductor (core + winding windows) -->
+<rect x="240" y="560" width="120" height="150" rx="6" fill="#3A4650" stroke="#1E262D" stroke-width="2"/>
+<rect x="252" y="580" width="36" height="110" fill="#5A2E12"/>
+<rect x="312" y="580" width="36" height="110" fill="#5A2E12"/>
+<circle cx="262" cy="590.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="262" cy="607.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="262" cy="625.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="262" cy="642.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="262" cy="660.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="262" cy="677.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="278" cy="590.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="278" cy="607.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="278" cy="625.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="278" cy="642.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="278" cy="660.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="278" cy="677.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="322" cy="590.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="322" cy="607.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="322" cy="625.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="322" cy="642.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="322" cy="660.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="322" cy="677.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="338" cy="590.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="338" cy="607.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="338" cy="625.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="338" cy="642.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="338" cy="660.0" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/><circle cx="338" cy="677.5" r="7.5" fill="#C46A2B" stroke="#F2B27C" stroke-width="1"/>
+<path d="M265,718 q7,6 0,12 q-7,6 0,12 q7,6 0,12 l0,8" fill="none" stroke="#C46A2B" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M300,718 q7,6 0,12 q-7,6 0,12 q7,6 0,12 l0,8" fill="none" stroke="#C46A2B" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M335,718 q7,6 0,12 q-7,6 0,12 q7,6 0,12 l0,8" fill="none" stroke="#C46A2B" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>
+<text x="300" y="808" text-anchor="middle" font-size="26" font-style="italic" font-weight="bold" fill="#7E3F14">P<tspan dy="7" font-size="17">loss</tspan></text>
+
+<!-- calibration heater: wire-wound resistor -->
+<rect x="500" y="600" width="60" height="130" rx="14" fill="#F1EBDF" stroke="#8A7F6E" stroke-width="2"/>
+<line x1="500" y1="612" x2="560" y2="622" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="627" x2="560" y2="637" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="642" x2="560" y2="652" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="657" x2="560" y2="667" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="672" x2="560" y2="682" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="687" x2="560" y2="697" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="702" x2="560" y2="712" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/><line x1="500" y1="717" x2="560" y2="727" stroke="#C46A2B" stroke-width="5" clip-path="url(#heater)"/>
+<rect x="500" y="600" width="60" height="130" rx="14" fill="none" stroke="#8A7F6E" stroke-width="2"/>
+
+<!-- PT100 probes: liquid (through the lid) and ambient -->
+<rect x="610" y="260" width="10" height="300" rx="3" fill="#C3CCD2" stroke="#5B6B77" stroke-width="1.5"/>
+<rect x="610" y="535" width="10" height="25" rx="3" fill="#5B6B77"/>
+<rect x="785" y="290" width="10" height="90" rx="3" fill="#C3CCD2" stroke="#5B6B77" stroke-width="1.5"/>
+<rect x="785" y="360" width="10" height="20" rx="3" fill="#5B6B77"/>
+
+<!-- numbered markers (legend on slide) -->
+<circle cx="150" cy="640" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="150" y="647.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">1</text><circle cx="135" cy="312" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="135" y="319.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">2</text><circle cx="590" cy="800" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="590" y="807.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">3</text><circle cx="365" cy="215" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="365" y="222.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">4</text>
+<circle cx="400" cy="600" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="400" y="607.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">5</text><circle cx="530" cy="765" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="530" y="772.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">6</text><circle cx="585" cy="500" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="585" y="507.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">7</text><circle cx="822" cy="335" r="19" fill="#23313A" stroke="#FFFFFF" stroke-width="2.5"/><text x="822" y="342.5" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFFFF">7</text>
+</svg>
