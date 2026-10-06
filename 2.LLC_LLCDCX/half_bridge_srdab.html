@@ -203,8 +203,8 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
     </div>
     <div class="prose"><p><b>How a half bridge makes a square wave.</b> The two capacitors split the input voltage, so their midpoint sits at half of it. When the top switch is on, the switch node is <b>+V/2</b> above the midpoint. When the bottom switch is on, it is <b>−V/2</b>. The primary makes ±V<sub>bus</sub>/2 at node A, and the secondary makes ±V<sub>Bat</sub>/2 at node B. Lr and Cr sit between the two square waves, and the current depends on the <i>difference</i> between them.</p></div>
     <ol class="steps" id="steps">
-      <li><span><b>Primary dead time.</b> Q2 has turned off and Q1 is not on yet. The current is still negative, so it flows into node A and charges it up from −12 V to +12 V. Once node A reaches +12 V, Q1's body diode starts conducting.</span></li>
-      <li><span><b>Q1 turns on at zero voltage.</b> Its voltage is already zero (the diode was conducting), so there is no switching loss. The current is still negative and flows backwards through Q1. The tank sees the largest voltage of the period, v<sub>A</sub> − v<sub>B</sub>/n = +12 + 12 V, so the current rises fast.</span></li>
+      <li><span><b>Primary dead time.</b> Q2 has turned off and Q1 is not on yet. The current is still negative, so it flows into node A and charges it up from −V<sub>bus</sub>/2 to +V<sub>bus</sub>/2 (−200 V to +200 V). Once node A reaches +200 V, Q1's body diode starts conducting.</span></li>
+      <li><span><b>Q1 turns on at zero voltage.</b> Its voltage is already zero (the diode was conducting), so there is no switching loss. The current is still negative and flows backwards through Q1. The tank sees the largest voltage of the period, v<sub>A</sub> − v<sub>B</sub>/n = +200 V + 200 V (at V<sub>Bat</sub> = 48 V), so the current rises fast.</span></li>
       <li><span><b>Current crosses zero, while Q4 is still on.</b> Now Q1 conducts normally, but the secondary has not switched yet. Current flows against v<sub>B</sub>, so a little power goes back from the battery. This short "backflow" interval is the price of the phase shift.</span></li>
       <li><span><b>Secondary dead time.</b> Q4 turns off. The now-positive current charges node B up to +V<sub>Bat</sub>/2, and Q3's body diode takes over.</span></li>
       <li><span><b>Q3 turns on at zero voltage. Power flows.</b> Both bridges are now positive. The tank sees only v<sub>A</sub> − v<sub>B</sub>/n, which is small, so the current changes slowly while it delivers energy to the battery.</span></li>
@@ -277,7 +277,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   const poly = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 
   // ---------- design (example, ~300 W like the app note) ----------
-  const DS = { Vbus: 24, n: 2, fs: 100e3, F: 1.2, P0: 300, th0: 40 * D, R: 0.02, CossP: 4e-9, CossS: 2e-9 };
+  const DS = { Vbus: 400, n: 48 / 400, fs: 100e3, F: 1.2, P0: 300, th0: 40 * D, R: 0.3, CossP: 100e-12, CossS: 1.5e-9 };   // 400 V bus, 48 V output, 600 V / 100 V MOSFETs
   (() => { const A = 2 * DS.Vbus / Math.PI, X = 2 * DS.Vbus * DS.Vbus * Math.sin(DS.th0) / (Math.PI ** 2 * DS.P0), w = 2 * Math.PI * DS.fs;
     DS.Lr = X / (w * (1 - 1 / DS.F ** 2)); DS.Cr = 1 / ((w / DS.F) ** 2 * DS.Lr); DS.X = X; })();
   const st = { th: 40 * D, td: 200e-9, VBat: 48, t: 0.01, playing: false };
@@ -390,7 +390,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
       <text x="${G.XC2 + 22}" y="${yc1 + 5}" class="lbl">C4</text><text x="${G.XC2 + 22}" y="${yc2 + 5}" class="lbl">C5</text>
       <text x="${G.XC1 + 8}" y="${G.YR + 18}">mid</text><text x="${G.XC2 - 8}" y="${G.YR + 18}" text-anchor="end">mid</text>
       <text x="375" y="${G.YA + 36}" text-anchor="middle" class="lbl">Cr</text><text x="440" y="${G.YA + 30}" text-anchor="middle" class="lbl">Lr</text>
-      <text x="${(G.XT + G.XS) / 2}" y="${G.YR + 26}" text-anchor="middle">1 : n</text>
+      <text x="${(G.XT + G.XS) / 2}" y="${G.YR + 26}" text-anchor="middle">${(1 / DS.n).toFixed(1)} : 1</text>
       <text x="${G.XA - 8}" y="${G.YA - 8}" text-anchor="end" class="lbl">A</text><text x="${G.XB + 8}" y="${G.YA - 8}" class="lbl">B</text>
       <g>
         <polyline id="cBand" class="flow-band flow-mag"/><polyline id="c2Band" class="flow-band flow-mag"/><polyline id="pBand" class="flow-band flow-pri"/>
@@ -400,7 +400,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
       </g>
       ${swSVG(1, G.XA, G.YU, false)}${swSVG(2, G.XA, G.YL, false)}${swSVG(3, G.XB, G.YU, true)}${swSVG(4, G.XB, G.YL, true)}
       <text id="iLbl" x="440" y="${G.YA - 24}" text-anchor="middle" class="lbl" style="font-size:14px"></text>
-      <text id="vaLbl" x="${G.XA}" y="${G.BOT + 28}" text-anchor="middle"></text><text id="vbLbl" x="${G.XB}" y="${G.BOT + 28}" text-anchor="middle"></text>`;
+      <text id="vaLbl" x="20" y="${G.BOT + 30}" text-anchor="start"></text><text id="vbLbl" x="985" y="${G.BOT + 30}" text-anchor="end"></text>`;
   }
   const ptsStr = (pts) => pts.map((p) => p.join(',')).join(' ');
   const setPts = (ids, pts) => ids.forEach((q) => $(q).setAttribute('points', pts ? ptsStr(pts) : ''));
@@ -443,7 +443,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     // labels
     const vds = { 1: s.VA - r.vA, 2: r.vA + s.VA, 3: (s.VB - r.vB) * DS.n, 4: (r.vB + s.VB) * DS.n };
     [1, 2, 3, 4].forEach((n) => { $('#CV' + n).textContent = `v_ds ${vds[n].toFixed(1)} V`; $('#GT' + n).textContent = r['q' + n] ? 'gate ON' : 'gate off'; });
-    $('#iLbl').textContent = flowing ? (i > 0 ? `i = ${i.toFixed(1)} A  →` : `←  i = ${i.toFixed(1)} A`) : 'i ≈ 0';
+    $('#iLbl').textContent = flowing ? (i > 0 ? `i = ${i.toFixed(2)} A  →` : `←  i = ${i.toFixed(2)} A`) : 'i ≈ 0';
     $('#vaLbl').textContent = flowing ? `primary: ${pMode}` : 'no current: v_A and v_B/n are equal and in phase';
     $('#vbLbl').textContent = flowing ? `secondary: ${sMode}` : '→ zero voltage across Lr–Cr (θ = 0, V_Bat = n·V_bus)';
   }
@@ -477,7 +477,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vA)]))}"/><polyline class="ln" style="stroke:var(--red)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vB)]))}"/>`;
     h += `<text x="${fr.x1 + 8}" y="${vy.y + 30}" style="fill:var(--blue)">v_A</text><text x="${fr.x1 + 8}" y="${vy.y + 48}" style="fill:var(--red)">v_B/n</text>`;
     // current
-    const iy = { y: 410, h: 130 }, im = nice(Math.max(5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
+    const iy = { y: 410, h: 130 }, im = nice(Math.max(0.5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
     h += `<text x="${fr.x0}" y="${iy.y - 10}" class="t-title">resonant current i (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(s.rec.map((q) => [X(q.t), YI(q.i)]))}"/>`;
     // ZVS markers at turn-on edges
@@ -497,7 +497,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     const V = Vrail * scale, YV = lin(-V * 1.15, V * 1.15, 210, 100);
     h += `<text x="${fr.x0}" y="96" class="t-title" style="fill:var(--blue)">${lab} (V)</text>` + [-V, 0, V].map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 6}" y="${YV(v) + 4}" text-anchor="end">${v.toFixed(0)}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(pts.map((q) => [X(q.t), YV(q[node] * scale)]))}"/>`;
-    const im = nice(Math.max(5, ...pts.map((q) => Math.abs(q.i))) * 1.15), YI = lin(-im, im, 310, 230);
+    const im = nice(Math.max(0.5, ...pts.map((q) => Math.abs(q.i))) * 1.15), YI = lin(-im, im, 310, 230);
     h += `<text x="${fr.x0}" y="226" class="t-title" style="fill:var(--purple)">i (A)</text>` + [-im, 0, im].map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 6}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(pts.map((q) => [X(q.t), YI(q.i)]))}"/>`;
     h += [-s.win, -s.win / 2, 0, s.win / 2, s.win].map((v) => `<text x="${X(v)}" y="328" text-anchor="middle">${(v * 1e9).toFixed(0)}</text>`).join('') + `<text x="${fr.x1 + 34}" y="328" text-anchor="middle">ns</text>`;
@@ -517,7 +517,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     document.querySelectorAll('#steps li').forEach((li, k) => li.classList.toggle('cur', k === S.step || (k === 5 && S.half === 1)));
     const H = S.half ? ['Q2', 'Q1', 'Q4', 'Q3', '−'] : ['Q1', 'Q2', 'Q3', 'Q4', '+'];
     const txt = [
-      `Dead time on the primary: ${H[1]} is off and ${H[0]} is not on yet. The current (${S.r.i.toFixed(1)} A) swings node A toward ${H[4]}12 V.`,
+      `Dead time on the primary: ${H[1]} is off and ${H[0]} is not on yet. The current (${S.r.i.toFixed(1)} A) swings node A toward ${H[4]}${DS.Vbus / 2} V.`,
       `${H[0]} is on with the current flowing backwards through it: it turned on at zero voltage. The current is rising fast.`,
       `The current has crossed zero. ${H[0]} conducts normally, and ${H[3]} is still on: a short backflow interval.`,
       `Dead time on the secondary: ${H[3]} is off and ${H[2]} is not on yet. The current swings node B toward ${H[4]}${(st.VBat / 2).toFixed(0)} V.`,
@@ -545,9 +545,9 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     const s = sim, e = s.edge, M = st.VBat / (DS.n * DS.Vbus);
     zoom('#zA', s.zA, 'vA', 'q1', 'q2', s.VA, 1, 'node A', e.q1, 'Q1', 'Q2');
     zoom('#zB', s.zB, 'vB', 'q3', 'q4', s.VB, DS.n, 'node B', e.q3, 'Q3', 'Q4');
-    $('#zAcap').innerHTML = `<b>Primary: Q2 off → Q1 on.</b> Current at the edge ${e.q1 ? e.q1.i.toFixed(1) : '?'} A (it must be negative). Estimated swing time 2·C<sub>oss</sub>·V/|i| ≈ ${swingNs(DS.CossP, DS.Vbus, e.q1 ? e.q1.i : 0).toFixed(0)} ns, against a dead time of ${(s.td * 1e9).toFixed(0)} ns.`;
-    $('#zBcap').innerHTML = `<b>Secondary: Q4 off → Q3 on.</b> Current at the edge ${e.q3 ? e.q3.i.toFixed(1) : '?'} A (it must be positive). Estimated swing ≈ ${swingNs(DS.CossS, st.VBat, e.q3 ? e.q3.i / DS.n : 0).toFixed(0)} ns. Node B is shown in real secondary volts.`;
-    $('#params').innerHTML = `V<sub>bus</sub> = ${DS.Vbus} V, n = ${DS.n}, f<sub>s</sub> = ${DS.fs / 1e3} kHz, f<sub>r</sub> = ${(DS.fs / DS.F / 1e3).toFixed(1)} kHz, Lr = ${(DS.Lr * 1e6).toFixed(2)} µH, Cr = ${(DS.Cr * 1e6).toFixed(2)} µF, C<sub>oss</sub> = ${DS.CossP * 1e9} nF (primary) and ${DS.CossS * 1e9} nF (secondary). Now: M = V<sub>Bat</sub>/(n·V<sub>bus</sub>) = ${M.toFixed(2)}, power = <b>${s.P.toFixed(0)} W</b>, tank RMS current = ${s.irms.toFixed(1)} A.`;
+    $('#zAcap').innerHTML = `<b>Primary: Q2 off → Q1 on.</b> Current at the edge ${e.q1 ? e.q1.i.toFixed(2) : '?'} A (it must be negative). Estimated swing time 2·C<sub>oss</sub>·V/|i| ≈ ${swingNs(DS.CossP, DS.Vbus, e.q1 ? e.q1.i : 0).toFixed(0)} ns, against a dead time of ${(s.td * 1e9).toFixed(0)} ns.`;
+    $('#zBcap').innerHTML = `<b>Secondary: Q4 off → Q3 on.</b> Current at the edge ${e.q3 ? e.q3.i.toFixed(2) : '?'} A on the primary side, ${e.q3 ? (e.q3.i / DS.n).toFixed(1) : '?'} A in the secondary (it must be positive). Estimated swing ≈ ${swingNs(DS.CossS, st.VBat, e.q3 ? e.q3.i / DS.n : 0).toFixed(0)} ns. Node B is shown in real secondary volts.`;
+    $('#params').innerHTML = `V<sub>bus</sub> = ${DS.Vbus} V, nominal output 48 V, turns ratio N<sub>p</sub>:N<sub>s</sub> = ${(1 / DS.n).toFixed(2)} : 1 (n = ${DS.n.toFixed(3)}), f<sub>s</sub> = ${DS.fs / 1e3} kHz, f<sub>r</sub> = ${(DS.fs / DS.F / 1e3).toFixed(1)} kHz, Lr = ${(DS.Lr * 1e6).toFixed(0)} µH, Cr = ${(DS.Cr * 1e9).toFixed(1)} nF, C<sub>oss</sub> = ${(DS.CossP * 1e12).toFixed(0)} pF (600 V primary MOSFETs) and ${(DS.CossS * 1e9).toFixed(1)} nF (100 V secondary MOSFETs), tank resistance ${DS.R} Ω. Now: M = V<sub>Bat</sub>/(n·V<sub>bus</sub>) = ${M.toFixed(2)}, power = <b>${s.P.toFixed(0)} W</b>, tank RMS current = ${s.irms.toFixed(2)} A (primary), ${(s.irms / DS.n).toFixed(1)} A (secondary).`;
     drawLaw(M);
   }
 
