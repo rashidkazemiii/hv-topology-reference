@@ -192,7 +192,7 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
       <div class="col">
         <figure class="panel fig">
           <div class="scroll"><svg id="sch" viewBox="0 0 1000 430" role="img" aria-label="Primary half bridge Q1 Q2 with split capacitors, Cr and Lr, transformer 1 to n, secondary half bridge Q3 Q4 with split capacitors"></svg></div>
-          <figcaption><b>The moving dashes show the current path and direction</b> at the selected moment: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, <span style="color:var(--purple)">purple</span> through C<sub>oss</sub> during a dead time. Each switch is drawn as channel, body diode and C<sub>oss</sub>. The loop closes through the split capacitor on the same side.</figcaption>
+          <figcaption><b>The moving dashes show the current path and direction</b> at the selected moment: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, <span style="color:var(--purple)">purple</span> through C<sub>oss</sub> during a dead time. Each switch is drawn as channel, body diode and C<sub>oss</sub>. <b>The AC current splits in two equal halves</b>: one loop closes through the nearest split capacitor (C1 when Q1 conducts), the other through the opposite capacitor and the source (C2 + V<sub>bus</sub>). For AC, the two capacitors are in parallel through the source. The capacitors carry no average current, so the DC part, P/V<sub>bus</sub>, flows only through the source.</figcaption>
         </figure>
         <div class="now" id="now"></div>
       </div>
@@ -393,12 +393,14 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
       <text x="${(G.XT + G.XS) / 2}" y="${G.YR + 26}" text-anchor="middle">${(1 / DS.n).toFixed(1)} : 1</text>
       <text x="${G.XA - 8}" y="${G.YA - 8}" text-anchor="end" class="lbl">A</text><text x="${G.XB + 8}" y="${G.YA - 8}" class="lbl">B</text>
       <g>
+        <polyline id="pxBand" class="flow-band flow-pri"/><polyline id="sxBand" class="flow-band flow-sec"/><polyline id="pxDash" class="flow-dash flow-pri"/><polyline id="sxDash" class="flow-dash flow-sec"/>
         <polyline id="cBand" class="flow-band flow-mag"/><polyline id="c2Band" class="flow-band flow-mag"/><polyline id="pBand" class="flow-band flow-pri"/>
         <polyline id="sBand" class="flow-band flow-sec"/><polyline id="s2Band" class="flow-band flow-sec"/>
         <polyline id="cDash" class="flow-dash flow-mag"/><polyline id="c2Dash" class="flow-dash flow-mag"/><polyline id="pDash" class="flow-dash flow-pri"/>
         <polyline id="sDash" class="flow-dash flow-sec"/><polyline id="s2Dash" class="flow-dash flow-sec"/>
       </g>
       ${swSVG(1, G.XA, G.YU, false)}${swSVG(2, G.XA, G.YL, false)}${swSVG(3, G.XB, G.YU, true)}${swSVG(4, G.XB, G.YL, true)}
+      <text id="busLbl" x="20" y="${G.TOP - 16}" style="fill:var(--blue)"></text><text id="batLbl" x="985" y="${G.TOP - 16}" text-anchor="end" style="fill:var(--green)"></text>
       <text id="iLbl" x="440" y="${G.YA - 24}" text-anchor="middle" class="lbl" style="font-size:14px"></text>
       <text id="vaLbl" x="20" y="${G.BOT + 30}" text-anchor="start"></text><text id="vbLbl" x="985" y="${G.BOT + 30}" text-anchor="end"></text>`;
   }
@@ -408,6 +410,10 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   const priTank = () => [[G.XA, G.YA], [G.XT, G.YA], [G.XT, G.YR], [G.XC1, G.YR]];
   const priUp = (bx) => [...priTank(), [G.XC1, G.TOP], [G.XA, G.TOP], ...devPath(G.XA, G.YU, bx, true), [G.XA, G.YA]];
   const priDn = (bx) => [...priTank(), [G.XC1, G.BOT], [G.XA, G.BOT], ...devPath(G.XA, G.YL, bx, false), [G.XA, G.YA]];
+  const priUpSrc = (bx) => [...priTank(), [G.XC1, G.BOT], [G.XV, G.BOT], [G.XV, G.TOP], [G.XA, G.TOP], ...devPath(G.XA, G.YU, bx, true), [G.XA, G.YA]];
+  const priDnSrc = (bx) => [...priTank(), [G.XC1, G.TOP], [G.XV, G.TOP], [G.XV, G.BOT], [G.XA, G.BOT], ...devPath(G.XA, G.YL, bx, false), [G.XA, G.YA]];
+  const secUpSrc = (bx) => [[G.XS, G.YA], [G.XB, G.YA], ...devPath(G.XB, G.YU, bx, false), [G.XB, G.TOP], [G.XV2, G.TOP], [G.XV2, G.BOT], [G.XC2, G.BOT], [G.XC2, G.YR], [G.XS, G.YR], [G.XS, G.YA]];
+  const secDnSrc = (bx) => [[G.XS, G.YA], [G.XB, G.YA], ...devPath(G.XB, G.YL, bx, true), [G.XB, G.BOT], [G.XV2, G.BOT], [G.XV2, G.TOP], [G.XC2, G.TOP], [G.XC2, G.YR], [G.XS, G.YR], [G.XS, G.YA]];
   const secUp = (bx) => [[G.XS, G.YA], [G.XB, G.YA], ...devPath(G.XB, G.YU, bx, false), [G.XB, G.TOP], [G.XC2, G.TOP], [G.XC2, G.YR], [G.XS, G.YR], [G.XS, G.YA]];
   const secDn = (bx) => [[G.XS, G.YA], [G.XB, G.YA], ...devPath(G.XB, G.YL, bx, true), [G.XB, G.BOT], [G.XC2, G.BOT], [G.XC2, G.YR], [G.XS, G.YR], [G.XS, G.YA]];
   function drawSch(S) {
@@ -419,30 +425,32 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     const ch = (x, mir) => x - G.OFF * (mir ? -1 : 1), di = (x, mir) => x + G.OFF * (mir ? -1 : 1), co = (x, mir) => x + G.CO * (mir ? -1 : 1);
     // ---- primary ----
     let pMode = 'none';
-    setPts(['#pBand', '#pDash', '#cBand', '#cDash', '#c2Band', '#c2Dash'], null);
+    setPts(['#pBand', '#pDash', '#pxBand', '#pxDash', '#cBand', '#cDash', '#c2Band', '#c2Dash'], null);
     if (flowing) {
-      if (r.q1) { setPts(['#pBand', '#pDash'], rev(priUp(ch(G.XA)))); $('#S1').classList.add('on'); pMode = i > 0 ? 'Q1 channel, drain → source' : 'Q1 channel, source → drain (reversed)'; }
-      else if (r.q2) { setPts(['#pBand', '#pDash'], rev(priDn(ch(G.XA)))); $('#S2').classList.add('on'); pMode = i < 0 ? 'Q2 channel, drain → source' : 'Q2 channel, source → drain (reversed)'; }
-      else if (r.vA >= s.VA - eps && i < 0) { setPts(['#pBand', '#pDash'], rev(priUp(di(G.XA)))); $('#D1').classList.add('on'); pMode = 'body diode D1'; }
-      else if (r.vA <= -s.VA + eps && i > 0) { setPts(['#pBand', '#pDash'], rev(priDn(di(G.XA)))); $('#D2').classList.add('on'); pMode = 'body diode D2'; }
+      if (r.q1) { setPts(['#pBand', '#pDash'], rev(priUp(ch(G.XA)))); setPts(['#pxBand', '#pxDash'], rev(priUpSrc(ch(G.XA)))); $('#S1').classList.add('on'); pMode = i > 0 ? 'Q1 channel, drain → source' : 'Q1 channel, source → drain (reversed)'; }
+      else if (r.q2) { setPts(['#pBand', '#pDash'], rev(priDn(ch(G.XA)))); setPts(['#pxBand', '#pxDash'], rev(priDnSrc(ch(G.XA)))); $('#S2').classList.add('on'); pMode = i < 0 ? 'Q2 channel, drain → source' : 'Q2 channel, source → drain (reversed)'; }
+      else if (r.vA >= s.VA - eps && i < 0) { setPts(['#pBand', '#pDash'], rev(priUp(di(G.XA)))); setPts(['#pxBand', '#pxDash'], rev(priUpSrc(di(G.XA)))); $('#D1').classList.add('on'); pMode = 'body diode D1'; }
+      else if (r.vA <= -s.VA + eps && i > 0) { setPts(['#pBand', '#pDash'], rev(priDn(di(G.XA)))); setPts(['#pxBand', '#pxDash'], rev(priDnSrc(di(G.XA)))); $('#D2').classList.add('on'); pMode = 'body diode D2'; }
       else { setPts(['#cBand', '#cDash'], rev(priUp(co(G.XA)))); setPts(['#c2Band', '#c2Dash'], rev(priDn(co(G.XA)))); $('#C1').classList.add('on'); $('#C2').classList.add('on'); pMode = 'Coss of Q1 and Q2 (node A swinging)'; }
     }
     // ---- secondary (positive = into node B) ----
-    setPts(['#sBand', '#sDash', '#s2Band', '#s2Dash'], null);
+    setPts(['#sBand', '#sDash', '#s2Band', '#s2Dash', '#sxBand', '#sxDash'], null);
     let sMode = 'none';
     const swingB = flowing && !r.q3 && !r.q4 && Math.abs(r.vB) < s.VB - eps;
     ['#sBand', '#s2Band'].forEach((q) => $(q).setAttribute('class', `flow-band ${swingB ? 'flow-mag' : 'flow-sec'}`));
     ['#sDash', '#s2Dash'].forEach((q) => $(q).setAttribute('class', `flow-dash ${swingB ? 'flow-mag' : 'flow-sec'}`));
     if (flowing) {
-      if (r.q3) { setPts(['#sBand', '#sDash'], rev(secUp(ch(G.XB, true)))); $('#S3').classList.add('on'); sMode = i < 0 ? 'Q3 channel, drain → source' : 'Q3 channel, source → drain (sync. rectifier)'; }
-      else if (r.q4) { setPts(['#sBand', '#sDash'], rev(secDn(ch(G.XB, true)))); $('#S4').classList.add('on'); sMode = i > 0 ? 'Q4 channel, drain → source' : 'Q4 channel, source → drain (sync. rectifier)'; }
-      else if (r.vB >= s.VB - eps && i > 0) { setPts(['#sBand', '#sDash'], rev(secUp(di(G.XB, true)))); $('#D3').classList.add('on'); sMode = 'body diode D3'; }
-      else if (r.vB <= -s.VB + eps && i < 0) { setPts(['#sBand', '#sDash'], rev(secDn(di(G.XB, true)))); $('#D4').classList.add('on'); sMode = 'body diode D4'; }
+      if (r.q3) { setPts(['#sBand', '#sDash'], rev(secUp(ch(G.XB, true)))); setPts(['#sxBand', '#sxDash'], rev(secUpSrc(ch(G.XB, true)))); $('#S3').classList.add('on'); sMode = i < 0 ? 'Q3 channel, drain → source' : 'Q3 channel, source → drain (sync. rectifier)'; }
+      else if (r.q4) { setPts(['#sBand', '#sDash'], rev(secDn(ch(G.XB, true)))); setPts(['#sxBand', '#sxDash'], rev(secDnSrc(ch(G.XB, true)))); $('#S4').classList.add('on'); sMode = i > 0 ? 'Q4 channel, drain → source' : 'Q4 channel, source → drain (sync. rectifier)'; }
+      else if (r.vB >= s.VB - eps && i > 0) { setPts(['#sBand', '#sDash'], rev(secUp(di(G.XB, true)))); setPts(['#sxBand', '#sxDash'], rev(secUpSrc(di(G.XB, true)))); $('#D3').classList.add('on'); sMode = 'body diode D3'; }
+      else if (r.vB <= -s.VB + eps && i < 0) { setPts(['#sBand', '#sDash'], rev(secDn(di(G.XB, true)))); setPts(['#sxBand', '#sxDash'], rev(secDnSrc(di(G.XB, true)))); $('#D4').classList.add('on'); sMode = 'body diode D4'; }
       else { setPts(['#sBand', '#sDash'], rev(secUp(co(G.XB, true)))); setPts(['#s2Band', '#s2Dash'], rev(secDn(co(G.XB, true)))); $('#C3').classList.add('on'); $('#C4').classList.add('on'); sMode = 'Coss of Q3 and Q4 (node B swinging)'; }
     }
     // labels
     const vds = { 1: s.VA - r.vA, 2: r.vA + s.VA, 3: (s.VB - r.vB) * DS.n, 4: (r.vB + s.VB) * DS.n };
     [1, 2, 3, 4].forEach((n) => { $('#CV' + n).textContent = `v_ds ${vds[n].toFixed(1)} V`; $('#GT' + n).textContent = r['q' + n] ? 'gate ON' : 'gate off'; });
+    $('#busLbl').textContent = `V_bus supplies ${(s.P / DS.Vbus).toFixed(2)} A average`;
+    $('#batLbl').textContent = `battery takes ${(s.P / st.VBat).toFixed(1)} A average`;
     $('#iLbl').textContent = flowing ? (i > 0 ? `i = ${i.toFixed(2)} A  →` : `←  i = ${i.toFixed(2)} A`) : 'i ≈ 0';
     $('#vaLbl').textContent = flowing ? `primary: ${pMode}` : 'no current: v_A and v_B/n are equal and in phase';
     $('#vbLbl').textContent = flowing ? `secondary: ${sMode}` : '→ zero voltage across Lr–Cr (θ = 0, V_Bat = n·V_bus)';
