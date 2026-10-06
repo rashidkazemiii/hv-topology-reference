@@ -134,6 +134,23 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
 #stepLbl { min-width: 92px; text-align: center; }
 .btns { display: flex; flex-wrap: wrap; gap: 8px; }
 .btns button { font: 500 12.5px/1 var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; cursor: pointer; }
+
+.dev path { stroke: var(--wire); stroke-width: 1.6; fill: none; stroke-linejoin: round; }
+.dev .fillme { fill: var(--wire); }
+.dev text { fill: var(--text2); }
+.dev .gt { font-size: 11px; fill: var(--text3); }
+.dev.gated .gate, .dev.gated path.gate { stroke: var(--blue); stroke-width: 2.4; }
+.dev.gated .gt { fill: var(--blue); font-weight: 600; }
+.dev.on path { stroke: var(--blue); stroke-width: 2.6; }
+#S3.on path, #S4.on path { stroke: var(--green); }
+.dev.diode.on path { stroke: var(--amber); } .dev.diode.on .fillme { fill: var(--amber); }
+.dev.cap.on path { stroke: var(--purple); stroke-width: 2.6; }
+.dev .cv { font-size: 11px; fill: var(--text3); }
+.flow-band { fill: none; stroke-width: 9; stroke-linejoin: round; opacity: 0.2; }
+.flow-dash { fill: none; stroke-width: 2.6; stroke-dasharray: 7 9; stroke-linejoin: round; animation: flow 0.7s linear infinite; }
+.flow-pri { stroke: var(--blue); } .flow-sec { stroke: var(--green); } .flow-mag { stroke: var(--purple); }
+@keyframes flow { to { stroke-dashoffset: -16; } }
+@media (prefers-reduced-motion: reduce) { .flow-dash { animation: none; } }
 </style>
 
 <main class="wrap">
@@ -161,8 +178,8 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
   <section>
     <h2><span class="n">1</span>The circuit</h2>
     <figure class="panel fig">
-      <div class="scroll"><svg id="sch" viewBox="0 0 1000 380" role="img" aria-label="Primary half bridge Q1 Q2 with split capacitors, Cr and Lr, transformer 1 to n, secondary half bridge Q3 Q4 with split capacitors"></svg></div>
-      <figcaption><b>At the moment selected by the time slider.</b> <span style="color:var(--blue)">Blue</span> switch: gate on, current flowing drain → source (normal). <span style="color:var(--green)">Green</span>: current flowing backwards, through the body diode or the channel; this is the ZVS state. <span style="color:var(--amber)">Amber</span>: gate off, but the body diode conducts (dead time). The arrow on Lr is the current direction.</figcaption>
+      <div class="scroll"><svg id="sch" viewBox="0 0 1000 430" role="img" aria-label="Primary half bridge Q1 Q2 with split capacitors, Cr and Lr, transformer 1 to n, secondary half bridge Q3 Q4 with split capacitors"></svg></div>
+      <figcaption><b>At the moment selected by the time slider.</b> Each switch is drawn as three parallel parts: the MOSFET channel, its body diode and its C<sub>oss</sub>. The moving dashes show where the current flows and in which direction: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, and <span style="color:var(--purple)">purple</span> through the C<sub>oss</sub> during a dead time, when the current splits between the two switches of a leg. The half-bridge loop closes through the split capacitor on the same side (C1 with Q1, C2 with Q2).</figcaption>
     </figure>
     <div class="prose"><p><b>How a half bridge makes a square wave.</b> The two capacitors split the input voltage, so their midpoint sits at half of it. When the top switch is on, the switch node is <b>+V/2</b> above the midpoint. When the bottom switch is on, it is <b>−V/2</b>. Both sides do this: the primary makes ±V<sub>bus</sub>/2 at node A, and the secondary makes ±V<sub>Bat</sub>/2 at node B. Lr and Cr sit between the two square waves. The current that flows depends on the <i>difference</i> between them.</p></div>
   </section>
@@ -305,53 +322,119 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     return { r, half, step, primDead, secDead };
   }
 
-  // ---------- schematic ----------
-  const coilH = (x0, y, nb) => `M${x0},${y} ` + Array.from({ length: nb }, () => 'a9,9 0 0 1 18,0').join(' ');
-  const coilV = (x, y0, nb, right) => `M${x},${y0} ` + Array.from({ length: nb }, () => `a9,9 0 0 ${right ? 1 : 0} 0,18`).join(' ');
-  function fet(x, yc, lab, mode, mirror) {   // mode: off | fwd | rev | diode
-    const s = mirror ? -1 : 1, xt = x - 14 * s, col = { off: 'var(--wire)', fwd: 'var(--blue)', rev: 'var(--green)', diode: 'var(--amber)' }[mode], sw = mode === 'off' ? 1.6 : 2.6;
-    const txt = { off: 'off', fwd: 'on', rev: 'on, current reversed (ZVS)', diode: 'off, body diode conducts' }[mode];
-    return `<g style="stroke:${col};stroke-width:${sw};fill:none">
-      <path d="M${x},${yc - 40} V${yc - 22} H${xt} V${yc - 14} M${xt},${yc + 14} V${yc + 22} H${x} V${yc + 40} M${xt - 8 * s},${yc - 15} V${yc + 15} M${xt - 14 * s},${yc - 11} V${yc + 11} M${xt - 14 * s},${yc} H${xt - 26 * s}"/>
-      <path d="M${x},${yc - 22} H${x + 17 * s} V${yc + 22} H${x} M${x + 12 * s},${yc + 4} H${x + 22 * s}"/></g>
-      <polygon points="${x + 12 * s},${yc - 6} ${x + 22 * s},${yc - 6} ${x + 17 * s},${yc + 4}" style="fill:${col}"/>
-      <text x="${xt - 32 * s}" y="${yc + 5}" text-anchor="${mirror ? 'start' : 'end'}" class="lbl" style="fill:${mode === 'off' ? 'var(--text2)' : col}">${lab}</text>
-      <text x="${xt - 32 * s}" y="${yc + 21}" text-anchor="${mirror ? 'start' : 'end'}" style="fill:${mode === 'off' ? 'var(--text3)' : col};font-size:11px">${txt}</text>`;
+  // ---------- schematic with animated current loops ----------
+  const G = { TOP: 60, BOT: 380, YU: 130, YL: 310, YA: 210, YR: 270, H: 34, OFF: 14, CO: 46, XV: 70, XC1: 160, XA: 300, XT: 560, XS: 600, XB: 720, XC2: 860, XV2: 940 };
+  function devPath(x, yc, bx, down) { const H = G.H, p = [[x, yc - H], [bx, yc - H], [bx, yc + H], [x, yc + H]]; return down ? p : p.reverse(); }
+  // one switch: channel (MOSFET), body diode and Coss as three parallel branches
+  function swSVG(n, x, yc, mirror) {
+    const s = mirror ? -1 : 1, H = G.H, xt = x - G.OFF * s, xd = x + G.OFF * s, xc = x + G.CO * s;
+    return `
+      <g class="dev" id="S${n}"><title>MOSFET channel of Q${n}</title>
+        <path d="M${xt},${yc - H} V${yc - 16} M${xt},${yc + 16} V${yc + H} M${xt - 9 * s},${yc - 16} V${yc + 16} M${xt - 9 * s},${yc - 16} H${xt} M${xt - 9 * s},${yc + 16} H${xt}"/>
+        <path class="gate" d="M${xt - 15 * s},${yc - 12} V${yc + 12} M${xt - 15 * s},${yc} H${xt - 26 * s}"/>
+        <text x="${xt - 30 * s}" y="${yc + 5}" text-anchor="${mirror ? 'start' : 'end'}" class="lbl">Q${n}</text>
+        <text class="gt" id="GT${n}" x="${xt - 30 * s}" y="${yc + 21}" text-anchor="${mirror ? 'start' : 'end'}"></text>
+      </g>
+      <g class="dev diode" id="D${n}"><title>Body diode of Q${n}</title>
+        <path d="M${xd},${yc - H} V${yc + H} M${xd - 8},${yc - 7} H${xd + 8}"/>
+        <polygon class="fillme" points="${xd - 8},${yc + 7} ${xd + 8},${yc + 7} ${xd},${yc - 7}"/>
+      </g>
+      <g class="dev cap" id="C${n}"><title>Output capacitance Coss of Q${n}</title>
+        <path d="M${xc},${yc - H} V${yc - 5} M${xc},${yc + 5} V${yc + H} M${xc - 10},${yc - 5} H${xc + 10} M${xc - 10},${yc + 5} H${xc + 10}"/>
+        <text x="${xc + 14 * s}" y="${yc - 3}" text-anchor="${mirror ? 'end' : 'start'}" style="font-size:11px">Coss</text>
+        <text class="cv" id="CV${n}" x="${xc + 14 * s}" y="${yc + 13}" text-anchor="${mirror ? 'end' : 'start'}"></text>
+      </g>`;
   }
-  function drawSch(S) {
-    const r = S.r, i = r.i;
-    // primary: i>0 leaves node A. Q1 (top) carries it forward if i>0; Q2 forward if i<0.
-    const mP = (on, fwdWhenPos, diodeSide) => (on ? ((i > 0) === fwdWhenPos ? 'fwd' : 'rev') : diodeSide ? 'diode' : 'off');
-    const pDead = S.primDead, sDead = S.secDead, atTopA = r.vA >= S0().VA - 1e-6, atBotA = r.vA <= -S0().VA + 1e-6, atTopB = r.vB >= S0().VB - 1e-6, atBotB = r.vB <= -S0().VB + 1e-6;
-    const m1 = mP(r.q1, true, pDead && atTopA && i < 0), m2 = mP(r.q2, false, pDead && atBotA && i > 0);
-    // secondary: i>0 flows into node B. Q3 (top) carries it forward if i<0 (from rail down into B? no): i>0 into B exits up through Q3 → reverse.
-    const m3 = r.q3 ? (i > 0 ? 'rev' : 'fwd') : sDead && atTopB && i > 0 ? 'diode' : 'off';
-    const m4 = r.q4 ? (i > 0 ? 'fwd' : 'rev') : sDead && atBotB && i < 0 ? 'diode' : 'off';
-    const cap = (x, y, lab, right) => `<path class="wire" style="stroke-width:3" d="M${x - 16},${y - 5} H${x + 16} M${x - 16},${y + 5} H${x + 16}"/><text x="${right ? x + 24 : x - 24}" y="${y + 4}" text-anchor="${right ? 'start' : 'end'}" class="lbl">${lab}</text>`;
-    const col = 'var(--purple)', right = i >= 0;
+  function legWires(x, mirror) {
+    const s = mirror ? -1 : 1, H = G.H, xl = x - G.OFF * s, xr = x + G.CO * s;
+    return `M${x},${G.TOP} V${G.YU - H} M${x},${G.YU + H} V${G.YL - H} M${x},${G.YL + H} V${G.BOT}` +
+      [G.YU, G.YL].map((yc) => ` M${xl},${yc - H} H${xr} M${xl},${yc + H} H${xr}`).join('');
+  }
+  function drawSchStatic() {
+    const coilH = Array.from({ length: 4 }, () => 'a10,10 0 0 1 20,0').join(' ');
+    const coilV = (sw) => Array.from({ length: 3 }, () => `a10,10 0 0 ${sw} 0,20`).join(' ');
+    const capP = (x, y) => `M${x - 16},${y - 6} H${x + 16} M${x - 16},${y + 6} H${x + 16}`;
+    const yc1 = (G.TOP + G.YR) / 2, yc2 = (G.YR + G.BOT) / 2;
+    const w = [
+      `M${G.XV},${G.TOP} H${G.XA} M${G.XV},${G.BOT} H${G.XA} M${G.XV},${G.TOP} V${(G.TOP + G.BOT) / 2 - 10} M${G.XV},${(G.TOP + G.BOT) / 2 + 10} V${G.BOT}`,
+      `M${G.XC1},${G.TOP} V${yc1 - 6} M${G.XC1},${yc1 + 6} V${yc2 - 6} M${G.XC1},${yc2 + 6} V${G.BOT}`,
+      legWires(G.XA, false), legWires(G.XB, true),
+      `M${G.XA},${G.YA} H370 M380,${G.YA} H400 ${coilH} H${G.XT} ${coilV(1)}`,
+      `M${G.XT},${G.YR} H${G.XA + 6} a6,6 0 0 0 -12,0 H${G.XC1}`,
+      `M${G.XS},${G.YA} ${coilV(0)} M${G.XS},${G.YA} H${G.XB}`,
+      `M${G.XS},${G.YR} H${G.XB - 6} a6,6 0 0 1 12,0 H${G.XC2}`,
+      `M${G.XB},${G.TOP} H${G.XV2} M${G.XB},${G.BOT} H${G.XV2} M${G.XC2},${G.TOP} V${yc1 - 6} M${G.XC2},${yc1 + 6} V${yc2 - 6} M${G.XC2},${yc2 + 6} V${G.BOT}`,
+      `M${G.XV2},${G.TOP} V${(G.TOP + G.BOT) / 2 - 10} M${G.XV2},${(G.TOP + G.BOT) / 2 + 10} V${G.BOT}`,
+    ].join(' ');
     $('#sch').innerHTML = `
-      <path class="wire" d="M90,60 H280 M90,330 H280 M120,60 V120 M120,130 V260 M120,270 V330 M280,60 V85 M280,165 V225 M280,305 V330"/>
-      ${cap(120, 125, 'C1')}${cap(120, 265, 'C2')}
-      <text x="70" y="70" class="lbl">+</text><text x="70" y="330" class="lbl">−</text><text x="40" y="200" class="lbl">V<tspan dy="3" font-size="10">bus</tspan></text>
-      ${fet(280, 125, 'Q1', m1, false)}${fet(280, 265, 'Q2', m2, false)}
-      <circle class="solid" cx="280" cy="195" r="3.5"/><circle class="solid" cx="120" cy="195" r="3.5"/><text x="288" y="185" class="lbl">A</text>
-      <path class="wire" d="M280,195 H335 M345,195 H380 M452,195 H560 V210 M560,282 V310 H286 a6,6 0 0 0 -12,0 H120 V270"/>
-      <path class="wire" style="stroke-width:3" d="M335,180 V210 M345,180 V210"/><text x="340" y="172" text-anchor="middle" class="lbl">Cr</text>
-      <path class="wire" style="stroke:${col};stroke-width:2.4" d="${coilH(380, 195, 4)}"/><text x="416" y="172" text-anchor="middle" class="lbl">Lr</text>
-      <path d="${right ? 'M478,205 l20,0 m-7,-6 l7,6 l-7,6' : 'M498,205 l-20,0 m7,-6 l-7,6 l7,6'}" style="stroke:${col};stroke-width:2.4;fill:none"/>
-      <text x="488" y="230" text-anchor="middle" style="fill:${col}">i = ${i.toFixed(1)} A</text>
-      <path class="wire" style="stroke:var(--blue);stroke-width:2.2" d="${coilV(560, 210, 4, true)}"/>
-      <path class="wire" style="stroke:var(--blue)" d="M576,204 V288 M580,204 V288"/>
-      <path class="wire" style="stroke:var(--blue);stroke-width:2.2" d="${coilV(596, 210, 4, false)}"/>
-      <text x="578" y="330" text-anchor="middle">1 : n</text>
-      <path class="wire" d="M596,210 V195 H720 M596,282 V310 H714 a6,6 0 0 1 12,0 H880 V270"/>
-      <path class="wire" d="M720,60 H930 M720,330 H930 M880,60 V120 M880,130 V260 M880,270 V330 M720,60 V85 M720,165 V225 M720,305 V330"/>
-      ${cap(880, 125, 'C4', true)}${cap(880, 265, 'C5', true)}
-      ${fet(720, 125, 'Q3', m3, true)}${fet(720, 265, 'Q4', m4, true)}
-      <circle class="solid" cx="720" cy="195" r="3.5"/><circle class="solid" cx="880" cy="195" r="3.5"/><text x="706" y="185" text-anchor="end" class="lbl">B</text>
-      <text x="945" y="70" class="lbl">+</text><text x="945" y="330" class="lbl">−</text><text x="920" y="200" class="lbl">V<tspan dy="3" font-size="10">Bat</tspan></text>
-      <text x="200" y="365" text-anchor="middle">v<tspan dy="3" font-size="9">A</tspan><tspan dy="-3"> = ${r.vA.toFixed(1)} V</tspan></text>
-      <text x="800" y="365" text-anchor="middle">v<tspan dy="3" font-size="9">B</tspan><tspan dy="-3"> = ${(r.vB * DS.n).toFixed(1)} V</tspan></text>`;
+      <path class="wire" d="${w}"/>
+      <path class="wire" style="stroke-width:3" d="${capP(G.XC1, yc1)} ${capP(G.XC1, yc2)} ${capP(G.XC2, yc1)} ${capP(G.XC2, yc2)} M370,${G.YA - 16} V${G.YA + 16} M380,${G.YA - 16} V${G.YA + 16}"/>
+      <path class="wire" style="stroke-width:3" d="M${G.XV - 18},${(G.TOP + G.BOT) / 2 - 10} H${G.XV + 18} M${G.XV2 - 18},${(G.TOP + G.BOT) / 2 - 10} H${G.XV2 + 18}"/>
+      <path class="wire" style="stroke-width:5" d="M${G.XV - 10},${(G.TOP + G.BOT) / 2 + 10} H${G.XV + 10} M${G.XV2 - 10},${(G.TOP + G.BOT) / 2 + 10} H${G.XV2 + 10}"/>
+      <path class="wire" d="M${G.XT + 18},${G.YA - 6} V${G.YR + 6} M${G.XT + 22},${G.YA - 6} V${G.YR + 6}"/>
+      ${[[G.XA, G.YA], [G.XC1, G.YR], [G.XB, G.YA], [G.XC2, G.YR], [G.XC1, G.TOP], [G.XC1, G.BOT], [G.XC2, G.TOP], [G.XC2, G.BOT]].map(([x, y]) => `<circle class="solid" cx="${x}" cy="${y}" r="3.4"/>`).join('')}
+      <text x="${G.XV - 24}" y="${(G.TOP + G.BOT) / 2 + 5}" text-anchor="end" class="lbl">V<tspan dy="3" font-size="10">bus</tspan></text>
+      <text x="${G.XV2 + 24}" y="${(G.TOP + G.BOT) / 2 + 5}" class="lbl">V<tspan dy="3" font-size="10">Bat</tspan></text>
+      <text x="${G.XC1 - 22}" y="${yc1 + 5}" text-anchor="end" class="lbl">C1</text><text x="${G.XC1 - 22}" y="${yc2 + 5}" text-anchor="end" class="lbl">C2</text>
+      <text x="${G.XC2 + 22}" y="${yc1 + 5}" class="lbl">C4</text><text x="${G.XC2 + 22}" y="${yc2 + 5}" class="lbl">C5</text>
+      <text x="${G.XC1 + 8}" y="${G.YR + 18}">mid</text><text x="${G.XC2 - 8}" y="${G.YR + 18}" text-anchor="end">mid</text>
+      <text x="375" y="${G.YA + 36}" text-anchor="middle" class="lbl">Cr</text><text x="440" y="${G.YA + 30}" text-anchor="middle" class="lbl">Lr</text>
+      <text x="${(G.XT + G.XS) / 2}" y="${G.YR + 26}" text-anchor="middle">1 : n</text>
+      <text x="${G.XA - 8}" y="${G.YA - 8}" text-anchor="end" class="lbl">A</text><text x="${G.XB + 8}" y="${G.YA - 8}" class="lbl">B</text>
+      <g>
+        <polyline id="cBand" class="flow-band flow-mag"/><polyline id="c2Band" class="flow-band flow-mag"/><polyline id="pBand" class="flow-band flow-pri"/>
+        <polyline id="sBand" class="flow-band flow-sec"/><polyline id="s2Band" class="flow-band flow-sec"/>
+        <polyline id="cDash" class="flow-dash flow-mag"/><polyline id="c2Dash" class="flow-dash flow-mag"/><polyline id="pDash" class="flow-dash flow-pri"/>
+        <polyline id="sDash" class="flow-dash flow-sec"/><polyline id="s2Dash" class="flow-dash flow-sec"/>
+      </g>
+      ${swSVG(1, G.XA, G.YU, false)}${swSVG(2, G.XA, G.YL, false)}${swSVG(3, G.XB, G.YU, true)}${swSVG(4, G.XB, G.YL, true)}
+      <text id="iLbl" x="440" y="${G.YA - 24}" text-anchor="middle" class="lbl" style="font-size:14px"></text>
+      <text id="vaLbl" x="${G.XA}" y="${G.BOT + 28}" text-anchor="middle"></text><text id="vbLbl" x="${G.XB}" y="${G.BOT + 28}" text-anchor="middle"></text>`;
+  }
+  const ptsStr = (pts) => pts.map((p) => p.join(',')).join(' ');
+  const setPts = (ids, pts) => ids.forEach((q) => $(q).setAttribute('points', pts ? ptsStr(pts) : ''));
+  // loops drawn in the positive direction of i (out of node A on the primary, into node B on the secondary)
+  const priTank = () => [[G.XA, G.YA], [G.XT, G.YA], [G.XT, G.YR], [G.XC1, G.YR]];
+  const priUp = (bx) => [...priTank(), [G.XC1, G.TOP], [G.XA, G.TOP], ...devPath(G.XA, G.YU, bx, true), [G.XA, G.YA]];
+  const priDn = (bx) => [...priTank(), [G.XC1, G.BOT], [G.XA, G.BOT], ...devPath(G.XA, G.YL, bx, false), [G.XA, G.YA]];
+  const secUp = (bx) => [[G.XS, G.YA], [G.XB, G.YA], ...devPath(G.XB, G.YU, bx, false), [G.XB, G.TOP], [G.XC2, G.TOP], [G.XC2, G.YR], [G.XS, G.YR], [G.XS, G.YA]];
+  const secDn = (bx) => [[G.XS, G.YA], [G.XB, G.YA], ...devPath(G.XB, G.YL, bx, true), [G.XB, G.BOT], [G.XC2, G.BOT], [G.XC2, G.YR], [G.XS, G.YR], [G.XS, G.YA]];
+  function drawSch(S) {
+    const r = S.r, i = r.i, s = sim, eps = 1e-6;
+    document.querySelectorAll('#sch .dev').forEach((g) => g.classList.remove('on', 'gated'));
+    [1, 2, 3, 4].forEach((n) => { if (r['q' + n]) $('#S' + n).classList.add('gated'); });
+    const flowing = Math.abs(i) > 0.02 * Math.max(1, s.imax);
+    const rev = (p) => (i < 0 ? p.slice().reverse() : p);
+    const ch = (x, mir) => x - G.OFF * (mir ? -1 : 1), di = (x, mir) => x + G.OFF * (mir ? -1 : 1), co = (x, mir) => x + G.CO * (mir ? -1 : 1);
+    // ---- primary ----
+    let pMode = 'none';
+    setPts(['#pBand', '#pDash', '#cBand', '#cDash', '#c2Band', '#c2Dash'], null);
+    if (flowing) {
+      if (r.q1) { setPts(['#pBand', '#pDash'], rev(priUp(ch(G.XA)))); $('#S1').classList.add('on'); pMode = i > 0 ? 'Q1 channel, drain → source' : 'Q1 channel, source → drain (reversed)'; }
+      else if (r.q2) { setPts(['#pBand', '#pDash'], rev(priDn(ch(G.XA)))); $('#S2').classList.add('on'); pMode = i < 0 ? 'Q2 channel, drain → source' : 'Q2 channel, source → drain (reversed)'; }
+      else if (r.vA >= s.VA - eps && i < 0) { setPts(['#pBand', '#pDash'], rev(priUp(di(G.XA)))); $('#D1').classList.add('on'); pMode = 'body diode D1'; }
+      else if (r.vA <= -s.VA + eps && i > 0) { setPts(['#pBand', '#pDash'], rev(priDn(di(G.XA)))); $('#D2').classList.add('on'); pMode = 'body diode D2'; }
+      else { setPts(['#cBand', '#cDash'], rev(priUp(co(G.XA)))); setPts(['#c2Band', '#c2Dash'], rev(priDn(co(G.XA)))); $('#C1').classList.add('on'); $('#C2').classList.add('on'); pMode = 'Coss of Q1 and Q2 (node A swinging)'; }
+    }
+    // ---- secondary (positive = into node B) ----
+    setPts(['#sBand', '#sDash', '#s2Band', '#s2Dash'], null);
+    let sMode = 'none';
+    const swingB = flowing && !r.q3 && !r.q4 && Math.abs(r.vB) < s.VB - eps;
+    ['#sBand', '#s2Band'].forEach((q) => $(q).setAttribute('class', `flow-band ${swingB ? 'flow-mag' : 'flow-sec'}`));
+    ['#sDash', '#s2Dash'].forEach((q) => $(q).setAttribute('class', `flow-dash ${swingB ? 'flow-mag' : 'flow-sec'}`));
+    if (flowing) {
+      if (r.q3) { setPts(['#sBand', '#sDash'], rev(secUp(ch(G.XB, true)))); $('#S3').classList.add('on'); sMode = i < 0 ? 'Q3 channel, drain → source' : 'Q3 channel, source → drain (sync. rectifier)'; }
+      else if (r.q4) { setPts(['#sBand', '#sDash'], rev(secDn(ch(G.XB, true)))); $('#S4').classList.add('on'); sMode = i > 0 ? 'Q4 channel, drain → source' : 'Q4 channel, source → drain (sync. rectifier)'; }
+      else if (r.vB >= s.VB - eps && i > 0) { setPts(['#sBand', '#sDash'], rev(secUp(di(G.XB, true)))); $('#D3').classList.add('on'); sMode = 'body diode D3'; }
+      else if (r.vB <= -s.VB + eps && i < 0) { setPts(['#sBand', '#sDash'], rev(secDn(di(G.XB, true)))); $('#D4').classList.add('on'); sMode = 'body diode D4'; }
+      else { setPts(['#sBand', '#sDash'], rev(secUp(co(G.XB, true)))); setPts(['#s2Band', '#s2Dash'], rev(secDn(co(G.XB, true)))); $('#C3').classList.add('on'); $('#C4').classList.add('on'); sMode = 'Coss of Q3 and Q4 (node B swinging)'; }
+    }
+    // labels
+    const vds = { 1: s.VA - r.vA, 2: r.vA + s.VA, 3: (s.VB - r.vB) * DS.n, 4: (r.vB + s.VB) * DS.n };
+    [1, 2, 3, 4].forEach((n) => { $('#CV' + n).textContent = `v_ds ${vds[n].toFixed(1)} V`; $('#GT' + n).textContent = r['q' + n] ? 'gate ON' : 'gate off'; });
+    $('#iLbl').textContent = flowing ? (i > 0 ? `i = ${i.toFixed(1)} A  →` : `←  i = ${i.toFixed(1)} A`) : 'i ≈ 0';
+    $('#vaLbl').textContent = `primary: ${pMode}`;
+    $('#vbLbl').textContent = `secondary: ${sMode}`;
   }
   const S0 = () => sim;
 
@@ -437,12 +520,16 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     segs = []; const T = sim.T;
     sim.rec.forEach((q) => { const k = stateAt(q.t).half * 10 + stateAt(q.t).step; const L = segs[segs.length - 1];
       if (L && L.k === k) L.b = q.t; else segs.push({ k, a: q.t, b: q.t }); });
-    segs.forEach((g) => { g.m = (g.a + g.b) / 2 / T; });
+    segs.forEach((g) => {
+      g.m = (g.a + g.b) / 2 / T;
+      const sw = sim.rec.find((q) => q.t >= g.a && q.t <= g.b && ((!q.q1 && !q.q2 && Math.abs(q.vA) < sim.VA - 1e-6) || (!q.q3 && !q.q4 && Math.abs(q.vB) < sim.VB - 1e-6)));
+      if (sw) g.m = sw.t / T;
+    });
   }
-  function curSeg() { const t = st.t * sim.T; let j = segs.findIndex((g) => t >= g.a - 1e-12 && t <= g.b + sim.T / 2000); return j < 0 ? 0 : j; }
+  function curSeg() { const t = st.t * sim.T + 1e-12; let j = 0; segs.forEach((g, k) => { if (g.a <= t) j = k; }); return j; }
   function jump(dir) { if (!segs.length) return; st.playing = false; $('#play').textContent = '▶ play'; let j = (curSeg() + dir + segs.length) % segs.length; st.t = segs[j].m; $('#t').value = Math.round(st.t * 1000); renderCursor(); }
   function renderAll() {
-    sim = simulate(); buildSegs();
+    sim = simulate(); sim.imax = Math.max(...sim.rec.map((q) => Math.abs(q.i))); buildSegs();
     renderCursor();
     const s = sim, e = s.edge, M = st.VBat / (DS.n * DS.Vbus);
     zoom('#zA', s.zA, 'vA', 'q1', 'q2', s.VA, 1, 'node A', e.q1, 'Q1', 'Q2');
@@ -480,6 +567,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   $('#prev').addEventListener('click', () => jump(-1)); $('#next').addEventListener('click', () => jump(1));
   document.addEventListener('keydown', (e) => { if (document.activeElement && document.activeElement.tagName === 'INPUT') return; if (e.key === 'ArrowRight') { jump(1); e.preventDefault(); } if (e.key === 'ArrowLeft') { jump(-1); e.preventDefault(); } });
   $('#play').addEventListener('click', () => { st.playing = !st.playing; $('#play').textContent = st.playing ? '❚❚ pause' : '▶ play'; last = 0; if (st.playing) requestAnimationFrame(tick); });
+  drawSchStatic();
   renderAll();
 })();
 </script>
