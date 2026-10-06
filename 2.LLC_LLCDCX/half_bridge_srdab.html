@@ -131,7 +131,7 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
 .stepnav { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1 var(--mono); color: var(--text); }
 .nav { font: 600 18px/1 var(--sans); width: 44px; height: 38px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel2); color: var(--blue); cursor: pointer; }
 .nav:hover { background: var(--blue-dim); }
-#stepLbl { min-width: 92px; text-align: center; }
+#stepLbl { min-width: 120px; text-align: center; }
 .btns { display: flex; flex-wrap: wrap; gap: 8px; }
 .wrap { max-width: 1560px; }
 .stick { position: sticky; top: 0; z-index: 30; background: var(--bg); padding-block: 8px; margin-block: -8px; }
@@ -144,6 +144,34 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
 #sch text { font-size: 15px; } #sch .lbl { font-size: 17px; } #sch .dev .gt, #sch .dev .cv { font-size: 14px; }
 #figW text { font-size: 12.5px; } #figW .t-title { font-size: 13px; } #figW .lbl { font-size: 14px; }
 .hint { font-size: 12.5px; color: var(--text3); }
+.chip { display: inline-block; font-family: var(--mono); font-size: 13px; font-weight: 600; padding: 1px 7px; border-radius: 5px; }
+.c-s { color: var(--blue); background: var(--blue-dim); } .c-d { color: var(--amber); background: var(--amber-dim); }
+.c-r { color: var(--green); background: var(--green-dim); } .c-m { color: var(--purple); background: var(--purple-dim); }
+.iv { padding: 20px; display: grid; gap: 16px; scroll-margin-top: 140px; transition: box-shadow .2s; }
+.iv.cur { box-shadow: 0 0 0 3px var(--blue); }
+.iv.none { opacity: .55; }
+.iv-head { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: baseline; }
+.iv-tag { font-family: var(--mono); font-weight: 600; font-size: 14px; color: var(--blue); background: var(--blue-dim); padding: 4px 10px; border-radius: 6px; }
+.iv-time { font: 500 13px var(--mono); color: var(--text3); }
+.imgs { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 800px) { .imgs { grid-template-columns: 1fr; } }
+.imgs figure { margin: 0; display: grid; gap: 4px; align-content: start; }
+.imgs svg { width: 100%; height: auto; display: block; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
+.imgs figcaption { font-size: 13px; color: var(--text3); }
+.snapS text { font-size: 15px; } .snapS .lbl { font-size: 17px; } .snapS .dev .gt, .snapS .dev .cv { font-size: 14px; }
+.snapW text { font-size: 12.5px; } .snapW .t-title { font-size: 13px; } .snapW .lbl { font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+.grid2 > div { display: grid; gap: 6px; align-content: start; }
+.path { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-family: var(--mono); font-size: 13.5px; }
+.path span { background: var(--panel2); padding: 2px 8px; border-radius: 5px; }
+.path i { font-style: normal; color: var(--text3); }
+.concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.concepts .panel { padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.concepts h3 { font-size: 15px; }
+.ivs { display: grid; gap: 18px; }
+.ivs > *, .iv > *, .iv .prose > * { min-width: 0; }
+.iv { min-width: 0; }
 .vo { font: 600 14px/1.3 var(--mono); color: var(--green); background: var(--green-dim); border-radius: 8px; padding: 8px 12px; white-space: nowrap; }
 .btns button { font: 500 12.5px/1 var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; cursor: pointer; }
 
@@ -205,18 +233,41 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
       </figure>
     </div>
     <div class="prose"><p><b>How a half bridge makes a square wave.</b> Node A switches between <b>0 V</b> (Q2 on) and <b>V<sub>bus</sub> = 400 V</b> (Q1 on). Cr is in series and blocks the DC part: it charges to about V<sub>bus</sub>/2 = 200 V and keeps that voltage. What is left for Lr and the transformer is a ±200 V square wave. The secondary works the same way: node B switches between 0 and V<sub>out</sub>, and C<sub>dc</sub> holds V<sub>out</sub>/2 so the transformer sees no DC. The current in Lr depends on the <i>difference</i> between the two square waves.</p></div>
-    <ol class="steps" id="steps">
-      <li><span><b>Primary dead time.</b> Q2 has turned off and Q1 is not on yet. The current is still negative, so it flows into node A and charges it up from 0 V to 400 V. Once node A reaches 400 V, Q1's body diode starts conducting.</span></li>
-      <li><span><b>Q1 turns on at zero voltage.</b> Its voltage is already zero (the diode was conducting), so there is no switching loss. The current is still negative and flows backwards through Q1. The tank sees the largest voltage of the period, v<sub>A</sub> − v<sub>B</sub>/n = +200 V + 200 V (with V<sub>out</sub> = 48 V), so the current rises fast.</span></li>
-      <li><span><b>Current crosses zero, while Q4 is still on.</b> Now Q1 conducts normally, but the secondary has not switched yet. Current flows against v<sub>B</sub>, so a little energy goes back from the output. This short "backflow" interval is the price of the phase shift.</span></li>
-      <li><span><b>Secondary dead time.</b> Q4 turns off. The now-positive current charges node B up from 0 V to V<sub>out</sub>, and Q3's body diode takes over.</span></li>
-      <li><span><b>Q3 turns on at zero voltage. Power flows.</b> Both bridges are now positive. The tank sees only v<sub>A</sub> − v<sub>B</sub>/n, which is small, so the current changes slowly while it delivers energy to the load.</span></li>
-      <li><span><b>Second half.</b> Q1 turns off, and the same six steps repeat mirrored: Q2 instead of Q1, Q4 instead of Q3, all signs reversed.</span></li>
-    </ol>
+  </section>
+
+  <section id="basics">
+    <h2><span class="n">2</span>Basics you need first</h2>
+    <div class="concepts">
+      <div class="panel"><h3>An inductor's current cannot jump</h3><p><span class="m">v = L·di/dt</span>. The voltage across Lr only sets the <i>slope</i> of its current. When a switch opens, Lr keeps its current flowing and forces it into whatever path is left: a C<sub>oss</sub>, then a body diode. All of ZVS comes from this.</p></div>
+      <div class="panel"><h3>A capacitor's voltage cannot jump</h3><p><span class="m">i = C·dv/dt</span>. To move a node by ΔV you must move a charge <span class="m">Q = C·ΔV</span>. A current I does that in a time <span class="m">t = C·ΔV/I</span>. That is the swing time in the dead time.</p></div>
+      <div class="panel"><h3>A MOSFET has three current paths</h3><p>1) The <b>channel</b>: with the gate on it conducts in both directions, like a small resistor. 2) The <b>body diode</b>: always there, conducts only source → drain, about 0.7 V drop. 3) The <b>output capacitance C<sub>oss</sub></b>: when the switch is off and its voltage changes, current flows into or out of it. The schematic draws all three.</p></div>
+      <div class="panel"><h3>ZVS</h3><p>Zero-voltage switching: the MOSFET turns on when its drain–source voltage is already zero, because the current has already emptied its C<sub>oss</sub> and its body diode conducts. Turning on at a voltage V instead dumps <span class="m">½·C·V²</span> into the channel, every switching event.</p></div>
+      <div class="panel"><h3>Dead time</h3><p>The two switches of one leg must never be on together, or they short the bus. So between "one off" and "the other on" there is a short time with both off. During that time the tank current swings the node voltage across the leg.</p></div>
+      <div class="panel"><h3>Why Cr and C<sub>dc</sub> hold a DC voltage</h3><p>Node A switches between 0 and 400 V, so it has a 200 V average. A transformer cannot take DC, so the series capacitor Cr takes it: about 200 V, constant. What is left for Lr and the transformer is a ±200 V square wave. C<sub>dc</sub> does the same on the secondary, with V<sub>out</sub>/2.</p></div>
+    </div>
+  </section>
+
+  <section id="intervals">
+    <h2><span class="n">3</span>One switching period, interval by interval</h2>
+    <div class="prose"><p>The first half period splits into seven intervals. For each one, the card shows the circuit and the waveforms at a moment inside that interval (gray band), which device conducts, where the current flows, and why the interval ends. All numbers come from the simulation, so they follow the sliders. The ◀ ▶ buttons step through the same intervals, and the current one is outlined in blue.</p></div>
+    <div class="ivs" id="ivs"></div>
+    <article class="panel iv" id="half2">
+      <div class="iv-head"><span class="iv-tag">T/2 → T</span><h3>The second half period: the same seven intervals, mirrored</h3></div>
+      <div class="prose"><p>At T/2, Q1 turns off and everything repeats with the roles swapped. Q2 takes Q1's place and Q4 takes Q3's. Node A now swings from 400 V down to 0 V, node B from V<sub>out</sub> down to 0 V, and every current changes sign.</p></div>
+      <div class="panel tbl"><table><thead><tr><th>First half</th><th>Second half</th></tr></thead><tbody>
+        <tr><td>1. Node A swings 0 → 400 V (C<sub>oss</sub> of Q1, Q2)</td><td>8. Node A swings 400 → 0 V</td></tr>
+        <tr><td>2. D1 conducts</td><td>9. D2 conducts</td></tr>
+        <tr><td>3. Q1 on, current reversed (ZVS)</td><td>10. Q2 on, current reversed (ZVS)</td></tr>
+        <tr><td>4. Q1 forward, Q4 still on (backflow)</td><td>11. Q2 forward, Q3 still on (backflow)</td></tr>
+        <tr><td>5. Node B swings 0 → V<sub>out</sub></td><td>12. Node B swings V<sub>out</sub> → 0</td></tr>
+        <tr><td>6. D3 conducts</td><td>13. D4 conducts</td></tr>
+        <tr><td>7. Q1 + Q3: power transfer</td><td>14. Q2 + Q4: power transfer</td></tr>
+      </tbody></table></div>
+    </article>
   </section>
 
   <section>
-    <h2><span class="n">3</span>Zoom: what happens inside the dead time</h2>
+    <h2><span class="n">4</span>Zoom: what happens inside the dead time</h2>
     <div class="two">
       <figure class="panel fig"><div class="scroll"><svg id="zA" viewBox="0 0 520 340" role="img" aria-label="Zoom around Q1 turn-on"></svg></div><figcaption id="zAcap"></figcaption></figure>
       <figure class="panel fig"><div class="scroll"><svg id="zB" viewBox="0 0 520 340" role="img" aria-label="Zoom around Q3 turn-on"></svg></div><figcaption id="zBcap"></figcaption></figure>
@@ -231,7 +282,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   </section>
 
   <section>
-    <h2><span class="n">4</span>Why can't θ be zero?</h2>
+    <h2><span class="n">5</span>Why can't θ be zero?</h2>
     <div class="prose">
       <p>It can: move the θ slider to 0° and look at the result. Two things go wrong.</p>
       <ul>
@@ -244,7 +295,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   </section>
 
   <section>
-    <h2><span class="n">5</span>How to choose θ (TI app note SDAA372)</h2>
+    <h2><span class="n">6</span>How to choose θ (TI app note SDAA372)</h2>
     <div class="prose"><p>The app note's goal: pick θ from the voltage ratio <span class="m">M = V_out/(n·V_bus)</span> so that all four switches keep ZVS, and set the power with the switching frequency. With the first-harmonic approximation, both sides have ZVS when</p></div>
     <div class="eq key">θ  &gt;  θ_boundary = arccos[ min(M, 1/M) ]          (correct in the app note)</div>
     <div class="two">
@@ -265,7 +316,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   </section>
 
   <section>
-    <h2><span class="n">6</span>Numbers used</h2>
+    <h2><span class="n">7</span>Numbers used</h2>
     <div class="prose"><p id="params"></p>
     <p style="color:var(--text2);font-size:14px">The simulation is a time-domain model of the real circuit. It uses ideal switches with body diodes, a constant C<sub>oss</sub> on each switch, the dead times, and a 2 Ω tank resistance (windings, R<sub>ds(on)</sub>, ESR). C<sub>bus</sub>, C<sub>out</sub> and C<sub>dc</sub> are large, so their voltages are constant within a period. V<sub>out</sub> is found by iteration until the power delivered equals V<sub>out</sub>²/R. The simulation starts from the first-harmonic solution and runs until the waveforms stop changing. The transformer magnetizing inductance is left out to keep it simple.</p></div>
   </section>
@@ -333,7 +384,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
         if (last) {
           if (!g.q1 && gn.q1) edge.q1 = { v: VA - x.vA, i: x.i }; if (!g.q2 && gn.q2) edge.q2 = { v: x.vA + VA, i: x.i };
           if (!g.q3 && gn.q3) edge.q3 = { v: (VB - x.vB) * DS.n, i: x.i }; if (!g.q4 && gn.q4) edge.q4 = { v: (x.vB + VB) * DS.n, i: x.i };
-          if (j % 10 === 0) rec.push({ t, ...g, vA: x.vA, vB: x.vB, i: x.i });
+          if (j % 2 === 0) rec.push({ t, ...g, vA: x.vA, vB: x.vB, i: x.i });
           if (t < win || t > T - win) zA.push({ t: t > T / 2 ? t - T : t, vA: x.vA, i: x.i, ...g });
           const tb = t - phi; if (Math.abs(tb) < win) zB.push({ t: tb, vB: x.vB, i: x.i, ...g });
           P += x.vB * x.i * dt / T; irms += x.i * x.i * dt / T;
@@ -348,18 +399,18 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   }
 
   // ---------- state at the cursor, for the explanation ----------
+  function cls(q, half) {
+    const pd = !q.q1 && !q.q2, sd = !q.q3 && !q.q4, e = 1e-6;
+    if (pd) return Math.abs(q.vA) < sim.VA - e ? 0 : 1;
+    if (sd) return Math.abs(q.vB) < sim.VB - e ? 4 : 5;
+    if (half ? q.q4 : q.q3) return 6;
+    return q.i * (half ? -1 : 1) < 0 ? 2 : 3;
+  }
   function stateAt(t) {
     const s = sim, T = s.T, a = ((t % T) + T) % T;
-    const r = s.rec.reduce((b, q) => (Math.abs(q.t - a) < Math.abs(b.t - a) ? q : b), s.rec[0]);
-    const half = a >= T / 2 ? 1 : 0, sg = half ? -1 : 1;
-    const primDead = !r.q1 && !r.q2, secDead = !r.q3 && !r.q4;
-    const top = half ? 'q2' : 'q1', secNew = half ? 'q4' : 'q3';
-    let step;
-    if (primDead) step = 0;
-    else if (secDead) step = 3;
-    else if (r[secNew]) step = 4;
-    else step = r.i * sg < 0 ? 1 : 2;
-    return { r, half, step, primDead, secDead };
+    const k = Math.min(s.rec.length - 1, Math.max(0, Math.round(a / (s.rec[1].t - s.rec[0].t))));
+    const r = s.rec[k], half = a >= T / 2 ? 1 : 0;
+    return { r, half, step: cls(r, half), primDead: !r.q1 && !r.q2, secDead: !r.q3 && !r.q4 };
   }
 
   // ---------- schematic with animated current loops ----------
@@ -489,7 +540,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   const S0 = () => sim;
 
   // ---------- period chart ----------
-  function drawW(S) {
+  function drawW(S, band) {
     const s = sim, T = s.T, fr = { x0: 52, x1: 572 }, X = lin(0, T, fr.x0, fr.x1);
     const gRows = [['q1', 'Q1', 'var(--blue)'], ['q2', 'Q2', 'var(--blue)'], ['q3', 'Q3', 'var(--green)'], ['q4', 'Q4', 'var(--green)']];
     let h = '';
@@ -523,6 +574,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     const ed = [['q1', s.td], ['q2', T / 2 + s.td], ['q3', s.phi + s.td], ['q4', s.phi + T / 2 + s.td]];
     ed.forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; te = te % T; h += `<circle cx="${X(te)}" cy="${YI(e.i)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
     h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${iy.y + iy.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${iy.y + iy.h + 38}" text-anchor="middle">time (µs)</text>`;
+    if (band) h += `<rect x="${X(band[0])}" y="${yTop - 6}" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${iy.y + iy.h - yTop + 6}" style="fill:var(--blue);opacity:.13"/>`;
     h += `<line x1="${X(st.t * T)}" y1="${yTop}" x2="${X(st.t * T)}" y2="${iy.y + iy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figW').innerHTML = h;
   }
@@ -547,37 +599,115 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   function swingNs(C, V, i) { return Math.abs(i) > 1e-6 ? 2 * C * V / Math.abs(i) * 1e9 : Infinity; }
 
   // ---------- render ----------
+  const SHORT = [
+    'Primary dead time: Q1 and Q2 are off, and the tank current swings node A through the two C<sub>oss</sub>.',
+    'Primary dead time, swing finished: node A sits at the rail and the body diode carries the current.',
+    'The new primary switch is on, but the current still flows backwards through it: it turned on at zero voltage.',
+    'The current has crossed zero. The primary switch conducts normally, while the old secondary switch is still on: backflow.',
+    'Secondary dead time: the current swings node B through the C<sub>oss</sub> of Q3 and Q4.',
+    'Secondary dead time, swing finished: the body diode on the secondary carries the current.',
+    'Both new switches are on: power transfer to the load.',
+  ];
   function renderCursor() {
     const S = stateAt(st.t * sim.T);
     drawSch(S); drawW(S);
     const T = sim.T, us = (st.t * T * 1e6).toFixed(2);
     $('#tOut').textContent = `${us} µs`;
-    if (segs.length) $('#stepLbl').textContent = `step ${curSeg() + 1} / ${segs.length}`;
-    document.querySelectorAll('#steps li').forEach((li, k) => li.classList.toggle('cur', k === S.step || (k === 5 && S.half === 1)));
-    const H = S.half ? ['Q2', 'Q1', 'Q4', 'Q3', '−'] : ['Q1', 'Q2', 'Q3', 'Q4', '+'];
-    const txt = [
-      `Dead time on the primary: ${H[1]} is off and ${H[0]} is not on yet. The current (${S.r.i.toFixed(1)} A) swings node A toward ${S.half ? '0 V' : DS.Vbus + ' V'}.`,
-      `${H[0]} is on with the current flowing backwards through it: it turned on at zero voltage. The current is rising fast.`,
-      `The current has crossed zero. ${H[0]} conducts normally, and ${H[3]} is still on: a short backflow interval.`,
-      `Dead time on the secondary: ${H[3]} is off and ${H[2]} is not on yet. The current swings node B toward ${S.half ? '0 V' : st.VBat.toFixed(0) + ' V'}.`,
-      `${H[0]} and ${H[2]} are both on. Power flows to the load (${sim.P.toFixed(0)} W on average, V_out = ${st.VBat.toFixed(1)} V).`,
-    ][S.step];
-    $('#now').innerHTML = `<div class="h">${S.half ? 'Second half (mirror) · ' : ''}step ${S.step + 1} at t = ${us} µs</div><div>${txt}</div>`;
+    
+    document.querySelectorAll('#ivs .iv').forEach((el) => el.classList.toggle('cur', +el.dataset.k === S.step));
+    const nr = S.step + 1 + 7 * S.half;
+    $('#stepLbl').textContent = `interval ${nr} / 14`;
+    let txt = SHORT[S.step];
+    if (S.half) txt = txt.replace(/Q1/g, '§').replace(/Q2/g, 'Q1').replace(/§/g, 'Q2').replace(/Q3/g, '§').replace(/Q4/g, 'Q3').replace(/§/g, 'Q4');
+    $('#now').innerHTML = `<div class="h">interval ${nr}${S.half ? ` (mirror of ${S.step + 1})` : ''} · t = ${us} µs · <a href="#iv${S.step}" style="color:inherit">details ↓</a></div><div>${txt}</div>`;
   }
   // step segments over one period, for the ◀ ▶ buttons
   let segs = [];
   function buildSegs() {
     segs = []; const T = sim.T;
-    sim.rec.forEach((q) => { const k = stateAt(q.t).half * 10 + stateAt(q.t).step; const L = segs[segs.length - 1];
+    sim.rec.forEach((q) => { const half = q.t >= T / 2 ? 1 : 0, k = half * 10 + cls(q, half); const L = segs[segs.length - 1];
       if (L && L.k === k) L.b = q.t; else segs.push({ k, a: q.t, b: q.t }); });
-    segs.forEach((g) => {
-      g.m = (g.a + g.b) / 2 / T;
-      const sw = sim.rec.find((q) => q.t >= g.a && q.t <= g.b && ((!q.q1 && !q.q2 && Math.abs(q.vA) < sim.VA - 1e-6) || (!q.q3 && !q.q4 && Math.abs(q.vB) < sim.VB - 1e-6)));
-      if (sw) g.m = sw.t / T;
-    });
+    segs.forEach((g) => { g.m = (g.a + g.b) / 2 / T; });
   }
   function curSeg() { const t = st.t * sim.T + 1e-12; let j = 0; segs.forEach((g, k) => { if (g.a <= t) j = k; }); return j; }
   function jump(dir) { if (!segs.length) return; st.playing = false; $('#play').textContent = '▶ play'; let j = (curSeg() + dir + segs.length) % segs.length; st.t = segs[j].m; $('#t').value = Math.round(st.t * 1000); renderCursor(); }
+  // ---------- interval cards (first half), with live snapshots ----------
+  const ns = (t) => `${(t * 1e9).toFixed(0)} ns`, us = (t) => `${(t * 1e6).toFixed(2)} µs`, A = (x) => `${x.toFixed(2)} A`;
+  const P_ = (...a) => `<div class="path">${a.map((x, k) => (k ? '<i>→</i>' : '') + `<span>${x}</span>`).join('')}</div>`;
+  const IV = [
+    { t: 'Primary dead time: node A swings from 0 to 400 V', capS: 'Q1 and Q2 are both off. The tank current splits between the C<sub>oss</sub> of Q1 (discharging) and of Q2 (charging).', capW: 'The blue band is this interval. v<sub>A</sub> ramps up.',
+      body: (c) => `<div class="grid2"><div><b>Before t0</b><p>Q2 and Q4 were on. The tank current is negative (${A(c.i0)}): it flows <i>from the tank into node A</i>.</p></div><div><b>At t0</b><p>Q2 turns off. Q1 is not on yet: the ${ns(st.td)} dead time starts. No channel is open on the primary.</p></div></div>
+      <div class="prose"><p><b>Where does the current go?</b> Lr keeps its current flowing, and the only paths left at node A are the two output capacitances:</p>
+      ${P_('tank', 'A', '<span class="chip c-m">C<sub>oss</sub> Q1</span> ↑', '+ rail', 'C<sub>bus</sub> ↓', '− rail', 'tank')}${P_('tank', 'A', '<span class="chip c-m">C<sub>oss</sub> Q2</span> ↓', '− rail', 'tank')}
+      <ul><li><span class="chip c-m">C<sub>oss</sub> of Q1</span> <b>discharges</b> from 400 V to 0 V.</li><li><span class="chip c-m">C<sub>oss</sub> of Q2</span> <b>charges</b> from 0 V to 400 V.</li></ul>
+      <p>So node A rises from 0 to 400 V, driven only by the inductor current. The energy in Q1's C<sub>oss</sub> is not lost: it goes back into the tank and into Q2's C<sub>oss</sub>.</p>
+      <p><b>Secondary:</b> nothing changes yet. Q4 is still on and carries the secondary current.</p></div>
+      <div class="eq">charge to move:   Q = 2·C_oss·V_bus = 2 × ${DS.CossP * 1e12} pF × ${DS.Vbus} V = ${(2 * DS.CossP * DS.Vbus * 1e9).toFixed(0)} nC
+current:          |i| ≈ ${A(Math.abs(c.i0))}
+swing time:       t ≈ Q/|i| = ${c.est} ns      (simulated: ${ns(c.dur)}, dead time ${ns(st.td)})</div>
+      <div class="prose"><p><b>Why it ends.</b> Node A reaches 400 V, and Q1's body diode becomes forward-biased.</p></div>
+      <div class="note"><b>Design note.</b> If |i| is too small or the dead time too short, Q1 turns on before node A arrives, with voltage still across it. That is hard switching. Try θ = 10°.</div>` },
+    { t: "Q1's body diode conducts for the rest of the dead time", capS: 'Node A is clamped at 400 V. The negative current flows up through D1 into the bus.', capW: 'v<sub>A</sub> is flat at 400 V, still inside the dead time.',
+      body: (c) => `<div class="grid2"><div><b>At t1</b><p>Node A has reached the + rail. Q1 is still off.</p></div><div><b>Current</b><p>Still negative, ${A(c.i0)} → ${A(c.i1)}. It now flows source → drain through Q1's body diode.</p></div></div>
+      <div class="prose">${P_('tank', 'A', '<span class="chip c-d">D1</span> ↑', '+ rail', 'C<sub>bus</sub> / V<sub>bus</sub>', '− rail', 'tank')}
+      <p>Q1's drain–source voltage is now only the diode drop (≈ 0 V). That is exactly the condition for ZVS: when the gate turns on, there is nothing to discharge.</p>
+      <p>The diode drops about 0.7 V while it carries the current. That is a conduction loss, so the dead time should end soon after the swing. Here the diode conducts for ${ns(c.dur)}.</p>
+      <p><b>Why it ends.</b> The dead time is over and Q1's gate turns on (t = ${ns(st.td)}).</p></div>` },
+    { t: 'Q1 turns on at zero voltage, but the current is still reversed', capS: 'Q1 is on and carries the negative current backwards (source → drain). Q4 is still on.', capW: 'i is negative and rising quickly toward zero.',
+      body: (c) => `<div class="grid2"><div><b>At t2</b><p>Q1's gate turns on with v<sub>ds</sub> ≈ 0: <b>ZVS</b>. The channel takes the current over from the diode, because it has a lower drop.</p></div><div><b>Secondary</b><p>Q4 is still on, so node B is at 0 V. The secondary current still flows the old way.</p></div></div>
+      <div class="prose">${P_('tank', 'A', '<span class="chip c-s">Q1 channel</span> ↑', '+ rail', 'C<sub>bus</sub>', '− rail', 'tank')}
+      <p><b>Why the current rises fast.</b> After the DC parts held by Cr and C<sub>dc</sub>, the tank sees <span class="m">v_A − v_B/n = +200 V − (−${(c.VB).toFixed(0)} V) = ${(200 + c.VB).toFixed(0)} V</span>, minus the AC part of v<sub>Cr</sub>. That is the largest voltage of the whole period, so <span class="m">di/dt ≈ ${(200 + c.VB).toFixed(0)} V / ${(DS.Lr * 1e6).toFixed(0)} µH</span> is steep. The current goes from ${A(c.i0)} to 0 in ${ns(c.dur)}.</p>
+      <p>The negative current, with node A at the + rail, means energy flows <i>back into the bus</i> for a moment. The tank is emptying its stored energy.</p>
+      <p><b>Why it ends.</b> The current crosses zero.</p></div>` },
+    { t: 'Current crosses zero; Q4 is still on (backflow)', capS: 'Q1 now conducts forward (drain → source). Q4 is still on, so the secondary is still in the "old" state.', capW: 'i is positive and still rising steeply. Q3 has not switched yet.',
+      body: (c) => `<div class="grid2"><div><b>Primary</b><p>Q1 conducts normally, and the bus now supplies energy.</p></div><div><b>Secondary</b><p>The current has reversed, but Q4 is still on: the secondary has not switched yet, because of the phase shift θ.</p></div></div>
+      <div class="prose">${P_('+ rail', '<span class="chip c-s">Q1</span> ↓', 'A', 'Cr, Lr', 'transformer', '− rail')}
+      <p>On the secondary, the current now flows <i>against</i> v<sub>B</sub>, so some energy flows back from the output side into the tank. This is the "backflow", or circulating-energy, interval. It lasts ${ns(c.dur)} here, and it is the price of the phase shift: a larger θ gives more power, but also more backflow.</p>
+      <p><b>Why it ends.</b> θ after Q2 turned off, Q4 turns off (t = ${us(sim.phi)}). The secondary dead time starts.</p></div>` },
+    { t: 'Secondary dead time: node B swings from 0 to V<sub>out</sub>', capS: 'Q3 and Q4 are both off. The secondary current splits between the C<sub>oss</sub> of Q3 (discharging) and of Q4 (charging).', capW: 'v<sub>B</sub>/n ramps up.',
+      body: (c) => `<div class="grid2"><div><b>At t4</b><p>Q4 turns off and Q3 is not on yet. The current is now positive: ${A(c.i0)} on the primary, ${(c.i0 / DS.n).toFixed(1)} A on the secondary.</p></div><div><b>Primary</b><p>Q1 stays on and is not affected.</p></div></div>
+      <div class="prose">${P_('winding', 'C<sub>dc</sub>', 'B', '<span class="chip c-m">C<sub>oss</sub> Q3</span> ↑', '+ rail', 'C<sub>out</sub> ↓', '− rail', 'winding')}${P_('winding', 'C<sub>dc</sub>', 'B', '<span class="chip c-m">C<sub>oss</sub> Q4</span> ↓', '− rail', 'winding')}
+      <p>The positive current flows into node B and lifts it from 0 to V<sub>out</sub> = ${c.Vo.toFixed(1)} V. Q4's C<sub>oss</sub> charges and Q3's discharges.</p></div>
+      <div class="eq">charge:      Q = 2·C_oss,sec·V_out = 2 × ${(DS.CossS * 1e9).toFixed(1)} nF × ${c.Vo.toFixed(0)} V = ${(2 * DS.CossS * c.Vo * 1e9).toFixed(0)} nC
+current:     |i_sec| = |i|/n ≈ ${(Math.abs(c.i0) / DS.n).toFixed(1)} A
+swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
+      <div class="prose"><p><b>Why it ends.</b> Node B reaches V<sub>out</sub>, and Q3's body diode becomes forward-biased.</p></div>` },
+    { t: "Q3's body diode conducts for the rest of the secondary dead time", capS: 'Node B is clamped at V<sub>out</sub>. The secondary current flows up through D3 into C<sub>out</sub> and R.', capW: 'v<sub>B</sub>/n flat at the top, before Q3 turns on.',
+      body: (c) => `<div class="prose">${P_('winding', 'C<sub>dc</sub>', 'B', '<span class="chip c-d">D3</span> ↑', '+ rail', 'C<sub>out</sub> ‖ R', '− rail', 'winding')}
+      <p>Q3's v<sub>ds</sub> is now ≈ 0, so Q3 will turn on with ZVS. The diode carries ${(c.i0 / DS.n).toFixed(1)} A for ${ns(c.dur)}. At this current the 0.7 V drop costs real loss, which is why the synchronous rectifier channel should take over quickly.</p>
+      <p><b>Why it ends.</b> Q3's gate turns on (t = ${us(sim.phi + st.td)}).</p></div>` },
+    { t: 'Q1 and Q3 on: power transfer', capS: 'Q1 conducts forward. Q3 conducts source → drain as a synchronous rectifier. DC goes to R, ripple to C<sub>out</sub>.', capW: 'Both nodes high. i changes slowly and follows the Lr–Cr resonance.',
+      body: (c) => `<div class="grid2"><div><b>Primary</b><p>Q1 on: the bus supplies the current.</p></div><div><b>Secondary</b><p>Q3 on with the current flowing source → drain: it works as a <span class="chip c-r">synchronous rectifier</span>, a diode with almost no drop.</p></div></div>
+      <div class="prose">${P_('+ rail', '<span class="chip c-s">Q1</span>', 'A', 'Cr, Lr', 'transformer', '− rail')}${P_('winding', 'C<sub>dc</sub>', 'B', '<span class="chip c-r">Q3</span> ↑', 'C<sub>out</sub> ‖ R', 'winding')}
+      <p><b>Why the current changes slowly.</b> Both square waves are now high, so the tank only sees the difference: <span class="m">v_A − v_B/n = 200 V − ${(c.VB).toFixed(0)} V = ${(200 - c.VB).toFixed(0)} V</span> (plus the AC part of v<sub>Cr</sub>). With M = ${(c.VB / 200).toFixed(2)} this is small, so the current follows the slow Lr–Cr resonance instead of a steep ramp.</p>
+      <p>This is where the power is delivered. On average ${sim.P.toFixed(0)} W goes to the load: V<sub>out</sub> = ${c.Vo.toFixed(1)} V, I<sub>out</sub> = ${(c.Vo / st.R).toFixed(2)} A.</p>
+      <p><b>Why it ends.</b> At T/2 = ${us(sim.T / 2)}, Q1 turns off and the second half period starts with interval 8, the mirror of interval 1.</p></div>` },
+  ];
+  function renderIntervals() {
+    const T = sim.T, save = st.t, Vo = st.VBat, VB = Vo / DS.n / 2;
+    const cards = IV.map((iv, k) => {
+      const g = segs.find((q) => q.k === k);
+      if (!g) return `<article class="panel iv none" id="iv${k}" data-k="${k}"><div class="iv-head"><span class="iv-tag">interval ${k + 1}</span><h3>${iv.t}</h3></div><p>This interval does not occur at the current operating point (for example, the node never finishes its swing, or the order of events has changed). Move θ, the dead time or R to see it again.</p></article>`;
+      const near = (t) => sim.rec[Math.min(sim.rec.length - 1, Math.round(t / (sim.rec[1].t - sim.rec[0].t)))];
+      const a = near(g.a), b = near(g.b), dt = g.b - g.a + (sim.rec[1].t - sim.rec[0].t);
+      const c = { i0: a.i, i1: b.i, dur: dt, Vo, VB };
+      c.est = k === 0 ? (2 * DS.CossP * DS.Vbus / Math.max(1e-6, Math.abs(a.i)) * 1e9).toFixed(0) : k === 4 ? (2 * DS.CossS * Vo / Math.max(1e-6, Math.abs(a.i) / DS.n) * 1e9).toFixed(0) : '';
+      return `<article class="panel iv" id="iv${k}" data-k="${k}">
+        <div class="iv-head"><span class="iv-tag">t${k} → t${k + 1}</span><h3>Interval ${k + 1}: ${iv.t}</h3><span class="iv-time">${us(g.a)} – ${us(g.b)}  (${ns(dt)})</span></div>
+        <div class="imgs"><figure><svg class="snapS" viewBox="0 0 1040 430" role="img" aria-label="Circuit during interval ${k + 1}"></svg><figcaption>${iv.capS}</figcaption></figure>
+        <figure><svg class="snapW" viewBox="0 0 640 600" role="img" aria-label="Waveforms with interval ${k + 1} highlighted"></svg><figcaption>${iv.capW}</figcaption></figure></div>
+        ${iv.body(c)}</article>`;
+    });
+    $('#ivs').innerHTML = cards.join('');
+    IV.forEach((iv, k) => {
+      const g = segs.find((q) => q.k === k), el = $('#iv' + k); if (!g || !el) return;
+      st.t = g.m; const S = stateAt(g.m * T);
+      drawSch(S); drawW(S, [g.a, g.b]);
+      el.querySelector('.snapS').innerHTML = $('#sch').innerHTML.replace(/ id="[^"]*"/g, '');
+      el.querySelector('.snapW').innerHTML = $('#figW').innerHTML.replace(/ id="[^"]*"/g, '');
+    });
+    st.t = save;
+  }
   function renderAll() {
     // V_out settles where the delivered power equals V_out²/R  (P ≈ V_out·I, so iterate V_out = R·P/V_out)
     for (let k = 0; k < 10; k++) {
@@ -589,6 +719,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     }
     $('#voOut').innerHTML = `V<sub>out</sub> = ${st.VBat.toFixed(1)} V · ${sim.P.toFixed(0)} W`;
     sim.imax = Math.max(...sim.rec.map((q) => Math.abs(q.i))); buildSegs();
+    renderIntervals();
     renderCursor();
     const s = sim, e = s.edge, M = st.VBat / (DS.n * DS.Vbus);
     zoom('#zA', s.zA, 'vA', 'q1', 'q2', s.VA, 1, 'node A', e.q1, 'Q1', 'Q2');
