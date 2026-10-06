@@ -1,4 +1,5 @@
 <title>Dual Half-Bridge SRC</title>
+<script>document.documentElement.setAttribute("data-theme", "light");</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -127,6 +128,10 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
 .zvs { font: 600 12.5px/1.3 var(--mono); padding: 3px 8px; border-radius: 6px; display: inline-block; }
 .zvs.ok { background: var(--green-dim); color: var(--green); }
 .zvs.bad { background: var(--red-dim); color: var(--red); }
+.stepnav { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1 var(--mono); color: var(--text); }
+.nav { font: 600 18px/1 var(--sans); width: 44px; height: 38px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel2); color: var(--blue); cursor: pointer; }
+.nav:hover { background: var(--blue-dim); }
+#stepLbl { min-width: 92px; text-align: center; }
 .btns { display: flex; flex-wrap: wrap; gap: 8px; }
 .btns button { font: 500 12.5px/1 var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; cursor: pointer; }
 </style>
@@ -142,10 +147,11 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
     <div class="panel controls" aria-label="Controls">
       <div class="ctl-row">
         <button type="button" class="play" id="play">▶ play</button>
+        <span class="stepnav"><button type="button" class="nav" id="prev" aria-label="Previous step">◀</button><span id="stepLbl">step 1</span><button type="button" class="nav" id="next" aria-label="Next step">▶</button></span>
         <div class="slider"><label for="t"><span>time in the period</span><output id="tOut"></output></label><input id="t" type="range" min="0" max="1000" step="1" value="10"></div>
       </div>
       <div class="ctl-row">
-        <div class="slider"><label for="th"><span>phase shift θ (Q1 → Q3)</span><output id="thOut">40°</output></label><input id="th" type="range" min="5" max="90" step="1" value="40"></div>
+        <div class="slider"><label for="th"><span>phase shift θ (Q1 → Q3; negative = reverse power)</span><output id="thOut">40°</output></label><input id="th" type="range" min="-90" max="90" step="1" value="40"></div>
         <div class="slider"><label for="td"><span>dead time</span><output id="tdOut">200 ns</output></label><input id="td" type="range" min="50" max="800" step="10" value="200"></div>
         <div class="slider"><label for="vb"><span>battery voltage V<sub>Bat</sub></span><output id="vbOut">48 V</output></label><input id="vb" type="range" min="24" max="96" step="1" value="48"></div>
       </div>
@@ -194,7 +200,19 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   </section>
 
   <section>
-    <h2><span class="n">4</span>How to choose θ (TI app note SDAA372)</h2>
+    <h2><span class="n">4</span>Why can't θ be zero?</h2>
+    <div class="prose">
+      <p>It can: move the θ slider to 0° and look at the result. Two things go wrong.</p>
+      <ul>
+        <li><b>No power.</b> The power is <span class="m">P = 2M·V_bus²·sin θ/(π²·X)</span>. At θ = 0 the two square waves are in phase, so sin θ = 0 and nothing is transferred. If V<sub>Bat</sub> = n·V<sub>bus</sub> (M = 1), the tank sees no voltage at all, and the current almost disappears.</li>
+        <li><b>No ZVS.</b> The dead-time swing is driven by the current at the switching edge. With almost no current, the node cannot swing, and all four switches turn on with voltage across them: hard switching (red circles). With M ≠ 1 some current flows, but it only circulates (reactive) and it helps just one side.</li>
+      </ul>
+      <p>So θ is the power knob. Increasing θ from 0 toward 90° increases the power and the ZVS current. <b>A negative θ reverses the power</b>: the secondary leads, and energy flows from the battery to the bus. That is the reverse mode in the app note.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>How to choose θ (TI app note SDAA372)</h2>
     <div class="prose"><p>The app note's goal: pick θ from the voltage ratio <span class="m">M = V_Bat/(n·V_bus)</span> so that all four switches keep ZVS, and set the power with the switching frequency. With the first-harmonic approximation, both sides have ZVS when</p></div>
     <div class="eq key">θ  &gt;  θ_boundary = arccos[ min(M, 1/M) ]          (correct in the app note)</div>
     <div class="two">
@@ -215,7 +233,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   </section>
 
   <section>
-    <h2><span class="n">5</span>Numbers used</h2>
+    <h2><span class="n">6</span>Numbers used</h2>
     <div class="prose"><p id="params"></p>
     <p style="color:var(--text2);font-size:14px">The simulation is a time-domain model of the real circuit. It uses ideal switches with body diodes, a constant C<sub>oss</sub> on each switch, the dead times, and a 20 mΩ tank resistance. It runs until the waveforms repeat. The app note's own PLECS values are not published, so these numbers are an example at a similar power level. The transformer magnetizing inductance is left out to keep it simple.</p></div>
   </section>
@@ -365,7 +383,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vA)]))}"/><polyline class="ln" style="stroke:var(--red)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vB)]))}"/>`;
     h += `<text x="${fr.x1 + 8}" y="${vy.y + 30}" style="fill:var(--blue)">v_A</text><text x="${fr.x1 + 8}" y="${vy.y + 48}" style="fill:var(--red)">v_B/n</text>`;
     // current
-    const iy = { y: 410, h: 130 }, im = nice(Math.max(...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
+    const iy = { y: 410, h: 130 }, im = nice(Math.max(5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
     h += `<text x="${fr.x0}" y="${iy.y - 10}" class="t-title">resonant current i (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(s.rec.map((q) => [X(q.t), YI(q.i)]))}"/>`;
     // ZVS markers at turn-on edges
@@ -385,7 +403,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     const V = Vrail * scale, YV = lin(-V * 1.15, V * 1.15, 210, 100);
     h += `<text x="${fr.x0}" y="96" class="t-title" style="fill:var(--blue)">${lab} (V)</text>` + [-V, 0, V].map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 6}" y="${YV(v) + 4}" text-anchor="end">${v.toFixed(0)}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(pts.map((q) => [X(q.t), YV(q[node] * scale)]))}"/>`;
-    const im = nice(Math.max(...pts.map((q) => Math.abs(q.i))) * 1.15), YI = lin(-im, im, 310, 230);
+    const im = nice(Math.max(5, ...pts.map((q) => Math.abs(q.i))) * 1.15), YI = lin(-im, im, 310, 230);
     h += `<text x="${fr.x0}" y="226" class="t-title" style="fill:var(--purple)">i (A)</text>` + [-im, 0, im].map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 6}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(pts.map((q) => [X(q.t), YI(q.i)]))}"/>`;
     h += [-s.win, -s.win / 2, 0, s.win / 2, s.win].map((v) => `<text x="${X(v)}" y="328" text-anchor="middle">${(v * 1e9).toFixed(0)}</text>`).join('') + `<text x="${fr.x1 + 34}" y="328" text-anchor="middle">ns</text>`;
@@ -401,6 +419,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     drawSch(S); drawW(S);
     const T = sim.T, us = (st.t * T * 1e6).toFixed(2);
     $('#tOut').textContent = `${us} µs`;
+    if (segs.length) $('#stepLbl').textContent = `step ${curSeg() + 1} / ${segs.length}`;
     document.querySelectorAll('#steps li').forEach((li, k) => li.classList.toggle('cur', k === S.step || (k === 5 && S.half === 1)));
     const H = S.half ? ['Q2', 'Q1', 'Q4', 'Q3', '−'] : ['Q1', 'Q2', 'Q3', 'Q4', '+'];
     const txt = [
@@ -408,12 +427,22 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
       `${H[0]} is on with the current flowing backwards through it: it turned on at zero voltage. The current is rising fast.`,
       `The current has crossed zero. ${H[0]} conducts normally, and ${H[3]} is still on: a short backflow interval.`,
       `Dead time on the secondary: ${H[3]} is off and ${H[2]} is not on yet. The current swings node B toward ${H[4]}${(st.VBat / 2).toFixed(0)} V.`,
-      `${H[0]} and ${H[2]} are both on: power flows to the battery.`,
+      `${H[0]} and ${H[2]} are both on. ${sim.P >= 0 ? 'Power flows to the battery' : 'θ is negative: power flows from the battery back to the bus'} (${sim.P.toFixed(0)} W on average).`,
     ][S.step];
     $('#now').innerHTML = `<div class="h">${S.half ? 'Second half (mirror) · ' : ''}step ${S.step + 1} at t = ${us} µs</div><div>${txt}</div>`;
   }
+  // step segments over one period, for the ◀ ▶ buttons
+  let segs = [];
+  function buildSegs() {
+    segs = []; const T = sim.T;
+    sim.rec.forEach((q) => { const k = stateAt(q.t).half * 10 + stateAt(q.t).step; const L = segs[segs.length - 1];
+      if (L && L.k === k) L.b = q.t; else segs.push({ k, a: q.t, b: q.t }); });
+    segs.forEach((g) => { g.m = (g.a + g.b) / 2 / T; });
+  }
+  function curSeg() { const t = st.t * sim.T; let j = segs.findIndex((g) => t >= g.a - 1e-12 && t <= g.b + sim.T / 2000); return j < 0 ? 0 : j; }
+  function jump(dir) { if (!segs.length) return; st.playing = false; $('#play').textContent = '▶ play'; let j = (curSeg() + dir + segs.length) % segs.length; st.t = segs[j].m; $('#t').value = Math.round(st.t * 1000); renderCursor(); }
   function renderAll() {
-    sim = simulate();
+    sim = simulate(); buildSegs();
     renderCursor();
     const s = sim, e = s.edge, M = st.VBat / (DS.n * DS.Vbus);
     zoom('#zA', s.zA, 'vA', 'q1', 'q2', s.VA, 1, 'node A', e.q1, 'Q1', 'Q2');
@@ -444,10 +473,12 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   $('#td').addEventListener('input', (e) => { st.td = +e.target.value * 1e-9; $('#tdOut').textContent = `${e.target.value} ns`; warm = null; later(); });
   $('#vb').addEventListener('input', (e) => { st.VBat = +e.target.value; $('#vbOut').textContent = `${e.target.value} V`; later(); });
   $('#t').addEventListener('input', (e) => { st.t = +e.target.value / 1000; renderCursor(); });
-  $('#use15').addEventListener('click', () => { const M = st.VBat / (DS.n * DS.Vbus); setTh(Math.min(90, Math.max(5, th15(M) / D))); });
-  $('#useFix').addEventListener('click', () => { const M = st.VBat / (DS.n * DS.Vbus); setTh(Math.min(90, Math.max(5, thFix(M) / D))); });
+  $('#use15').addEventListener('click', () => { const M = st.VBat / (DS.n * DS.Vbus); setTh(Math.min(90, Math.max(-90, th15(M) / D))); });
+  $('#useFix').addEventListener('click', () => { const M = st.VBat / (DS.n * DS.Vbus); setTh(Math.min(90, Math.max(-90, thFix(M) / D))); });
   let last = 0;
   function tick(ts) { if (!st.playing) return; if (last) { st.t = (st.t + (ts - last) / 1000 * 0.08) % 1; $('#t').value = Math.round(st.t * 1000); renderCursor(); } last = ts; requestAnimationFrame(tick); }
+  $('#prev').addEventListener('click', () => jump(-1)); $('#next').addEventListener('click', () => jump(1));
+  document.addEventListener('keydown', (e) => { if (document.activeElement && document.activeElement.tagName === 'INPUT') return; if (e.key === 'ArrowRight') { jump(1); e.preventDefault(); } if (e.key === 'ArrowLeft') { jump(-1); e.preventDefault(); } });
   $('#play').addEventListener('click', () => { st.playing = !st.playing; $('#play').textContent = st.playing ? '❚❚ pause' : '▶ play'; last = 0; if (st.playing) requestAnimationFrame(tick); });
   renderAll();
 })();
