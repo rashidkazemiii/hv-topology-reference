@@ -133,6 +133,17 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
 .nav:hover { background: var(--blue-dim); }
 #stepLbl { min-width: 92px; text-align: center; }
 .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.wrap { max-width: 1560px; }
+.stick { position: sticky; top: 0; z-index: 30; background: var(--bg); padding-block: 8px; margin-block: -8px; }
+.stick .controls { box-shadow: 0 4px 14px rgba(0,0,0,0.08); padding-block: 8px; gap: 6px; }
+.duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.duo .col { display: grid; gap: 12px; min-width: 0; }
+@media (min-width: 1101px) { .duo .fig .scroll svg { min-width: 0; } }
+@media (max-width: 1100px) { .duo { grid-template-columns: 1fr; } }
+#figW { cursor: ew-resize; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+#sch text { font-size: 15px; } #sch .lbl { font-size: 17px; } #sch .dev .gt, #sch .dev .cv { font-size: 14px; }
+#figW text { font-size: 12.5px; } #figW .t-title { font-size: 13px; } #figW .lbl { font-size: 14px; }
+.hint { font-size: 12.5px; color: var(--text3); }
 .btns button { font: 500 12.5px/1 var(--sans); color: var(--text); background: var(--panel2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; cursor: pointer; }
 
 .dev path { stroke: var(--wire); stroke-width: 1.6; fill: none; stroke-linejoin: round; }
@@ -160,7 +171,7 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
     <p class="lede">Two half bridges, one on each side of a transformer, with Lr and Cr in between. Every switch runs at 50 % duty with a short dead time. The secondary is delayed by a phase shift θ, and θ decides how much power flows. Press play and follow the gate signals.</p>
   </header>
 
-  <section>
+  <div class="stick">
     <div class="panel controls" aria-label="Controls">
       <div class="ctl-row">
         <button type="button" class="play" id="play">▶ play</button>
@@ -173,24 +184,24 @@ svg .lbl { fill: var(--text); font-size: 13px; font-weight: 500; }
         <div class="slider"><label for="vb"><span>battery voltage V<sub>Bat</sub></span><output id="vbOut">48 V</output></label><input id="vb" type="range" min="24" max="96" step="1" value="48"></div>
       </div>
     </div>
-  </section>
+  </div>
 
   <section>
-    <h2><span class="n">1</span>The circuit</h2>
-    <figure class="panel fig">
-      <div class="scroll"><svg id="sch" viewBox="0 0 1000 430" role="img" aria-label="Primary half bridge Q1 Q2 with split capacitors, Cr and Lr, transformer 1 to n, secondary half bridge Q3 Q4 with split capacitors"></svg></div>
-      <figcaption><b>At the moment selected by the time slider.</b> Each switch is drawn as three parallel parts: the MOSFET channel, its body diode and its C<sub>oss</sub>. The moving dashes show where the current flows and in which direction: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, and <span style="color:var(--purple)">purple</span> through the C<sub>oss</sub> during a dead time, when the current splits between the two switches of a leg. The half-bridge loop closes through the split capacitor on the same side (C1 with Q1, C2 with Q2).</figcaption>
-    </figure>
-    <div class="prose"><p><b>How a half bridge makes a square wave.</b> The two capacitors split the input voltage, so their midpoint sits at half of it. When the top switch is on, the switch node is <b>+V/2</b> above the midpoint. When the bottom switch is on, it is <b>−V/2</b>. Both sides do this: the primary makes ±V<sub>bus</sub>/2 at node A, and the secondary makes ±V<sub>Bat</sub>/2 at node B. Lr and Cr sit between the two square waves. The current that flows depends on the <i>difference</i> between them.</p></div>
-  </section>
-
-  <section>
-    <h2><span class="n">2</span>Gate signals, voltages and current over one period</h2>
-    <figure class="panel fig">
-      <div class="scroll"><svg id="figW" viewBox="0 0 1000 600" role="img" aria-label="Gate signals Q1 to Q4 with dead times, node voltages vA and vB, and resonant current over one switching period"></svg></div>
-      <figcaption><b>Gray bands are dead times</b>, when both switches of a leg are off. Q1 and Q2 never overlap, and neither do Q3 and Q4. Q3 starts θ later than Q1. The node voltages are drawn against their capacitor midpoints. The secondary voltage is shown as v<sub>B</sub>/n, so it is on the same scale as v<sub>A</sub>.</figcaption>
-    </figure>
-    <div class="now" id="now"></div>
+    <h2><span class="n">1</span>The circuit and its waveforms, side by side</h2>
+    <div class="duo">
+      <div class="col">
+        <figure class="panel fig">
+          <div class="scroll"><svg id="sch" viewBox="0 0 1000 430" role="img" aria-label="Primary half bridge Q1 Q2 with split capacitors, Cr and Lr, transformer 1 to n, secondary half bridge Q3 Q4 with split capacitors"></svg></div>
+          <figcaption><b>The moving dashes show the current path and direction</b> at the selected moment: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, <span style="color:var(--purple)">purple</span> through C<sub>oss</sub> during a dead time. Each switch is drawn as channel, body diode and C<sub>oss</sub>. The loop closes through the split capacitor on the same side.</figcaption>
+        </figure>
+        <div class="now" id="now"></div>
+      </div>
+      <figure class="panel fig">
+        <div class="scroll"><svg id="figW" viewBox="0 0 640 600" role="img" aria-label="Gate signals Q1 to Q4 with dead times, node voltages vA and vB, and resonant current over one switching period"></svg></div>
+        <figcaption><b>Click or drag on this chart to move in time.</b> Gray bands are dead times, when both switches of a leg are off. Q3 starts θ later than Q1. The secondary voltage is shown as v<sub>B</sub>/n, so it is on the same scale as v<sub>A</sub>.</figcaption>
+      </figure>
+    </div>
+    <div class="prose"><p><b>How a half bridge makes a square wave.</b> The two capacitors split the input voltage, so their midpoint sits at half of it. When the top switch is on, the switch node is <b>+V/2</b> above the midpoint. When the bottom switch is on, it is <b>−V/2</b>. The primary makes ±V<sub>bus</sub>/2 at node A, and the secondary makes ±V<sub>Bat</sub>/2 at node B. Lr and Cr sit between the two square waves, and the current depends on the <i>difference</i> between them.</p></div>
     <ol class="steps" id="steps">
       <li><span><b>Primary dead time.</b> Q2 has turned off and Q1 is not on yet. The current is still negative, so it flows into node A and charges it up from −12 V to +12 V. Once node A reaches +12 V, Q1's body diode starts conducting.</span></li>
       <li><span><b>Q1 turns on at zero voltage.</b> Its voltage is already zero (the diode was conducting), so there is no switching loss. The current is still negative and flows backwards through Q1. The tank sees the largest voltage of the period, v<sub>A</sub> − v<sub>B</sub>/n = +12 + 12 V, so the current rises fast.</span></li>
@@ -433,14 +444,14 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     const vds = { 1: s.VA - r.vA, 2: r.vA + s.VA, 3: (s.VB - r.vB) * DS.n, 4: (r.vB + s.VB) * DS.n };
     [1, 2, 3, 4].forEach((n) => { $('#CV' + n).textContent = `v_ds ${vds[n].toFixed(1)} V`; $('#GT' + n).textContent = r['q' + n] ? 'gate ON' : 'gate off'; });
     $('#iLbl').textContent = flowing ? (i > 0 ? `i = ${i.toFixed(1)} A  →` : `←  i = ${i.toFixed(1)} A`) : 'i ≈ 0';
-    $('#vaLbl').textContent = `primary: ${pMode}`;
-    $('#vbLbl').textContent = `secondary: ${sMode}`;
+    $('#vaLbl').textContent = flowing ? `primary: ${pMode}` : 'no current: v_A and v_B/n are equal and in phase';
+    $('#vbLbl').textContent = flowing ? `secondary: ${sMode}` : '→ zero voltage across Lr–Cr (θ = 0, V_Bat = n·V_bus)';
   }
   const S0 = () => sim;
 
   // ---------- period chart ----------
   function drawW(S) {
-    const s = sim, T = s.T, fr = { x0: 70, x1: 880 }, X = lin(0, T, fr.x0, fr.x1);
+    const s = sim, T = s.T, fr = { x0: 52, x1: 572 }, X = lin(0, T, fr.x0, fr.x1);
     const gRows = [['q1', 'Q1', 'var(--blue)'], ['q2', 'Q2', 'var(--blue)'], ['q3', 'Q3', 'var(--green)'], ['q4', 'Q4', 'var(--green)']];
     let h = '';
     // dead-time bands
@@ -562,6 +573,18 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   $('#t').addEventListener('input', (e) => { st.t = +e.target.value / 1000; renderCursor(); });
   $('#use15').addEventListener('click', () => { const M = st.VBat / (DS.n * DS.Vbus); setTh(Math.min(90, Math.max(-90, th15(M) / D))); });
   $('#useFix').addEventListener('click', () => { const M = st.VBat / (DS.n * DS.Vbus); setTh(Math.min(90, Math.max(-90, thFix(M) / D))); });
+  // click / drag on the waveform chart to move in time
+  const svgW = $('#figW'); let dragging = false;
+  function scrub(e) {
+    const pt = svgW.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const x = pt.matrixTransform(svgW.getScreenCTM().inverse()).x;
+    st.t = Math.min(0.999, Math.max(0, (x - 52) / (572 - 52)));
+    st.playing = false; $('#play').textContent = '▶ play';
+    $('#t').value = Math.round(st.t * 1000); renderCursor();
+  }
+  svgW.addEventListener('pointerdown', (e) => { dragging = true; svgW.setPointerCapture(e.pointerId); scrub(e); });
+  svgW.addEventListener('pointermove', (e) => { if (dragging) scrub(e); });
+  ['pointerup', 'pointercancel'].forEach((ev) => svgW.addEventListener(ev, () => { dragging = false; }));
   let last = 0;
   function tick(ts) { if (!st.playing) return; if (last) { st.t = (st.t + (ts - last) / 1000 * 0.08) % 1; $('#t').value = Math.round(st.t * 1000); renderCursor(); } last = ts; requestAnimationFrame(tick); }
   $('#prev').addEventListener('click', () => jump(-1)); $('#next').addEventListener('click', () => jump(1));
