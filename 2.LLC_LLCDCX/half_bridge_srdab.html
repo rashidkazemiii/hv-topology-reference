@@ -874,7 +874,10 @@ swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
     ['pointerup', 'pointercancel'].forEach((ev) => sv.addEventListener(ev, () => { dragging = false; }));
   });
   let last = 0;
-  function tick(ts) { if (!st.playing) return; if (last) { st.t = (st.t + (ts - last) / 1000 * 0.08) % 1; $('#t').value = Math.round(st.t * 1000); renderCursor(); } last = ts; requestAnimationFrame(tick); }
+  function tick(ts) { if (!st.playing) return; if (last) {
+    // slow motion inside dead times, so the C_oss swings (tens of ns) can be seen
+    const S0 = stateAt(st.t * sim.T), slow = S0.primDead || S0.secDead, swing = S0.step === 0 || S0.step === 4;
+    st.t = (st.t + (ts - last) / 1000 * 0.08 * (swing ? 0.004 : slow ? 0.03 : 1)) % 1; $('#t').value = Math.round(st.t * 1000); renderCursor(); } last = ts; requestAnimationFrame(tick); }
   $('#prev').addEventListener('click', () => jump(-1)); $('#next').addEventListener('click', () => jump(1));
   document.addEventListener('keydown', (e) => { if (document.activeElement && document.activeElement.tagName === 'INPUT') return; if (e.key === 'ArrowRight') { jump(1); e.preventDefault(); } if (e.key === 'ArrowLeft') { jump(-1); e.preventDefault(); } });
   $('#play').addEventListener('click', () => { st.playing = !st.playing; $('#play').textContent = st.playing ? '❚❚ pause' : '▶ play'; last = 0; if (st.playing) requestAnimationFrame(tick); });
