@@ -251,7 +251,7 @@ figure { margin: 0; }
     <h2><span class="n">2</span>How the phase shift θ sets the power</h2>
     <div class="duo">
       <div class="col">
-        <div class="prose"><p>Replace both square waves by their fundamentals (sine waves). Then the circuit is just two AC sources joined by one reactance X, the tank. That is the same picture as a power line between two generators: power flows from the source that <b>leads</b> to the one that <b>lags</b>, and θ is the angle between them.</p></div>
+        <div class="prose"><p>Replace both square waves by their fundamentals (sine waves), and refer the secondary one to the primary side through the turns ratio. Then the circuit is just two AC sources joined by one reactance X, the tank. That is the same picture as a power line between two generators: power flows from the source that <b>leads</b> to the one that <b>lags</b>, and θ is the angle between them.</p></div>
         <div class="eq key" id="pEq"></div>
         <div class="prose"><ul>
           <li><b>θ = 0:</b> sin θ = 0, so no power.</li>
@@ -588,16 +588,22 @@ at Q1 turn-on:    i(0) = −Î·sin φ ${phi > 0 ? '< 0  → current flows backw
     const w = 2 * Math.PI * DS.fs, X = w * DS.Lr - 1 / (w * DS.Cr);
     const VA1 = 2 * DS.Vbus / Math.PI, VB1 = 2 * st.VBat / (Math.PI * DS.n), th = st.th;
     const P = VA1 * VB1 * Math.sin(th) / (2 * X), Pmax = VA1 * VB1 / (2 * X);
+    const VBs = 2 * st.VBat / Math.PI;
     $('#pEq').textContent =
-`V_A1 = 2·V_bus/π     = ${VA1.toFixed(1)} V     v_A fundamental (peak)
-V_B1 = 2·V_out/(π·n) = ${VB1.toFixed(1)} V     v_B/n fundamental (peak)
-X = ωLr − 1/(ωCr)    = ${X.toFixed(1)} Ω      tank reactance
+`primary:    v_A = 0…${DS.Vbus} V → ±${DS.Vbus / 2} V square wave
+            V_A1 = 2·V_bus/π = ${VA1.toFixed(1)} V   (fundamental, peak)
 
-P = V_A1·V_B1·sin θ / (2X)
-  = ${VA1.toFixed(0)} × ${VB1.toFixed(0)} × sin ${(th / D).toFixed(0)}° / ${(2 * X).toFixed(0)}
-  = ${P.toFixed(0)} W     (simulation: ${sim.P.toFixed(0)} W)
+secondary:  v_B = 0…${st.VBat.toFixed(0)} V → ±${(st.VBat / 2).toFixed(0)} V square wave
+            2·V_out/π = ${VBs.toFixed(1)} V     (fundamental, on the secondary)
+            referred to the primary (÷ n = ${DS.n.toFixed(2)}, ratio ${(1 / DS.n).toFixed(2)}:1):
+            V_B1 = ${VBs.toFixed(1)} / ${DS.n.toFixed(2)} = ${VB1.toFixed(1)} V
 
-P_max (θ = 90°) = V_A1·V_B1/(2X) = ${Pmax.toFixed(0)} W`;
+tank:       X = ωLr − 1/(ωCr) = ${X.toFixed(1)} Ω
+
+power:      P = V_A1·V_B1·sin θ / (2X)
+              = ${VA1.toFixed(0)} × ${VB1.toFixed(0)} × sin ${(th / D).toFixed(0)}° / ${(2 * X).toFixed(0)}
+              = ${P.toFixed(0)} W     (simulation: ${sim.P.toFixed(0)} W)
+            P_max (θ = 90°) = ${Pmax.toFixed(0)} W`;
     const fr = { x0: 56, x1: 500, y0: 24, y1: 266 }, Xs = lin(0, 90, fr.x0, fr.x1), top = nice(Pmax * 1.15), Y = lin(0, top, fr.y1, fr.y0);
     let h = ticks(0, top, 5).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += [0, 15, 30, 45, 60, 75, 90].map((v) => `<text x="${Xs(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}°</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">phase shift θ</text><text x="${fr.x0}" y="${fr.y0 - 10}" class="t-title">power P (W)</text>`;
