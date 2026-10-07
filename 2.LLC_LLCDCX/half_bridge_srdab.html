@@ -247,121 +247,31 @@ figure { margin: 0; }
         <figcaption><b>Secondary.</b> The dashed blue line is Q1's turn-on, θ before Q3's. Dotted lines: the current crosses zero, which is where a diode rectifier would switch. Currents in real secondary amperes (i/n).</figcaption>
       </figure>
     </div>
-    <div class="prose"><p><b>Reading the schematic at the top.</b> The moving dashes show the current path and direction at the selected moment: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, <span style="color:var(--purple)">purple</span> through C<sub>oss</sub> during a dead time. Each switch is drawn as channel, body diode and C<sub>oss</sub>. When the top switch conducts, the loop closes through C<sub>bus</sub> (AC part) and V<sub>bus</sub> (DC part). When the bottom switch conducts, the loop is short: tank → bottom switch → back. On the secondary, the DC part goes to R and the ripple to C<sub>out</sub>.</p></div>
-    <div class="prose"><p><b>Why does the primary current lag v<sub>A</sub>?</b> Above resonance the tank Lr–Cr is an inductor overall. An inductor's current lags its voltage by 90°, and the voltage across the tank is the difference between the two square waves. Put together, the current crosses zero φ <i>after</i> v<sub>A</sub> rises:</p></div>
-    <div class="eq key" id="lagEq"></div>
-    <div class="prose"><p><b>How a half bridge makes a square wave.</b> Node A switches between <b>0 V</b> (Q2 on) and <b>V<sub>bus</sub> = 400 V</b> (Q1 on). Cr is in series and blocks the DC part: it charges to about V<sub>bus</sub>/2 = 200 V and keeps that voltage. What is left for Lr and the transformer is a ±200 V square wave. The secondary works the same way: node B switches between 0 and V<sub>out</sub>, and C<sub>dc</sub> holds V<sub>out</sub>/2 so the transformer sees no DC. The current in Lr depends on the <i>difference</i> between the two square waves.</p></div>
   </section>
 
-  <section id="secondary">
-    <h2><span class="n">2</span>How the secondary switches turn on and off</h2>
+  <section id="power">
+    <h2><span class="n">2</span>How the phase shift θ sets the power</h2>
     <div class="duo">
       <div class="col">
-        <div class="prose">
-          <p><b>1. The secondary is a second square-wave generator.</b> Q3 and Q4 get the same 50 % gate signals as Q1 and Q2, only delayed by θ. Q3 on → node B = V<sub>out</sub>. Q4 on → node B = 0 V. The controller decides when they switch, not the current.</p>
-          <p><b>2. What a plain diode rectifier would do.</b> If Q3 and Q4 were only diodes, node B would follow the current. Current flowing into B → D3 conducts → node B = V<sub>out</sub>. Current flowing out of B → D4 → node B = 0. A diode bridge switches exactly when the current crosses zero (lower bar in the secondary chart, right).</p>
-          <p><b>3. What the active bridge does instead.</b> It switches θ after the primary. The current already crossed zero at φ, which is a little earlier. In between (<span style="color:var(--red)">red</span>), the old switch Q4 is still on, but the current now flows drain → source through it, which a diode could never do. Energy goes back from the output: this is the backflow. Then Q4 turns off and the dead time starts. The current, already in the new direction, swings node B up (<span style="color:var(--purple)">purple</span>), D3 picks it up (<span style="color:var(--amber)">amber</span>), and Q3 turns on at zero voltage. For the rest of the half period, Q3 carries the current source → drain like a diode without the 0.7 V drop (<span style="color:var(--green)">green</span>): a synchronous rectifier.</p>
-          <p><b>4. The one rule.</b> A secondary switch gets ZVS if the current has already reversed when its partner turns off. So the gate edge θ must come <i>after</i> the zero crossing φ:</p>
-        </div>
-        <div class="eq key">primary ZVS:     φ &gt; 0     (current still negative when Q1 turns on)
-secondary ZVS:   φ &lt; θ     (current already positive when Q4 turns off)
-both:            0 &lt; φ &lt; θ
-backflow time:   (θ − φ)/360° · T</div>
-        <div class="now" id="secRead"></div>
+        <div class="prose"><p>Replace both square waves by their fundamentals (sine waves). Then the circuit is just two AC sources joined by one reactance X, the tank. That is the same picture as a power line between two generators: power flows from the source that <b>leads</b> to the one that <b>lags</b>, and θ is the angle between them.</p></div>
+        <div class="eq key" id="pEq"></div>
+        <div class="prose"><ul>
+          <li><b>θ = 0:</b> sin θ = 0, so no power.</li>
+          <li><b>θ grows:</b> power grows like sin θ.</li>
+          <li><b>θ = 90°:</b> maximum power. Beyond 90° the power falls again, while the current keeps growing.</li>
+          <li><b>θ &lt; 0:</b> the power reverses (possible with a battery, not with a resistor).</li>
+          <li><b>X is the second knob:</b> raising f<sub>s</sub> further above resonance makes X larger, so less power for the same θ.</li>
+        </ul></div>
       </div>
+      <figure class="panel fig"><div class="scroll"><svg id="figPT" viewBox="0 0 520 320" role="img" aria-label="Power against phase shift"></svg></div><figcaption><b>P against θ</b> at the present V<sub>out</sub> and f<sub>s</sub>. Line: formula. Dot: your θ. Ring: the time-domain simulation. At small θ the simulation gives a bit more than the formula: the dead time and the higher harmonics also transfer some power, and the formula keeps only the fundamentals.</figcaption></figure>
     </div>
-  </section>
-
-  <section id="basics">
-    <h2><span class="n">3</span>Basics you need first</h2>
-    <div class="concepts">
-      <div class="panel"><h3>An inductor's current cannot jump</h3><p><span class="m">v = L·di/dt</span>. The voltage across Lr only sets the <i>slope</i> of its current. When a switch opens, Lr keeps its current flowing and forces it into whatever path is left: a C<sub>oss</sub>, then a body diode. All of ZVS comes from this.</p></div>
-      <div class="panel"><h3>A capacitor's voltage cannot jump</h3><p><span class="m">i = C·dv/dt</span>. To move a node by ΔV you must move a charge <span class="m">Q = C·ΔV</span>. A current I does that in a time <span class="m">t = C·ΔV/I</span>. That is the swing time in the dead time.</p></div>
-      <div class="panel"><h3>A MOSFET has three current paths</h3><p>1) The <b>channel</b>: with the gate on it conducts in both directions, like a small resistor. 2) The <b>body diode</b>: always there, conducts only source → drain, about 0.7 V drop. 3) The <b>output capacitance C<sub>oss</sub></b>: when the switch is off and its voltage changes, current flows into or out of it. The schematic draws all three.</p></div>
-      <div class="panel"><h3>ZVS</h3><p>Zero-voltage switching: the MOSFET turns on when its drain–source voltage is already zero, because the current has already emptied its C<sub>oss</sub> and its body diode conducts. Turning on at a voltage V instead dumps <span class="m">½·C·V²</span> into the channel, every switching event.</p></div>
-      <div class="panel"><h3>Dead time</h3><p>The two switches of one leg must never be on together, or they short the bus. So between "one off" and "the other on" there is a short time with both off. During that time the tank current swings the node voltage across the leg.</p></div>
-      <div class="panel"><h3>Why Cr and C<sub>dc</sub> hold a DC voltage</h3><p>Node A switches between 0 and 400 V, so it has a 200 V average. A transformer cannot take DC, so the series capacitor Cr takes it: about 200 V, constant. What is left for Lr and the transformer is a ±200 V square wave. C<sub>dc</sub> does the same on the secondary, with V<sub>out</sub>/2.</p></div>
-    </div>
-  </section>
-
-  <section id="intervals">
-    <h2><span class="n">4</span>One switching period, interval by interval</h2>
-    <div class="prose"><p>The first half period splits into seven intervals. For each one, the card shows the circuit and the waveforms at a moment inside that interval (gray band), which device conducts, where the current flows, and why the interval ends. All numbers come from the simulation, so they follow the sliders. The ◀ ▶ buttons step through the same intervals, and the current one is outlined in blue.</p></div>
-    <div class="ivs" id="ivs"></div>
-    <article class="panel iv" id="half2">
-      <div class="iv-head"><span class="iv-tag">T/2 → T</span><h3>The second half period: the same seven intervals, mirrored</h3></div>
-      <div class="prose"><p>At T/2, Q1 turns off and everything repeats with the roles swapped. Q2 takes Q1's place and Q4 takes Q3's. Node A now swings from 400 V down to 0 V, node B from V<sub>out</sub> down to 0 V, and every current changes sign.</p></div>
-      <div class="panel tbl"><table><thead><tr><th>First half</th><th>Second half</th></tr></thead><tbody>
-        <tr><td>1. Node A swings 0 → 400 V (C<sub>oss</sub> of Q1, Q2)</td><td>8. Node A swings 400 → 0 V</td></tr>
-        <tr><td>2. D1 conducts</td><td>9. D2 conducts</td></tr>
-        <tr><td>3. Q1 on, current reversed (ZVS)</td><td>10. Q2 on, current reversed (ZVS)</td></tr>
-        <tr><td>4. Q1 forward, Q4 still on (backflow)</td><td>11. Q2 forward, Q3 still on (backflow)</td></tr>
-        <tr><td>5. Node B swings 0 → V<sub>out</sub></td><td>12. Node B swings V<sub>out</sub> → 0</td></tr>
-        <tr><td>6. D3 conducts</td><td>13. D4 conducts</td></tr>
-        <tr><td>7. Q1 + Q3: power transfer</td><td>14. Q2 + Q4: power transfer</td></tr>
-      </tbody></table></div>
-    </article>
-  </section>
-
-  <section>
-    <h2><span class="n">5</span>Zoom: what happens inside the dead time</h2>
-    <div class="two">
-      <figure class="panel fig"><div class="scroll"><svg id="zA" viewBox="0 0 520 340" role="img" aria-label="Zoom around Q1 turn-on"></svg></div><figcaption id="zAcap"></figcaption></figure>
-      <figure class="panel fig"><div class="scroll"><svg id="zB" viewBox="0 0 520 340" role="img" aria-label="Zoom around Q3 turn-on"></svg></div><figcaption id="zBcap"></figcaption></figure>
-    </div>
-    <div class="prose">
-      <p><b>The rule for ZVS, in one sentence:</b> when a switch turns off, the current must still be flowing in the direction that swings the node toward the other rail, and it must be large enough to finish the swing within the dead time.</p>
-    </div>
-    <div class="eq key">swing time  ≈  2·C_oss · V / |i|          must be  &lt;  dead time
-primary (Q1):    i_res  &lt; 0  when Q2 turns off
-secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
-    <div class="prose"><p><b>Try it.</b> Lower θ to about 10°: the current at the switching edges gets small, the swing becomes slow, and the switch turns on before the node arrives (red). Set R to 15 Ω (light load): V<sub>out</sub> rises, M becomes larger than 1, and the primary loses ZVS first. Set R to 4 Ω (heavy load): V<sub>out</sub> drops, M is below 1, and the secondary loses it first. A dead time that is too long is not free either. After the swing, the body diode conducts for the rest of the dead time, and that costs conduction loss.</p></div>
-  </section>
-
-  <section>
-    <h2><span class="n">6</span>Why can't θ be zero?</h2>
-    <div class="prose">
-      <p>It can: move the θ slider to 0° and look at the result. Two things go wrong.</p>
-      <ul>
-        <li><b>No power.</b> The power is <span class="m">P = 2M·V_bus²·sin θ/(π²·X)</span>. At θ = 0 the two square waves are in phase, so sin θ = 0 and nothing is transferred. With a resistor as load, the output capacitor then discharges and V<sub>out</sub> falls to zero.</li>
-        <li><b>No ZVS.</b> The dead-time swing is driven by the current at the switching edge. With almost no current, the node cannot swing, and all four switches turn on with voltage across them: hard switching (red circles). Some current still flows, but it only circulates (reactive) and does not deliver power.</li>
-      </ul>
-      <p>So θ is the power knob, and with a resistive load it sets the output voltage. Increasing θ from 0 toward 90° increases the power and the ZVS current. With a battery instead of a resistor, a negative θ would reverse the power and charge the bus from the battery: the reverse mode in the app note. A resistor cannot give energy back, so here θ stays between 0° and 90°.</p>
-      <p><b>Why V<sub>out</sub> changes with R.</b> For a fixed θ this converter behaves like a current source: the average output current is set by θ and the tank, not by the load. So V<sub>out</sub> ≈ I·R. A lighter load (larger R) gives a higher voltage. A real controller closes the loop and adjusts θ to hold 48 V. The <b>θ for 48 V</b> button does that once.</p>
-    </div>
-  </section>
-
-  <section>
-    <h2><span class="n">7</span>How to choose θ (TI app note SDAA372)</h2>
-    <div class="prose"><p>The app note's goal: pick θ from the voltage ratio <span class="m">M = V_out/(n·V_bus)</span> so that all four switches keep ZVS, and set the power with the switching frequency. With the first-harmonic approximation, both sides have ZVS when</p></div>
-    <div class="eq key">θ  &gt;  θ_boundary = arccos[ min(M, 1/M) ]          (correct in the app note)</div>
-    <div class="two">
-      <figure class="panel fig"><div class="scroll"><svg id="figTh" viewBox="0 0 520 320" role="img" aria-label="Phase shift against M: ZVS boundary, app note eq. 15 and corrected law"></svg></div><figcaption><b>θ against M.</b> <span style="color:var(--text3)">Gray</span>: ZVS boundary (ZVS needs θ above it). <span style="color:var(--amber)">Amber</span>: app note eq. 15. <span style="color:var(--green)">Green</span>: corrected law. The dot marks your current setting.</figcaption></figure>
-      <div class="prose">
-        <p><b>What I found when checking the app note:</b></p>
-        <ul>
-          <li><b>Eq. 6 is wrong.</b> It forgets that an inductive tank makes the current lag by 90°, the "j" in jX. The correct current is <span class="m">i ∝ M·sinθ·sin ωt − (1 − M·cosθ)·cos ωt</span>. The later equations 11 and 13 already use this correct form.</li>
-          <li><b>Eq. 14–15 are curve fits, not solutions.</b> Eq. 13 has no answer below 90°.</li>
-          <li><b>Eq. 15 drops below the ZVS boundary</b> for M &gt; 1.6. There the primary switches hard. The cause is the extra factor (1 − 0.25·|M − 1|).</li>
-        </ul>
-        <p><b>Simple fix:</b> remove that factor.</p>
-        <div class="eq">θ = arccos[ 0.8 · min(M, 1/M) ]</div>
-        <div class="btns"><button type="button" id="use15">set θ by eq. 15</button><button type="button" id="useFix">set θ by the corrected law</button></div>
-        <p id="lawRead" style="font:500 12.5px/1.6 var(--mono);color:var(--text2)"></p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2><span class="n">8</span>Numbers used</h2>
-    <div class="prose"><p id="params"></p>
-    <p style="color:var(--text2);font-size:14px">The simulation is a time-domain model of the real circuit. It uses ideal switches with body diodes, a constant C<sub>oss</sub> on each switch, the dead times, and a 2 Ω tank resistance (windings, R<sub>ds(on)</sub>, ESR). C<sub>bus</sub>, C<sub>out</sub> and C<sub>dc</sub> are large, so their voltages are constant within a period. V<sub>out</sub> is found by iteration until the power delivered equals V<sub>out</sub>²/R. The simulation starts from the first-harmonic solution and runs until the waveforms stop changing. The transformer magnetizing inductance is left out to keep it simple.</p></div>
   </section>
 </main>
 
 <script>
 (() => {
-  const $ = (s) => document.querySelector(s);
+  const DUMMY = document.createElement('div');
+  const $ = (s) => document.querySelector(s) || DUMMY;
   const D = Math.PI / 180;
   const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
   const nice = (x) => { const e = Math.pow(10, Math.floor(Math.log10(x))), f = x / e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e; };
@@ -674,6 +584,31 @@ at Q1 turn-on:    i(0) = −Î·sin φ ${phi > 0 ? '< 0  → current flows backw
     const ok1 = phi > 0, ok3 = phi < th / D, back = (th / D - phi) / 360 * T;
     $('#secRead').innerHTML = `<div class="h">now: φ = ${phi.toFixed(1)}°${phiS === null ? '' : ` (simulated ${phiS.toFixed(1)}°)`}, θ = ${(th / D).toFixed(0)}°</div><div>Primary ZVS: φ ${ok1 ? '&gt;' : '≤'} 0 → ${ok1 ? '<b style="color:var(--green)">yes</b>' : '<b style="color:var(--red)">no</b>'}. Secondary ZVS: φ ${ok3 ? '&lt;' : '≥'} θ → ${ok3 ? '<b style="color:var(--green)">yes</b>' : '<b style="color:var(--red)">no</b>'}. ${ok3 ? `Backflow lasts (θ − φ) ≈ ${(back * 1e9).toFixed(0)} ns.` : 'The current has not reversed when Q4 turns off, so node B cannot swing and Q3 turns on hard.'}</div>`;
   }
+  // ---------- power vs phase shift ----------
+  function renderPower() {
+    const w = 2 * Math.PI * DS.fs, X = w * DS.Lr - 1 / (w * DS.Cr);
+    const VA1 = 2 * DS.Vbus / Math.PI, VB1 = 2 * st.VBat / (Math.PI * DS.n), th = st.th;
+    const P = VA1 * VB1 * Math.sin(th) / (2 * X), Pmax = VA1 * VB1 / (2 * X);
+    $('#pEq').textContent =
+`V_A1 = 2·V_bus/π     = ${VA1.toFixed(1)} V     v_A fundamental (peak)
+V_B1 = 2·V_out/(π·n) = ${VB1.toFixed(1)} V     v_B/n fundamental (peak)
+X = ωLr − 1/(ωCr)    = ${X.toFixed(1)} Ω      tank reactance
+
+P = V_A1·V_B1·sin θ / (2X)
+  = ${VA1.toFixed(0)} × ${VB1.toFixed(0)} × sin ${(th / D).toFixed(0)}° / ${(2 * X).toFixed(0)}
+  = ${P.toFixed(0)} W     (simulation: ${sim.P.toFixed(0)} W)
+
+P_max (θ = 90°) = V_A1·V_B1/(2X) = ${Pmax.toFixed(0)} W`;
+    const fr = { x0: 56, x1: 500, y0: 24, y1: 266 }, Xs = lin(0, 90, fr.x0, fr.x1), top = nice(Pmax * 1.15), Y = lin(0, top, fr.y1, fr.y0);
+    let h = ticks(0, top, 5).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    h += [0, 15, 30, 45, 60, 75, 90].map((v) => `<text x="${Xs(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}°</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">phase shift θ</text><text x="${fr.x0}" y="${fr.y0 - 10}" class="t-title">power P (W)</text>`;
+    h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(Array.from({ length: 91 }, (_, d) => [Xs(d), Y(Pmax * Math.sin(d * D))]))}"/>`;
+    const d = Math.max(0, Math.min(90, th / D));
+    h += `<line x1="${Xs(d)}" y1="${fr.y0}" x2="${Xs(d)}" y2="${fr.y1}" style="stroke:var(--text);stroke-dasharray:2 3"/>`;
+    h += `<circle cx="${Xs(d)}" cy="${Y(sim.P)}" r="8" fill="none" style="stroke:var(--green);stroke-width:2.2"/><circle cx="${Xs(d)}" cy="${Y(P)}" r="4.5" fill="var(--blue)"/>`;
+    h += `<text x="${Xs(d) + 10}" y="${Y(P) - 10}" style="fill:var(--text)">${P.toFixed(0)} W</text>`;
+    $('#figPT').innerHTML = h;
+  }
   // ---------- zoom charts ----------
   function zoom(id, pts, node, gOn, gOff, Vrail, scale, lab, edge, labOn, labOff) {
     const s = sim, fr = { x0: 56, x1: 470 }, X = lin(-s.win, s.win, fr.x0, fr.x1);
@@ -714,7 +649,7 @@ at Q1 turn-on:    i(0) = −Î·sin φ ${phi > 0 ? '< 0  → current flows backw
     $('#stepLbl').textContent = `interval ${nr} / 14`;
     let txt = SHORT[S.step];
     if (S.half) txt = txt.replace(/Q1/g, '§').replace(/Q2/g, 'Q1').replace(/§/g, 'Q2').replace(/Q3/g, '§').replace(/Q4/g, 'Q3').replace(/§/g, 'Q4');
-    $('#now').innerHTML = `<div class="h">interval ${nr}${S.half ? ` (mirror of ${S.step + 1})` : ''} · t = ${us} µs · <a href="#iv${S.step}" style="color:inherit">details ↓</a></div><div>${txt}</div>`;
+    $('#now').innerHTML = `<div class="h">interval ${nr}${S.half ? ` (mirror of ${S.step + 1})` : ''} · t = ${us} µs</div><div>${txt}</div>`;
   }
   // step segments over one period, for the ◀ ▶ buttons
   let segs = [];
@@ -779,6 +714,7 @@ swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
       <p><b>Why it ends.</b> At T/2 = ${us(sim.T / 2)}, Q1 turns off and the second half period starts with interval 8, the mirror of interval 1.</p></div>` },
   ];
   function renderIntervals() {
+    if (!document.querySelector('#ivs')) return;
     const T = sim.T, save = st.t, Vo = st.VBat, VB = Vo / DS.n / 2;
     const cards = IV.map((iv, k) => {
       const g = segs.find((q) => q.k === k);
@@ -817,7 +753,7 @@ swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
     sim.imax = Math.max(...sim.rec.map((q) => Math.abs(q.i))); buildSegs();
     renderIntervals();
     renderCursor();
-    renderPhase();
+    renderPower();
     const s = sim, e = s.edge, M = st.VBat / (DS.n * DS.Vbus);
     zoom('#zA', s.zA, 'vA', 'q1', 'q2', s.VA, 1, 'node A', e.q1, 'Q1', 'Q2');
     zoom('#zB', s.zB, 'vB', 'q3', 'q4', s.VB, DS.n, 'node B', e.q3, 'Q3', 'Q4');
