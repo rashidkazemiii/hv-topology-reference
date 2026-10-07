@@ -238,7 +238,7 @@ figure { margin: 0; }
     <h2><span class="n">1</span>Waveforms: primary on the left, secondary on the right</h2>
     <div class="duo2">
       <figure class="panel fig">
-        <div class="scroll"><svg id="figW" viewBox="0 0 640 580" role="img" aria-label="Primary: gate signals Q1 and Q2, node A voltage, drain-source voltages of Q1 and Q2, resonant current"></svg></div>
+        <div class="scroll"><svg id="figW" viewBox="0 0 640 590" role="img" aria-label="Primary: gate signals Q1 and Q2, node A voltage, drain-source voltages of Q1 and Q2, resonant current"></svg></div>
         <figcaption><b>Primary.</b> Gray bands: dead time. Circles: turn-on currents of Q1 and Q2 (green = ZVS, red = hard). Click or drag to move in time.</figcaption>
       </figure>
       <figure class="panel fig">
@@ -591,22 +591,22 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     });
     h += `<text x="${fr.x1 + 6}" y="60" style="fill:var(--text3);font-size:11px">dead</text><text x="${fr.x1 + 6}" y="74" style="fill:var(--text3);font-size:11px">time</text>`;
     const vm = nice(Math.max(2 * s.VA, 2 * s.VB) * 1.1);
-    const vy = { y: 145, h: 90 }, YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
+    const vy = { y: 290, h: 90 }, YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
     h += `<text x="${fr.x0}" y="${vy.y - 8}" class="t-title">node A, to the − rail (V)</text>` + ticks(0, vm, 2).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--red);stroke-width:1.2;stroke-dasharray:4 3;opacity:.7" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vB + s.VB)]))}"/>`;
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vA + s.VA)]))}"/>`;
     h += `<text x="${fr.x1 + 6}" y="${vy.y + 22}" style="fill:var(--blue);font-size:11px">v_A</text><text x="${fr.x1 + 6}" y="${vy.y + 38}" style="fill:var(--red);font-size:11px">v_B/n</text>`;
-    const vd = { y: 270, h: 90 }, YD = lin(-0.08 * vm, vm, vd.y + vd.h, vd.y);
+    const vd = { y: 420, h: 110 }, YD = lin(-0.08 * vm, vm, vd.y + vd.h, vd.y);
     h += `<text x="${fr.x0}" y="${vd.y - 8}" class="t-title">drain–source voltages Q1, Q2 (V)</text>` + ticks(0, vm, 2).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YD(v)}" x2="${fr.x1}" y2="${YD(v)}"/><text x="${fr.x0 - 8}" y="${YD(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YD(s.VA - q.vA)]))}"/><polyline class="ln" style="stroke:var(--amber);stroke-dasharray:5 3" points="${poly(s.rec.map((q) => [X(q.t), YD(q.vA + s.VA)]))}"/>`;
     h += `<text x="${fr.x1 + 6}" y="${vd.y + 22}" style="fill:var(--blue);font-size:11px">v_ds Q1</text><text x="${fr.x1 + 6}" y="${vd.y + 38}" style="fill:var(--amber);font-size:11px">v_ds Q2</text>`;
-    const iy = { y: 395, h: 130 }, im = nice(Math.max(0.5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
+    const iy = { y: 140, h: 110 }, im = nice(Math.max(0.5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
     h += `<text x="${fr.x0}" y="${iy.y - 8}" class="t-title">primary (resonant) current i (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(s.rec.map((q) => [X(q.t), YI(q.i)]))}"/>`;
     [['q1', s.td], ['q2', T / 2 + s.td]].forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; h += `<circle cx="${X(te % T)}" cy="${YI(e.i)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
-    h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${iy.y + iy.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${iy.y + iy.h + 38}" text-anchor="middle">time (µs)</text>`;
-    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${iy.y + iy.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
-    h += `<line x1="${X(st.t * T)}" y1="10" x2="${X(st.t * T)}" y2="${iy.y + iy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
+    h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${vd.y + vd.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${vd.y + vd.h + 38}" text-anchor="middle">time (µs)</text>`;
+    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${vd.y + vd.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
+    h += `<line x1="${X(st.t * T)}" y1="10" x2="${X(st.t * T)}" y2="${vd.y + vd.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figW').innerHTML = h;
   }
 
@@ -654,7 +654,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${vy.y + vy.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${vy.y + vy.h + 38}" text-anchor="middle">time (µs)</text>`;
     [['q3', s.phi + s.td], ['q4', s.phi + T / 2 + s.td]].forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; h += `<circle cx="${X(te % T)}" cy="${YI(e.i / n)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
     h += `<line x1="${X(s.td)}" y1="10" x2="${X(s.td)}" y2="${iy.y + iy.h}" style="stroke:var(--blue);stroke-dasharray:6 4;opacity:.7"/><text x="${X(s.td) + 3}" y="10" style="fill:var(--blue);font-size:11px">Q1↑</text>`;
-    h += `<path d="M${X(s.td)},122 H${X(s.td + s.phi)}" style="stroke:var(--text);stroke-width:1.2"/><text x="${(X(s.td) + X(s.td + s.phi)) / 2}" y="132" text-anchor="middle" style="font-size:11px;fill:var(--text)">θ</text>`;
+    h += `<path d="M${X(s.td)},62 H${X(s.td + s.phi)}" style="stroke:var(--text);stroke-width:1.2"/><text x="${(X(s.td) + X(s.td + s.phi)) / 2}" y="60" text-anchor="middle" style="font-size:11px;fill:var(--text)">θ</text>`;
     if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${vy.y + vy.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
     h += `<line x1="${X(st.t * T)}" y1="14" x2="${X(st.t * T)}" y2="${vy.y + vy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figSec').innerHTML = h;
@@ -790,7 +790,7 @@ swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
       return `<article class="panel iv" id="iv${k}" data-k="${k}">
         <div class="iv-head"><span class="iv-tag">t${k} → t${k + 1}</span><h3>Interval ${k + 1}: ${iv.t}</h3><span class="iv-time">${us(g.a)} – ${us(g.b)}  (${ns(dt)})</span></div>
         <div class="imgs"><figure><svg class="snapS" viewBox="0 0 1040 430" role="img" aria-label="Circuit during interval ${k + 1}"></svg><figcaption>${iv.capS}</figcaption></figure>
-        <figure><svg class="snapW" viewBox="0 0 640 ${k <= 2 ? 580 : 590}" role="img" aria-label="Waveforms with interval ${k + 1} highlighted"></svg><figcaption>${iv.capW}</figcaption></figure></div>
+        <figure><svg class="snapW" viewBox="0 0 640 590" role="img" aria-label="Waveforms with interval ${k + 1} highlighted"></svg><figcaption>${iv.capW}</figcaption></figure></div>
         ${iv.body(c)}</article>`;
     });
     $('#ivs').innerHTML = cards.join('');
