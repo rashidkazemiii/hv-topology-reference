@@ -148,6 +148,9 @@ figure { margin: 0; }
 .duo2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
 @media (max-width: 1000px) { .duo2 { grid-template-columns: 1fr; } }
 .duo2 .fig .scroll svg { min-width: 0; }
+.pfig { position: sticky; top: 150px; }
+@media (max-width: 1100px) { .pfig { position: static; } }
+#power h3 { margin-top: 6px; }
 .duo .col { display: grid; gap: 12px; min-width: 0; }
 @media (min-width: 1101px) { .duo .fig .scroll svg { min-width: 0; } }
 @media (max-width: 1100px) { .duo { grid-template-columns: 1fr; } }
@@ -251,18 +254,53 @@ figure { margin: 0; }
     <h2><span class="n">2</span>How the phase shift θ sets the power</h2>
     <div class="duo">
       <div class="col">
-        <div class="prose"><p>Replace both square waves by their fundamentals (sine waves), and refer the secondary one to the primary side through the turns ratio. Then the circuit is just two AC sources joined by one reactance X, the tank. That is the same picture as a power line between two generators: power flows from the source that <b>leads</b> to the one that <b>lags</b>, and θ is the angle between them.</p></div>
-        <div class="eq key" id="pEq"></div>
-        <div class="prose"><ul>
-          <li><b>θ = 0:</b> sin θ = 0, so no power.</li>
-          <li><b>θ grows:</b> power grows like sin θ.</li>
-          <li><b>θ = 90°:</b> maximum power. Beyond 90° the power falls again, while the current keeps growing.</li>
-          <li><b>V<sub>out</sub> stays 48 V:</b> the controller holds it there, so θ only decides the power. The load that takes this power is R = 48²/P, shown in the schematic.</li>
-          <li><b>θ &lt; 0:</b> the power would reverse (possible with a battery, not with a resistor).</li>
-          <li><b>X is the second knob:</b> raising f<sub>s</sub> further above resonance makes X larger, so less power for the same θ.</li>
-        </ul></div>
+        <div class="prose"><h3>1. From square waves to sine waves</h3><p>A square wave of ±V/2 has a fundamental (first harmonic) of amplitude <span class="m">V₁ = (4/π)·(V/2) = 2V/π</span>. Keep only the fundamentals, and refer the secondary to the primary by dividing by the turns ratio n:</p></div>
+        <div class="eq">v_A(t)  = V_A1 · sin(ωt)            V_A1 = 2·V_bus/π
+v_B'(t) = V_B1 · sin(ωt − θ)        V_B1 = 2·V_out/(π·n)</div>
+        <div class="prose"><h3>2. The tank is a single reactance</h3><p>Above resonance (f<sub>s</sub> &gt; f<sub>r</sub>), Lr and Cr together behave like one inductor:</p></div>
+        <div class="eq">X = ωLr − 1/(ωCr)  &gt; 0</div>
+        <div class="prose"><h3>3. The current, with phasors</h3><p>With V<sub>A</sub> = V<sub>A1</sub>∠0 and V<sub>B</sub> = V<sub>B1</sub>∠−θ:</p></div>
+        <div class="eq">I = (V_A − V_B) / (jX)</div>
+        <div class="prose"><h3>4. The power delivered to the secondary</h3></div>
+        <div class="eq">P = ½ · Re{ V_B · I* }
+  = ½ · Re{ j·(V_B·V_A* − |V_B|²) } / X</div>
+        <div class="prose"><p>|V<sub>B</sub>|² is a real number; multiplied by j it becomes imaginary and <b>adds no power</b>. From V<sub>B</sub>·V<sub>A</sub>* = V<sub>A1</sub>·V<sub>B1</sub>·e<sup>−jθ</sup>, only the imaginary part survives:</p></div>
+        <div class="eq key">P = V_A1 · V_B1 · sin θ / (2X)</div>
+        <div class="prose"><h3>5. In terms of the circuit values</h3></div>
+        <div class="eq key">P = (2V_bus/π)·(2V_out/(π·n))·sin θ / (2X)
+
+P = 2 · V_bus · V_out · sin θ / (π² · n · X)</div>
+        <div class="prose"><p><b>With the numbers on this page:</b></p></div>
+        <div class="eq" id="pEq"></div>
+
+        <div class="prose"><h3>Why the power behaves like this</h3>
+          <p><b>a) The tank consumes no power.</b> An inductor and a capacitor only store energy and give it back; their average power is zero. So all the power that enters from the primary arrives at the secondary.</p>
+          <p><b>b) The current lags the voltage <i>difference</i> by 90°.</b> The current is driven by the difference between the two voltages, and because the tank is inductive it lags that difference by 90°: <span class="m">I = (V_A − V_B)/(jX)</span>.</p>
+          <p><b>c) Only the part of V<sub>A</sub> perpendicular to V<sub>B</sub> carries power.</b> Split V<sub>A</sub> in the phasor diagram into two parts:</p>
+          <ul>
+            <li><b>The part parallel to V<sub>B</sub></b> (size V<sub>A1</sub>·cos θ) drives a current 90° out of phase with V<sub>B</sub>. It only flows back and forth (reactive) and carries no power.</li>
+            <li><b>The part perpendicular to V<sub>B</sub></b> (size <b>V<sub>A1</sub>·sin θ</b>) is turned by 90° in the inductor, so it drives a current <b>in phase with V<sub>B</sub></b>. Only this current carries power.</li>
+          </ul>
+        </div>
+        <div class="eq">useful current = V_A1 · sin θ / X      →      P = ½ · V_B1 · (V_A1 · sin θ / X)</div>
+        <div class="panel tbl"><table><thead><tr><th>θ</th><th>What happens</th></tr></thead><tbody>
+          <tr><td class="num">0°</td><td>The two voltages point the same way and there is no perpendicular part. <b>No power</b>, only reactive current.</td></tr>
+          <tr><td class="num">0° to 90°</td><td>The perpendicular part grows like sin θ, and so does <b>the power</b>.</td></tr>
+          <tr><td class="num">90°</td><td>V<sub>A</sub> is fully perpendicular to V<sub>B</sub>: <b>maximum power</b>, P<sub>max</sub> = V<sub>A1</sub>·V<sub>B1</sub>/(2X).</td></tr>
+          <tr><td class="num">above 90°</td><td>The perpendicular part shrinks again, so the power falls. But |V<sub>A</sub> − V<sub>B</sub>| keeps growing, so <b>the current and the losses keep rising</b>. A bad region to work in.</td></tr>
+          <tr><td class="num">negative</td><td>The perpendicular part changes sign: <b>the power flows from the secondary to the primary</b> (needs a battery, not a resistor).</td></tr>
+        </tbody></table></div>
+        <div class="prose">
+          <p><b>d) Why X is in the denominator.</b> X tells how stiff the tank is against a current. A larger X gives less current for the same voltage difference, so less power. X depends on the frequency:</p>
+        </div>
+        <div class="eq">X = Z₀ · (F − 1/F)        F = f_s/f_r,   Z₀ = √(Lr/Cr)</div>
+        <div class="prose">
+          <ul><li><b>Near resonance</b> X → 0 and the power becomes very large (dangerous).</li><li><b>Higher f<sub>s</sub></b> gives a larger X and less power. This is the second control knob, the VFM in the TI app note.</li></ul>
+          <p><b>e) The same formula as a power grid.</b> This is exactly the power transfer between two generators on a line, <span class="m">P = V₁·V₂·sin δ / X</span>. Here the line is Lr–Cr and the load angle δ is θ.</p>
+          <p><b>f) How it shows in the charts above.</b> At every instant the secondary power is v<sub>B</sub> × i. Where v<sub>B</sub> and i have the same sign (green "SR" bar), power goes to the output. Where they have opposite signs (red "backflow" bar), power comes back. A larger θ makes the green part larger compared with the red, and the current amplitude larger. Together that gives the sin θ growth.</p>
+        </div>
       </div>
-      <figure class="panel fig"><div class="scroll"><svg id="figPT" viewBox="0 0 520 320" role="img" aria-label="Power against phase shift"></svg></div><figcaption><b>P against θ</b> with V<sub>out</sub> = 48 V and f<sub>s</sub> = 100 kHz. Line: formula. Dot: your θ. Ring: the time-domain simulation. At small θ the simulation gives a bit more than the formula: the dead time and the higher harmonics also transfer some power, and the formula keeps only the fundamentals.</figcaption></figure>
+      <figure class="panel fig pfig"><div class="scroll"><svg id="figPT" viewBox="0 0 520 320" role="img" aria-label="Power against phase shift"></svg></div><figcaption><b>P against θ</b> with V<sub>out</sub> = 48 V and f<sub>s</sub> = 100 kHz. Line: P = V<sub>A1</sub>·V<sub>B1</sub>·sin θ/(2X). Dot: your θ. Ring: the time-domain simulation. At small θ the simulation gives a little more than the formula: the dead time and the higher harmonics also transfer some power, and the formula keeps only the fundamentals.</figcaption></figure>
     </div>
   </section>
 </main>
@@ -590,20 +628,12 @@ at Q1 turn-on:    i(0) = −Î·sin φ ${phi > 0 ? '< 0  → current flows backw
     const P = VA1 * VB1 * Math.sin(th) / (2 * X), Pmax = VA1 * VB1 / (2 * X);
     const VBs = 2 * st.VBat / Math.PI;
     $('#pEq').textContent =
-`primary:    v_A = 0…${DS.Vbus} V → ±${DS.Vbus / 2} V square wave
-            V_A1 = 2·V_bus/π = ${VA1.toFixed(1)} V   (fundamental, peak)
+`V_A1 = 2·${DS.Vbus}/π = ${VA1.toFixed(1)} V
+V_B1 = (2·${st.VBat.toFixed(0)}/π) / ${DS.n.toFixed(2)} = ${VBs.toFixed(1)} V / ${DS.n.toFixed(2)} = ${VB1.toFixed(1)} V
+X    = ${(w * DS.Lr).toFixed(0)} − ${(1 / (w * DS.Cr)).toFixed(0)} = ${X.toFixed(1)} Ω
 
-secondary:  v_B = 0…${st.VBat.toFixed(0)} V → ±${(st.VBat / 2).toFixed(0)} V square wave
-            2·V_out/π = ${VBs.toFixed(1)} V     (fundamental, on the secondary)
-            referred to the primary (÷ n = ${DS.n.toFixed(2)}, ratio ${(1 / DS.n).toFixed(2)}:1):
-            V_B1 = ${VBs.toFixed(1)} / ${DS.n.toFixed(2)} = ${VB1.toFixed(1)} V
-
-tank:       X = ωLr − 1/(ωCr) = ${X.toFixed(1)} Ω
-
-power:      P = V_A1·V_B1·sin θ / (2X)
-              = ${VA1.toFixed(0)} × ${VB1.toFixed(0)} × sin ${(th / D).toFixed(0)}° / ${(2 * X).toFixed(0)}
-              = ${P.toFixed(0)} W     (simulation: ${sim.P.toFixed(0)} W)
-            P_max (θ = 90°) = ${Pmax.toFixed(0)} W`;
+P = ${VA1.toFixed(0)} × ${VB1.toFixed(0)} × sin ${(th / D).toFixed(0)}° / (2 × ${X.toFixed(1)}) = ${P.toFixed(0)} W     (simulation: ${sim.P.toFixed(0)} W)
+P_max (θ = 90°) = ${Pmax.toFixed(0)} W`;
     const fr = { x0: 56, x1: 500, y0: 24, y1: 266 }, Xs = lin(0, 90, fr.x0, fr.x1), top = nice(Pmax * 1.15), Y = lin(0, top, fr.y1, fr.y0);
     let h = ticks(0, top, 5).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${Y(v)}" x2="${fr.x1}" y2="${Y(v)}"/><text x="${fr.x0 - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += [0, 15, 30, 45, 60, 75, 90].map((v) => `<text x="${Xs(v)}" y="${fr.y1 + 18}" text-anchor="middle">${v}°</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${fr.y1 + 38}" text-anchor="middle">phase shift θ</text><text x="${fr.x0}" y="${fr.y0 - 10}" class="t-title">power P (W)</text>`;
