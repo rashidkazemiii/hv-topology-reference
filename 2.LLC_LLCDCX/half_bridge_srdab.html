@@ -137,9 +137,18 @@ figure { margin: 0; }
 #stepLbl { min-width: 120px; text-align: center; }
 .btns { display: flex; flex-wrap: wrap; gap: 8px; }
 .wrap { max-width: 1560px; }
-.stick { position: sticky; top: 0; z-index: 30; background: var(--bg); padding-block: 8px; margin-block: -8px; }
+.stick { position: sticky; top: 0; z-index: 30; background: var(--bg); padding-block: 8px; margin-block: -8px; display: grid; gap: 8px; box-shadow: 0 10px 14px -12px rgba(0,0,0,0.25); }
+.stickrow { display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.stickrow .schfig { padding: 6px; display: flex; justify-content: center; }
+#sch { height: min(31vh, 320px); width: 100%; max-width: 100%; }
+.stickrow .now { align-content: start; overflow: auto; max-height: min(31vh, 320px); }
+@media (max-width: 900px), (max-height: 640px) { .stick { position: static; box-shadow: none; } .stickrow { grid-template-columns: 1fr; } #sch { height: auto; } .stickrow .now { max-height: none; } }
 .stick .controls { box-shadow: 0 4px 14px rgba(0,0,0,0.08); padding-block: 8px; gap: 6px; }
 .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.duo2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .duo2 { grid-template-columns: 1fr; } }
+.duo2 .fig .scroll svg { min-width: 0; }
+@media (min-width: 901px) and (min-height: 641px) { .duo2 #figW, .duo2 #figSec { height: calc(67vh - 185px); min-height: 340px; } }
 .duo .col { display: grid; gap: 12px; min-width: 0; }
 @media (min-width: 1101px) { .duo .fig .scroll svg { min-width: 0; } }
 @media (max-width: 1100px) { .duo { grid-template-columns: 1fr; } }
@@ -218,23 +227,26 @@ figure { margin: 0; }
         <button type="button" class="nav" id="reg48" style="width:auto;padding:0 12px;font-size:13px">θ for 48 V</button>
       </div>
     </div>
+    <div class="stickrow">
+      <figure class="panel schfig"><svg id="sch" viewBox="0 0 1040 430" role="img" aria-label="Primary half bridge Q1 Q2 with bus capacitor, Cr and Lr, transformer, DC-blocking capacitor, secondary half bridge Q3 Q4, output capacitor and load resistor"></svg></figure>
+      <div class="now" id="now"></div>
+    </div>
   </div>
 
   <section>
-    <h2><span class="n">1</span>The circuit and its waveforms, side by side</h2>
-    <div class="duo">
-      <div class="col">
-        <figure class="panel fig">
-          <div class="scroll"><svg id="sch" viewBox="0 0 1040 430" role="img" aria-label="Primary half bridge Q1 Q2 with bus capacitor, Cr and Lr, transformer, DC-blocking capacitor, secondary half bridge Q3 Q4, output capacitor and load resistor"></svg></div>
-          <figcaption><b>The moving dashes show the current path and direction</b> at the selected moment: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, <span style="color:var(--purple)">purple</span> through C<sub>oss</sub> during a dead time. Each switch is drawn as channel, body diode and C<sub>oss</sub>. When the top switch conducts, the loop closes through C<sub>bus</sub> (AC part) and through V<sub>bus</sub> (DC part). When the bottom switch conducts, the loop is short: tank → bottom switch → back. On the secondary, the DC part goes to R and the ripple to C<sub>out</sub>.</figcaption>
-        </figure>
-        <div class="now" id="now"></div>
-      </div>
+    <h2><span class="n">1</span>Waveforms: primary on the left, secondary on the right</h2>
+    <div class="duo2">
       <figure class="panel fig">
-        <div class="scroll"><svg id="figW" viewBox="0 0 640 720" role="img" aria-label="Gate signals Q1 to Q4 with dead times, node voltages vA and vB, and resonant current over one switching period"></svg></div>
-        <figcaption><b>Click or drag on this chart to move in time.</b> Gray bands are dead times, when both switches of a leg are off. Q3 starts θ later than Q1. The secondary voltage is shown as v<sub>B</sub>/n, so it is on the same scale as v<sub>A</sub>.</figcaption>
+        <div class="scroll"><svg id="figW" viewBox="0 0 640 580" role="img" aria-label="Primary: gate signals Q1 and Q2, node A voltage, drain-source voltages of Q1 and Q2, resonant current"></svg></div>
+        <figcaption><b>Primary.</b> Gray bands: dead time. Circles: turn-on currents of Q1 and Q2 (green = ZVS, red = hard). Click or drag to move in time.</figcaption>
+      </figure>
+      <figure class="panel fig">
+        <div class="scroll"><svg id="figSec" viewBox="0 0 640 590" role="img" aria-label="Secondary: gate signals Q3 and Q4, secondary current, which device conducts compared with a diode bridge, node B and drain-source voltages of Q3 and Q4"></svg></div>
+        <div class="barleg"><span><i style="background:var(--green)"></i>synchronous rectifier (source → drain)</span><span><i style="background:var(--red)"></i>backflow (drain → source)</span><span><i style="background:var(--purple)"></i>C<sub>oss</sub> swing</span><span><i style="background:var(--amber)"></i>body diode</span></div>
+        <figcaption><b>Secondary.</b> The dashed blue line is Q1's turn-on, θ before Q3's. Dotted lines: the current crosses zero, which is where a diode rectifier would switch. Currents in real secondary amperes (i/n).</figcaption>
       </figure>
     </div>
+    <div class="prose"><p><b>Reading the schematic at the top.</b> The moving dashes show the current path and direction at the selected moment: <span style="color:var(--blue)">blue</span> on the primary, <span style="color:var(--green)">green</span> on the secondary, <span style="color:var(--purple)">purple</span> through C<sub>oss</sub> during a dead time. Each switch is drawn as channel, body diode and C<sub>oss</sub>. When the top switch conducts, the loop closes through C<sub>bus</sub> (AC part) and V<sub>bus</sub> (DC part). When the bottom switch conducts, the loop is short: tank → bottom switch → back. On the secondary, the DC part goes to R and the ripple to C<sub>out</sub>.</p></div>
     <div class="prose"><p><b>Why does the primary current lag v<sub>A</sub>?</b> Above resonance the tank Lr–Cr is an inductor overall. An inductor's current lags its voltage by 90°, and the voltage across the tank is the difference between the two square waves. Put together, the current crosses zero φ <i>after</i> v<sub>A</sub> rises:</p></div>
     <div class="eq key" id="lagEq"></div>
     <div class="prose"><p><b>How a half bridge makes a square wave.</b> Node A switches between <b>0 V</b> (Q2 on) and <b>V<sub>bus</sub> = 400 V</b> (Q1 on). Cr is in series and blocks the DC part: it charges to about V<sub>bus</sub>/2 = 200 V and keeps that voltage. What is left for Lr and the transformer is a ±200 V square wave. The secondary works the same way: node B switches between 0 and V<sub>out</sub>, and C<sub>dc</sub> holds V<sub>out</sub>/2 so the transformer sees no DC. The current in Lr depends on the <i>difference</i> between the two square waves.</p></div>
@@ -246,7 +258,7 @@ figure { margin: 0; }
       <div class="col">
         <div class="prose">
           <p><b>1. The secondary is a second square-wave generator.</b> Q3 and Q4 get the same 50 % gate signals as Q1 and Q2, only delayed by θ. Q3 on → node B = V<sub>out</sub>. Q4 on → node B = 0 V. The controller decides when they switch, not the current.</p>
-          <p><b>2. What a plain diode rectifier would do.</b> If Q3 and Q4 were only diodes, node B would follow the current. Current flowing into B → D3 conducts → node B = V<sub>out</sub>. Current flowing out of B → D4 → node B = 0. A diode bridge switches exactly when the current crosses zero (lower bar in the chart).</p>
+          <p><b>2. What a plain diode rectifier would do.</b> If Q3 and Q4 were only diodes, node B would follow the current. Current flowing into B → D3 conducts → node B = V<sub>out</sub>. Current flowing out of B → D4 → node B = 0. A diode bridge switches exactly when the current crosses zero (lower bar in the secondary chart, right).</p>
           <p><b>3. What the active bridge does instead.</b> It switches θ after the primary. The current already crossed zero at φ, which is a little earlier. In between (<span style="color:var(--red)">red</span>), the old switch Q4 is still on, but the current now flows drain → source through it, which a diode could never do. Energy goes back from the output: this is the backflow. Then Q4 turns off and the dead time starts. The current, already in the new direction, swings node B up (<span style="color:var(--purple)">purple</span>), D3 picks it up (<span style="color:var(--amber)">amber</span>), and Q3 turns on at zero voltage. For the rest of the half period, Q3 carries the current source → drain like a diode without the 0.7 V drop (<span style="color:var(--green)">green</span>): a synchronous rectifier.</p>
           <p><b>4. The one rule.</b> A secondary switch gets ZVS if the current has already reversed when its partner turns off. So the gate edge θ must come <i>after</i> the zero crossing φ:</p>
         </div>
@@ -256,11 +268,6 @@ both:            0 &lt; φ &lt; θ
 backflow time:   (θ − φ)/360° · T</div>
         <div class="now" id="secRead"></div>
       </div>
-      <figure class="panel fig">
-        <div class="scroll"><svg id="figSec" viewBox="0 0 640 590" role="img" aria-label="Secondary gate signals, secondary current, which device conducts compared with a diode bridge, node B and drain voltages of Q3 and Q4"></svg></div>
-        <div class="barleg"><span><i style="background:var(--green)"></i>synchronous rectifier (source → drain)</span><span><i style="background:var(--red)"></i>backflow (drain → source)</span><span><i style="background:var(--purple)"></i>C<sub>oss</sub> swing</span><span><i style="background:var(--amber)"></i>body diode</span></div>
-        <figcaption><b>The secondary only.</b> Click or drag to move in time. The dotted lines mark where the current crosses zero, which is where a diode rectifier would switch. Currents are real secondary amperes (i/n).</figcaption>
-      </figure>
     </div>
   </section>
 
@@ -571,45 +578,34 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   // ---------- period chart ----------
   function drawW(S, band) {
     const s = sim, T = s.T, fr = { x0: 52, x1: 572 }, X = lin(0, T, fr.x0, fr.x1);
-    const gRows = [['q1', 'Q1', 'var(--blue)'], ['q2', 'Q2', 'var(--blue)'], ['q3', 'Q3', 'var(--green)'], ['q4', 'Q4', 'var(--green)']];
     let h = '';
-    // dead-time bands
-    const bands = []; let prevP = null, prevS = null, startP = 0, startS = 0;
-    s.rec.forEach((q) => { const dp = !q.q1 && !q.q2, ds = !q.q3 && !q.q4;
-      if (dp && prevP !== true) startP = q.t; if (!dp && prevP === true) bands.push([startP, q.t, 'p']); prevP = dp;
-      if (ds && prevS !== true) startS = q.t; if (!ds && prevS === true) bands.push([startS, q.t, 's']); prevS = ds; });
-    if (prevP) bands.push([startP, T, 'p']); if (prevS) bands.push([startS, T, 's']);
-    const yTop = 20, yBot = 560;
-    bands.forEach(([a, b, k]) => { h += `<rect x="${X(a)}" y="${k === 'p' ? yTop : yTop + 104}" width="${Math.max(1.5, X(b) - X(a))}" height="${k === 'p' ? 100 : 100}" style="fill:var(--text3);opacity:.22"/>`; });
-    gRows.forEach(([k, lab, c], j) => {
-      const y0 = yTop + 8 + j * 52, hi = y0 + 4, lo = y0 + 38;
-      h += `<text x="${fr.x0 - 10}" y="${y0 + 26}" text-anchor="end" class="lbl" style="fill:${c}">${lab}</text><line class="gr" x1="${fr.x0}" y1="${lo}" x2="${fr.x1}" y2="${lo}"/>`;
-      h += `<polyline class="ln" style="stroke:${c}" points="${poly(s.rec.map((q) => [X(q.t), q[k] ? hi : lo]))}"/>`;
+    let st0 = null; const bands = [];
+    s.rec.forEach((q) => { const d = !q.q1 && !q.q2; if (d && st0 === null) st0 = q.t; if (!d && st0 !== null) { bands.push([st0, q.t]); st0 = null; } });
+    if (st0 !== null) bands.push([st0, T]);
+    bands.forEach(([a, b]) => { h += `<rect x="${X(a)}" y="14" width="${Math.max(1.5, X(b) - X(a))}" height="96" style="fill:var(--text3);opacity:.22"/>`; });
+    [['q1', 'Q1'], ['q2', 'Q2']].forEach(([k, lab], j) => {
+      const y0 = 18 + j * 48, hi = y0 + 4, lo = y0 + 36;
+      h += `<text x="${fr.x0 - 10}" y="${y0 + 26}" text-anchor="end" class="lbl" style="fill:var(--blue)">${lab}</text><line class="gr" x1="${fr.x0}" y1="${lo}" x2="${fr.x1}" y2="${lo}"/>`;
+      h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), q[k] ? hi : lo]))}"/>`;
     });
-    h += `<text x="${fr.x1 + 8}" y="${yTop + 60}" style="fill:var(--text3)">dead</text><text x="${fr.x1 + 8}" y="${yTop + 76}" style="fill:var(--text3)">time</text>`;
-    // phase shift arrow
-    const ya = yTop + 8 + 2 * 52 - 6;
-    h += `<path d="M${X(s.td)},${ya} H${X(s.td + s.phi)}" style="stroke:var(--text);stroke-width:1.2;marker-end:none"/><text x="${(X(s.td) + X(s.td + s.phi)) / 2}" y="${ya - 4}" text-anchor="middle" style="fill:var(--text)">θ</text>`;
-    // voltages
-    const vy = { y: 250, h: 100 }, vm = nice(Math.max(2 * s.VA, 2 * s.VB) * 1.1), YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
-    h += `<text x="${fr.x0}" y="${vy.y - 10}" class="t-title">node voltages to the − rail (V)</text>` + ticks(0, vm, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('');
-    h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vA + s.VA)]))}"/><polyline class="ln" style="stroke:var(--red)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vB + s.VB)]))}"/>`;
-    h += `<text x="${fr.x1 + 8}" y="${vy.y + 30}" style="fill:var(--blue)">v_A</text><text x="${fr.x1 + 8}" y="${vy.y + 48}" style="fill:var(--red)">v_B/n</text>`;
-    // primary drain-source voltages
-    const vd = { y: 390, h: 100 }, YD = lin(-0.08 * vm, vm, vd.y + vd.h, vd.y);
-    h += `<text x="${fr.x0}" y="${vd.y - 10}" class="t-title">primary drain–source voltages (V)</text>` + ticks(0, vm, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YD(v)}" x2="${fr.x1}" y2="${YD(v)}"/><text x="${fr.x0 - 8}" y="${YD(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    h += `<text x="${fr.x1 + 6}" y="60" style="fill:var(--text3);font-size:11px">dead</text><text x="${fr.x1 + 6}" y="74" style="fill:var(--text3);font-size:11px">time</text>`;
+    const vm = nice(Math.max(2 * s.VA, 2 * s.VB) * 1.1);
+    const vy = { y: 145, h: 90 }, YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
+    h += `<text x="${fr.x0}" y="${vy.y - 8}" class="t-title">node A, to the − rail (V)</text>` + ticks(0, vm, 2).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    h += `<polyline class="ln" style="stroke:var(--red);stroke-width:1.2;stroke-dasharray:4 3;opacity:.7" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vB + s.VB)]))}"/>`;
+    h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vA + s.VA)]))}"/>`;
+    h += `<text x="${fr.x1 + 6}" y="${vy.y + 22}" style="fill:var(--blue);font-size:11px">v_A</text><text x="${fr.x1 + 6}" y="${vy.y + 38}" style="fill:var(--red);font-size:11px">v_B/n</text>`;
+    const vd = { y: 270, h: 90 }, YD = lin(-0.08 * vm, vm, vd.y + vd.h, vd.y);
+    h += `<text x="${fr.x0}" y="${vd.y - 8}" class="t-title">drain–source voltages Q1, Q2 (V)</text>` + ticks(0, vm, 2).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YD(v)}" x2="${fr.x1}" y2="${YD(v)}"/><text x="${fr.x0 - 8}" y="${YD(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YD(s.VA - q.vA)]))}"/><polyline class="ln" style="stroke:var(--amber);stroke-dasharray:5 3" points="${poly(s.rec.map((q) => [X(q.t), YD(q.vA + s.VA)]))}"/>`;
-    h += `<text x="${fr.x1 + 8}" y="${vd.y + 30}" style="fill:var(--blue)">v_ds Q1</text><text x="${fr.x1 + 8}" y="${vd.y + 48}" style="fill:var(--amber)">v_ds Q2</text>`;
-    // current
-    const iy = { y: 530, h: 130 }, im = nice(Math.max(0.5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
-    h += `<text x="${fr.x0}" y="${iy.y - 10}" class="t-title">resonant current i (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    h += `<text x="${fr.x1 + 6}" y="${vd.y + 22}" style="fill:var(--blue);font-size:11px">v_ds Q1</text><text x="${fr.x1 + 6}" y="${vd.y + 38}" style="fill:var(--amber);font-size:11px">v_ds Q2</text>`;
+    const iy = { y: 395, h: 130 }, im = nice(Math.max(0.5, ...s.rec.map((q) => Math.abs(q.i))) * 1.1), YI = lin(-im, im, iy.y + iy.h, iy.y);
+    h += `<text x="${fr.x0}" y="${iy.y - 8}" class="t-title">primary (resonant) current i (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(s.rec.map((q) => [X(q.t), YI(q.i)]))}"/>`;
-    // ZVS markers at turn-on edges
-    const ed = [['q1', s.td], ['q2', T / 2 + s.td], ['q3', s.phi + s.td], ['q4', s.phi + T / 2 + s.td]];
-    ed.forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; te = te % T; h += `<circle cx="${X(te)}" cy="${YI(e.i)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
+    [['q1', s.td], ['q2', T / 2 + s.td]].forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; h += `<circle cx="${X(te % T)}" cy="${YI(e.i)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
     h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${iy.y + iy.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${iy.y + iy.h + 38}" text-anchor="middle">time (µs)</text>`;
-    if (band) h += `<rect x="${X(band[0])}" y="${yTop - 6}" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${iy.y + iy.h - yTop + 6}" style="fill:var(--blue);opacity:.13"/>`;
-    h += `<line x1="${X(st.t * T)}" y1="${yTop}" x2="${X(st.t * T)}" y2="${iy.y + iy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
+    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${iy.y + iy.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
+    h += `<line x1="${X(st.t * T)}" y1="10" x2="${X(st.t * T)}" y2="${iy.y + iy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figW').innerHTML = h;
   }
 
@@ -617,7 +613,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
   function zeroCross() {   // first − → + crossing of i in the first half (FHA: at ωt = φ)
     const r = sim.rec; for (let k = 1; k < r.length && r[k].t < sim.T / 2; k++) if (r[k - 1].i < 0 && r[k].i >= 0) return r[k].t; return null;
   }
-  function drawSec() {
+  function drawSec(band) {
     const s = sim, T = s.T, n = DS.n, fr = { x0: 52, x1: 572 }, X = lin(0, T, fr.x0, fr.x1);
     let h = '';
     // gates with secondary dead-time bands
@@ -655,6 +651,10 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     h += `<polyline class="ln" style="stroke:var(--amber);stroke-dasharray:5 3;stroke-width:1.5" points="${poly(s.rec.map((q) => [X(q.t), YV((s.VB - q.vB) * n)]))}"/>`;
     h += `<text x="${fr.x1 + 5}" y="${vy.y + 20}" style="fill:var(--green);font-size:11px">v_B</text><text x="${fr.x1 + 5}" y="${vy.y + 34}" style="fill:var(--green);font-size:11px">=v_ds Q4</text><text x="${fr.x1 + 5}" y="${vy.y + 54}" style="fill:var(--amber);font-size:11px">v_ds Q3</text>`;
     h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${vy.y + vy.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${vy.y + vy.h + 38}" text-anchor="middle">time (µs)</text>`;
+    [['q3', s.phi + s.td], ['q4', s.phi + T / 2 + s.td]].forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; h += `<circle cx="${X(te % T)}" cy="${YI(e.i / n)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
+    h += `<line x1="${X(s.td)}" y1="10" x2="${X(s.td)}" y2="${iy.y + iy.h}" style="stroke:var(--blue);stroke-dasharray:6 4;opacity:.7"/><text x="${X(s.td) + 3}" y="10" style="fill:var(--blue);font-size:11px">Q1↑</text>`;
+    h += `<path d="M${X(s.td)},122 H${X(s.td + s.phi)}" style="stroke:var(--text);stroke-width:1.2"/><text x="${(X(s.td) + X(s.td + s.phi)) / 2}" y="132" text-anchor="middle" style="font-size:11px;fill:var(--text)">θ</text>`;
+    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${vy.y + vy.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
     h += `<line x1="${X(st.t * T)}" y1="14" x2="${X(st.t * T)}" y2="${vy.y + vy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figSec').innerHTML = h;
   }
@@ -789,16 +789,17 @@ swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
       return `<article class="panel iv" id="iv${k}" data-k="${k}">
         <div class="iv-head"><span class="iv-tag">t${k} → t${k + 1}</span><h3>Interval ${k + 1}: ${iv.t}</h3><span class="iv-time">${us(g.a)} – ${us(g.b)}  (${ns(dt)})</span></div>
         <div class="imgs"><figure><svg class="snapS" viewBox="0 0 1040 430" role="img" aria-label="Circuit during interval ${k + 1}"></svg><figcaption>${iv.capS}</figcaption></figure>
-        <figure><svg class="snapW" viewBox="0 0 640 720" role="img" aria-label="Waveforms with interval ${k + 1} highlighted"></svg><figcaption>${iv.capW}</figcaption></figure></div>
+        <figure><svg class="snapW" viewBox="0 0 640 ${k <= 2 ? 580 : 590}" role="img" aria-label="Waveforms with interval ${k + 1} highlighted"></svg><figcaption>${iv.capW}</figcaption></figure></div>
         ${iv.body(c)}</article>`;
     });
     $('#ivs').innerHTML = cards.join('');
     IV.forEach((iv, k) => {
       const g = segs.find((q) => q.k === k), el = $('#iv' + k); if (!g || !el) return;
       st.t = g.m; const S = stateAt(g.m * T);
-      drawSch(S); drawW(S, [g.a, g.b]);
+      drawSch(S);
       el.querySelector('.snapS').innerHTML = $('#sch').innerHTML.replace(/ id="[^"]*"/g, '');
-      el.querySelector('.snapW').innerHTML = $('#figW').innerHTML.replace(/ id="[^"]*"/g, '');
+      if (k <= 2) drawW(S, [g.a, g.b]); else drawSec([g.a, g.b]);
+      el.querySelector('.snapW').innerHTML = (k <= 2 ? $('#figW') : $('#figSec')).innerHTML.replace(/ id="[^"]*"/g, '');
     });
     st.t = save;
   }
