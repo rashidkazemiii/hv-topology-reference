@@ -222,9 +222,7 @@ figure { margin: 0; }
       <div class="ctl-row">
         <div class="slider"><label for="th"><span>phase shift θ (Q1 → Q3)</span><output id="thOut">40°</output></label><input id="th" type="range" min="0" max="90" step="1" value="40"></div>
         <div class="slider"><label for="td"><span>dead time</span><output id="tdOut">200 ns</output></label><input id="td" type="range" min="50" max="800" step="10" value="200"></div>
-        <div class="slider"><label for="rl"><span>load resistance R</span><output id="rlOut">7.7 Ω</output></label><input id="rl" type="range" min="3" max="16" step="0.1" value="7.7"></div>
-        <div class="vo" id="voOut">V<sub>out</sub> = 48.0 V</div>
-        <button type="button" class="nav" id="reg48" style="width:auto;padding:0 12px;font-size:13px">θ for 48 V</button>
+        <div class="vo" id="voOut">V<sub>out</sub> = 48 V</div>
       </div>
     </div>
   </div>
@@ -259,11 +257,12 @@ figure { margin: 0; }
           <li><b>θ = 0:</b> sin θ = 0, so no power.</li>
           <li><b>θ grows:</b> power grows like sin θ.</li>
           <li><b>θ = 90°:</b> maximum power. Beyond 90° the power falls again, while the current keeps growing.</li>
-          <li><b>θ &lt; 0:</b> the power reverses (possible with a battery, not with a resistor).</li>
+          <li><b>V<sub>out</sub> stays 48 V:</b> the controller holds it there, so θ only decides the power. The load that takes this power is R = 48²/P, shown in the schematic.</li>
+          <li><b>θ &lt; 0:</b> the power would reverse (possible with a battery, not with a resistor).</li>
           <li><b>X is the second knob:</b> raising f<sub>s</sub> further above resonance makes X larger, so less power for the same θ.</li>
         </ul></div>
       </div>
-      <figure class="panel fig"><div class="scroll"><svg id="figPT" viewBox="0 0 520 320" role="img" aria-label="Power against phase shift"></svg></div><figcaption><b>P against θ</b> at the present V<sub>out</sub> and f<sub>s</sub>. Line: formula. Dot: your θ. Ring: the time-domain simulation. At small θ the simulation gives a bit more than the formula: the dead time and the higher harmonics also transfer some power, and the formula keeps only the fundamentals.</figcaption></figure>
+      <figure class="panel fig"><div class="scroll"><svg id="figPT" viewBox="0 0 520 320" role="img" aria-label="Power against phase shift"></svg></div><figcaption><b>P against θ</b> with V<sub>out</sub> = 48 V and f<sub>s</sub> = 100 kHz. Line: formula. Dot: your θ. Ring: the time-domain simulation. At small θ the simulation gives a bit more than the formula: the dead time and the higher harmonics also transfer some power, and the formula keeps only the fundamentals.</figcaption></figure>
     </div>
   </section>
 </main>
@@ -478,8 +477,8 @@ figure { margin: 0; }
     const vds = { 1: s.VA - r.vA, 2: r.vA + s.VA, 3: (s.VB - r.vB) * DS.n, 4: (r.vB + s.VB) * DS.n };
     [1, 2, 3, 4].forEach((n) => { $('#CV' + n).textContent = `v_ds ${vds[n].toFixed(1)} V`; $('#GT' + n).textContent = r['q' + n] ? 'gate ON' : 'gate off'; });
     $('#busLbl').textContent = `V_bus supplies ${(s.P / DS.Vbus).toFixed(2)} A average`;
-    $('#rLbl').textContent = `${st.R.toFixed(1)} Ω`; $('#cdcLbl').textContent = `≈${(st.VBat / 2).toFixed(0)} V DC`;
-    $('#batLbl').textContent = `R: V_out = ${st.VBat.toFixed(1)} V, I_out = ${(st.VBat / st.R).toFixed(2)} A`;
+    $('#rLbl').textContent = isFinite(st.R) ? `${st.R.toFixed(1)} Ω` : '∞'; $('#cdcLbl').textContent = `≈${(st.VBat / 2).toFixed(0)} V DC`;
+    $('#batLbl').textContent = `V_out = 48 V (regulated), I_out = ${(sim.P / 48).toFixed(2)} A`;
     $('#iLbl').textContent = flowing ? (i > 0 ? `i = ${i.toFixed(2)} A  →` : `←  i = ${i.toFixed(2)} A`) : 'i ≈ 0';
     $('#vaLbl').textContent = flowing ? `primary: ${pMode}` : 'no current: v_A and v_B/n are equal and in phase';
     $('#vbLbl').textContent = flowing ? `secondary: ${sMode}` : '→ no power reaches the load';
@@ -741,15 +740,10 @@ swing time:  ≈ ${c.est} ns      (simulated: ${ns(c.dur)})</div>
     st.t = save;
   }
   function renderAll() {
-    // V_out settles where the delivered power equals V_out²/R  (P ≈ V_out·I, so iterate V_out = R·P/V_out)
-    for (let k = 0; k < 10; k++) {
-      sim = simulate();
-      const Pn = Math.max(0, sim.P), Vo = st.VBat;
-      const VoNew = Math.max(0.5, Vo > 1 ? st.R * Pn / Vo : Math.sqrt(Pn * st.R));
-      if (Math.abs(VoNew - Vo) < 0.002 * Math.max(Vo, 5)) break;
-      st.VBat = VoNew;
-    }
-    $('#voOut').innerHTML = `V<sub>out</sub> = ${st.VBat.toFixed(1)} V · ${sim.P.toFixed(0)} W`;
+    st.VBat = 48;                                   // output regulated at 48 V
+    sim = simulate();
+    st.R = sim.P > 0.5 ? 48 * 48 / sim.P : Infinity; // equivalent load that takes this power
+    $('#voOut').innerHTML = `V<sub>out</sub> = 48 V · P = ${sim.P.toFixed(0)} W · R = ${isFinite(st.R) ? st.R.toFixed(1) + ' Ω' : '∞'}`;
     sim.imax = Math.max(...sim.rec.map((q) => Math.abs(q.i))); buildSegs();
     renderIntervals();
     renderCursor();
