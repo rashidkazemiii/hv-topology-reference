@@ -591,12 +591,12 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     });
     h += `<text x="${fr.x1 + 6}" y="60" style="fill:var(--text3);font-size:11px">dead</text><text x="${fr.x1 + 6}" y="74" style="fill:var(--text3);font-size:11px">time</text>`;
     const vm = nice(Math.max(2 * s.VA, 2 * s.VB) * 1.1);
-    const vy = { y: 290, h: 90 }, YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
+    const vy = { y: 420, h: 110 }, BOT = 530, YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
     h += `<text x="${fr.x0}" y="${vy.y - 8}" class="t-title">node A, to the − rail (V)</text>` + ticks(0, vm, 2).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--red);stroke-width:1.2;stroke-dasharray:4 3;opacity:.7" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vB + s.VB)]))}"/>`;
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YV(q.vA + s.VA)]))}"/>`;
     h += `<text x="${fr.x1 + 6}" y="${vy.y + 22}" style="fill:var(--blue);font-size:11px">v_A</text><text x="${fr.x1 + 6}" y="${vy.y + 38}" style="fill:var(--red);font-size:11px">v_B/n</text>`;
-    const vd = { y: 420, h: 110 }, YD = lin(-0.08 * vm, vm, vd.y + vd.h, vd.y);
+    const vd = { y: 290, h: 90 }, YD = lin(-0.08 * vm, vm, vd.y + vd.h, vd.y);
     h += `<text x="${fr.x0}" y="${vd.y - 8}" class="t-title">drain–source voltages Q1, Q2 (V)</text>` + ticks(0, vm, 2).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YD(v)}" x2="${fr.x1}" y2="${YD(v)}"/><text x="${fr.x0 - 8}" y="${YD(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--blue)" points="${poly(s.rec.map((q) => [X(q.t), YD(s.VA - q.vA)]))}"/><polyline class="ln" style="stroke:var(--amber);stroke-dasharray:5 3" points="${poly(s.rec.map((q) => [X(q.t), YD(q.vA + s.VA)]))}"/>`;
     h += `<text x="${fr.x1 + 6}" y="${vd.y + 22}" style="fill:var(--blue);font-size:11px">v_ds Q1</text><text x="${fr.x1 + 6}" y="${vd.y + 38}" style="fill:var(--amber);font-size:11px">v_ds Q2</text>`;
@@ -604,9 +604,9 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     h += `<text x="${fr.x0}" y="${iy.y - 8}" class="t-title">primary (resonant) current i (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--purple)" points="${poly(s.rec.map((q) => [X(q.t), YI(q.i)]))}"/>`;
     [['q1', s.td], ['q2', T / 2 + s.td]].forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; h += `<circle cx="${X(te % T)}" cy="${YI(e.i)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
-    h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${vd.y + vd.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${vd.y + vd.h + 38}" text-anchor="middle">time (µs)</text>`;
-    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${vd.y + vd.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
-    h += `<line x1="${X(st.t * T)}" y1="10" x2="${X(st.t * T)}" y2="${vd.y + vd.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
+    h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${BOT + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${BOT + 38}" text-anchor="middle">time (µs)</text>`;
+    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${BOT - 8}" style="fill:var(--blue);opacity:.13"/>`;
+    h += `<line x1="${X(st.t * T)}" y1="10" x2="${X(st.t * T)}" y2="${BOT}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figW').innerHTML = h;
   }
 
@@ -632,7 +632,7 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
     h += `<text x="${fr.x0}" y="${iy.y - 8}" class="t-title">secondary current i/n (A)</text>` + ticks(-im, im, 4).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YI(v)}" x2="${fr.x1}" y2="${YI(v)}"/><text x="${fr.x0 - 8}" y="${YI(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--green)" points="${poly(s.rec.map((q) => [X(q.t), YI(q.i / n)]))}"/>`;
     // zero crossings
-    for (let k = 1; k < s.rec.length; k++) if ((s.rec[k - 1].i < 0) !== (s.rec[k].i < 0)) { const x = X(s.rec[k].t); h += `<line x1="${x}" y1="14" x2="${x}" y2="390" style="stroke:var(--text2);stroke-dasharray:2 3"/><text x="${x + 3}" y="${iy.y + 12}" style="font-size:11px;fill:var(--text2)">i = 0</text>`; }
+    for (let k = 1; k < s.rec.length; k++) if ((s.rec[k - 1].i < 0) !== (s.rec[k].i < 0)) { const x = X(s.rec[k].t); h += `<line x1="${x}" y1="14" x2="${x}" y2="511" style="stroke:var(--text2);stroke-dasharray:2 3"/><text x="${x + 3}" y="${iy.y + 12}" style="font-size:11px;fill:var(--text2)">i = 0</text>`; }
     // which device conducts: active bridge vs diode bridge
     const col = { sync: 'var(--green)', back: 'var(--red)', coss: 'var(--purple)', diode: 'var(--amber)' };
     const act = (q) => { if (q.q3) return q.i > 0 ? ['Q3 SR', 'sync'] : ['Q3 back', 'back']; if (q.q4) return q.i < 0 ? ['Q4 SR', 'sync'] : ['Q4 back', 'back']; if (Math.abs(q.vB) < s.VB - 1e-6) return ['Coss', 'coss']; return [q.vB > 0 ? 'D3' : 'D4', 'diode']; };
@@ -643,20 +643,20 @@ secondary (Q3):  i_res  &gt; 0  when Q4 turns off</div>
       segs2.forEach((z, k) => { const b = k < segs2.length - 1 ? segs2[k + 1].a : T, w = Math.max(1.2, X(b) - X(z.a)); g += `<rect x="${X(z.a)}" y="${y}" width="${w}" height="26" style="fill:${col[z.c]}"><title>${z.t}</title></rect>`; if (w > 44) g += `<text x="${X(z.a) + w / 2}" y="${y + 17}" text-anchor="middle" style="fill:#fff;font-weight:600">${z.t}</text>`; });
       return g;
     };
-    h += bar(act, 290, 'active bridge (this converter): who conducts');
-    h += bar(dio, 350, 'a diode bridge would use');
+    h += bar(act, 425, 'active bridge (this converter): who conducts');
+    h += bar(dio, 485, 'a diode bridge would use');
     // node B and drain voltages
-    const vy = { y: 420, h: 110 }, VBr = 2 * s.VB * n, vm = nice(VBr * 1.15), YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
-    h += `<text x="${fr.x0}" y="${vy.y - 8}" class="t-title">node B and secondary drain voltages (V)</text>` + ticks(0, vm, 3).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    const vy = { y: 290, h: 90 }, BOT = 530, VBr = 2 * s.VB * n, vm = nice(VBr * 1.15), YV = lin(-0.08 * vm, vm, vy.y + vy.h, vy.y);
+    h += `<text x="${fr.x0}" y="${vy.y - 8}" class="t-title">drain–source voltages Q3, Q4 (V)</text>` + ticks(0, vm, 3).map((v) => `<line class="${v === 0 ? 'ax' : 'gr'}" x1="${fr.x0}" y1="${YV(v)}" x2="${fr.x1}" y2="${YV(v)}"/><text x="${fr.x0 - 8}" y="${YV(v) + 4}" text-anchor="end">${v}</text>`).join('');
     h += `<polyline class="ln" style="stroke:var(--green)" points="${poly(s.rec.map((q) => [X(q.t), YV((q.vB + s.VB) * n)]))}"/>`;
     h += `<polyline class="ln" style="stroke:var(--amber);stroke-dasharray:5 3;stroke-width:1.5" points="${poly(s.rec.map((q) => [X(q.t), YV((s.VB - q.vB) * n)]))}"/>`;
     h += `<text x="${fr.x1 + 5}" y="${vy.y + 20}" style="fill:var(--green);font-size:11px">v_B</text><text x="${fr.x1 + 5}" y="${vy.y + 34}" style="fill:var(--green);font-size:11px">=v_ds Q4</text><text x="${fr.x1 + 5}" y="${vy.y + 54}" style="fill:var(--amber);font-size:11px">v_ds Q3</text>`;
-    h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${vy.y + vy.h + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${vy.y + vy.h + 38}" text-anchor="middle">time (µs)</text>`;
+    h += [0, 0.25, 0.5, 0.75, 1].map((f) => `<text x="${X(f * T)}" y="${BOT + 20}" text-anchor="middle">${(f * T * 1e6).toFixed(1)}</text>`).join('') + `<text x="${(fr.x0 + fr.x1) / 2}" y="${BOT + 38}" text-anchor="middle">time (µs)</text>`;
     [['q3', s.phi + s.td], ['q4', s.phi + T / 2 + s.td]].forEach(([k, te]) => { const e = s.edge[k]; if (!e) return; const ok = e.v < 0.5; h += `<circle cx="${X(te % T)}" cy="${YI(e.i / n)}" r="5.5" fill="none" style="stroke:${ok ? 'var(--green)' : 'var(--red)'};stroke-width:2.2"><title>${k.toUpperCase()} turn-on: ${ok ? 'ZVS' : `hard, ${e.v.toFixed(1)} V`}</title></circle>`; });
     h += `<line x1="${X(s.td)}" y1="10" x2="${X(s.td)}" y2="${iy.y + iy.h}" style="stroke:var(--blue);stroke-dasharray:6 4;opacity:.7"/><text x="${X(s.td) + 3}" y="10" style="fill:var(--blue);font-size:11px">Q1↑</text>`;
     h += `<path d="M${X(s.td)},62 H${X(s.td + s.phi)}" style="stroke:var(--text);stroke-width:1.2"/><text x="${(X(s.td) + X(s.td + s.phi)) / 2}" y="60" text-anchor="middle" style="font-size:11px;fill:var(--text)">θ</text>`;
-    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${vy.y + vy.h - 8}" style="fill:var(--blue);opacity:.13"/>`;
-    h += `<line x1="${X(st.t * T)}" y1="14" x2="${X(st.t * T)}" y2="${vy.y + vy.h}" style="stroke:var(--text);stroke-width:1.5"/>`;
+    if (band) h += `<rect x="${X(band[0])}" y="8" width="${Math.max(3, X(band[1]) - X(band[0]))}" height="${BOT - 8}" style="fill:var(--blue);opacity:.13"/>`;
+    h += `<line x1="${X(st.t * T)}" y1="14" x2="${X(st.t * T)}" y2="${BOT}" style="stroke:var(--text);stroke-width:1.5"/>`;
     $('#figSec').innerHTML = h;
   }
   function renderPhase() {
