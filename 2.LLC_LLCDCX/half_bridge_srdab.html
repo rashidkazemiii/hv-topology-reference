@@ -140,9 +140,9 @@ figure { margin: 0; }
 .stick { position: sticky; top: 0; z-index: 30; background: var(--bg); padding-block: 8px; margin-block: -8px; display: grid; gap: 8px; box-shadow: 0 10px 14px -12px rgba(0,0,0,0.25); }
 .stickrow { display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
 .stickrow .schfig { padding: 6px; display: flex; justify-content: center; }
-#sch { height: min(31vh, 320px); width: 100%; max-width: 100%; }
-.stickrow .now { align-content: start; overflow: auto; max-height: min(31vh, 320px); }
-@media (max-width: 900px), (max-height: 640px) { .stick { position: static; box-shadow: none; } .stickrow { grid-template-columns: 1fr; } #sch { height: auto; } .stickrow .now { max-height: none; } }
+#sch { width: 100%; height: auto; }
+.stickrow .now { align-content: start; }
+@media (max-width: 900px) { .stickrow { grid-template-columns: 1fr; } }
 .stick .controls { box-shadow: 0 4px 14px rgba(0,0,0,0.08); padding-block: 8px; gap: 6px; }
 .duo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; }
 .duo2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
@@ -218,6 +218,7 @@ figure { margin: 0; }
         <span class="stepnav"><button type="button" class="nav" id="prev" aria-label="Previous step">◀</button><span id="stepLbl">step 1</span><button type="button" class="nav" id="next" aria-label="Next step">▶</button></span>
         <div class="slider"><label for="t"><span>time in the period</span><output id="tOut"></output></label><input id="t" type="range" min="0" max="1000" step="1" value="10"></div>
       </div>
+
       <div class="ctl-row">
         <div class="slider"><label for="th"><span>phase shift θ (Q1 → Q3)</span><output id="thOut">40°</output></label><input id="th" type="range" min="0" max="90" step="1" value="40"></div>
         <div class="slider"><label for="td"><span>dead time</span><output id="tdOut">200 ns</output></label><input id="td" type="range" min="50" max="800" step="10" value="200"></div>
@@ -226,11 +227,12 @@ figure { margin: 0; }
         <button type="button" class="nav" id="reg48" style="width:auto;padding:0 12px;font-size:13px">θ for 48 V</button>
       </div>
     </div>
-    <div class="stickrow">
+  </div>
+
+  <div class="stickrow">
       <figure class="panel schfig"><svg id="sch" viewBox="0 0 1040 430" role="img" aria-label="Primary half bridge Q1 Q2 with bus capacitor, Cr and Lr, transformer, DC-blocking capacitor, secondary half bridge Q3 Q4, output capacitor and load resistor"></svg></figure>
       <div class="now" id="now"></div>
     </div>
-  </div>
 
   <section>
     <h2><span class="n">1</span>Waveforms: primary on the left, secondary on the right</h2>
