@@ -71,6 +71,7 @@ h2 { margin: 0; font-size: 18px; font-weight: 600; text-wrap: balance; }
 h3 { margin: 0; font-size: 16px; font-weight: 600; text-wrap: balance; }
 p { margin: 0; }
 .lede { color: var(--text2); }
+a { color: var(--pri); text-underline-offset: 2px; }
 .facts { display: flex; flex-wrap: wrap; gap: 8px; }
 .formula { font-family: var(--mono); font-size: 13.5px; background: var(--panel2); border-radius: 6px; padding: 8px 12px; max-width: 100%; overflow-x: auto; }
 .formula small { color: var(--text3); font-size: 12px; }
@@ -182,6 +183,8 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
 .w-i2 { stroke: var(--sec); stroke-width: 2.2; }
 .w-band { fill: var(--band); }
 .w-dcm { fill: var(--dcm); }
+.w-dead { fill: var(--grid); }
+.w-dtl { font-size: 14px; fill: var(--text3); }
 .w-cursor { stroke: var(--cursor); stroke-width: 1.4; }
 .w-dot { fill: var(--cursor); }
 .w-row { font-size: 19px; fill: var(--text); font-weight: 500; }
@@ -307,7 +310,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
         <p>At v<sub>in</sub> = 0 the reverse slope is V<sub>C</sub>(2L2 − M)/det, which is negative only if M &gt; 2L2. Then the bridge diodes keep conducting through the zero crossing, and the usual PFC dead zone around the zero crossing disappears.</p>
       </div>
     </div>
-    <p>Model settings: V<sub>in</sub> = 230 V<sub>rms</sub> (V<sub>m</sub> = 325 V), f<sub>L</sub> = 50 Hz, f<sub>s</sub> = 100 kHz, P = 70 W as in the paper's Figs. 4–6, and coupling k = 0.9 (the paper leaves k free). L1, L2 and M follow from R<sub>in</sub> = V<sub>m</sub>²/2P and the chosen nk. i<sub>2</sub> is shifted so its local average is zero, which is the paper's charge-balance condition for Cb1 and Cb2. The waveforms neglect the dead time, as the paper does. The schematic shows it as a short body-diode interval at each switch transition.</p>
+    <p>Model settings: V<sub>in</sub> = 230 V<sub>rms</sub> (V<sub>m</sub> = 325 V), f<sub>L</sub> = 50 Hz, f<sub>s</sub> = 100 kHz, P = 70 W as in the paper's Figs. 4–6, and coupling k = 0.9 (the paper leaves k free). L1, L2 and M follow from R<sub>in</sub> = V<sub>m</sub>²/2P and the chosen nk. i<sub>2</sub> is shifted so its local average is zero, which is the paper's charge-balance condition for Cb1 and Cb2. The gate signals include the fixed 2% dead time after t0 and after t2. V<sub>2</sub> still steps exactly at t0 and t2, as the paper assumes: i<sub>2</sub> is large at both edges, so it swings the switch node through C<sub>oss</sub> in a few tens of nanoseconds, and the body diode of the incoming switch carries i<sub>2</sub> for the rest of the dead time (shown in the schematic). <a href="https://claude.ai/artifact/5CS5egFrPe3CbHdiRhMZUT">UPF Rectifier Transitions</a> extends this model: it gives the switch-node swing, the diode commutation through C<sub>j</sub> and the ringing in the DCM gap intervals of their own.</p>
   </section>
 </main>
 
@@ -395,7 +398,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
   };
   const $ = (s) => document.querySelector(s);
   let D, C, MS;
-  const TD = 0.03;   // dead time shown in the schematic, fraction of T
+  const TD = 0.02;   // fixed dead time after each turn-off (t0 and t2), fraction of T
 
   function evalAt(t) {
     const iv = C.iv;
@@ -547,8 +550,12 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     const i2p = pl((v) => y2(v.i2s), (v) => y2(v.i2s + v.s2 * (v.b - v.a)));
     const vxp = pl((v) => vy(v.Vx), (v) => vy(v.Vx));
     const v2p = pl((v) => vy(v.V2), (v) => vy(v.V2));
-    const g1 = `M${tx(0)},${R.g1[0]} H${tx(h)} V${R.g1[1]} H${tx(T)}`;
-    const g2 = `M${tx(0)},${R.g2[1]} H${tx(h)} V${R.g2[0]} H${tx(T)}`;
+    // each gate turns on a fixed dead time after the other turns off; V2 still steps at t0 and t2
+    const td = TD * T;
+    const g1 = `M${tx(0)},${R.g1[1]} H${tx(td)} V${R.g1[0]} H${tx(h)} V${R.g1[1]} H${tx(T)}`;
+    const g2 = `M${tx(0)},${R.g2[0]} V${R.g2[1]} H${tx(h + td)} V${R.g2[0]} H${tx(T)}`;
+    const dead = [0, h].map((a) => `<rect class="w-dead" x="${tx(a)}" y="${R.g1[0] - 8}" width="${tx(a + td) - tx(a)}" height="${R.g2[1] - R.g1[0] + 16}"/>`).join('') +
+      `<text class="w-dtl" x="${tx(td) + 4}" y="${R.g1[0] - 12}">dead time 2%</text><text class="w-dtl" x="${tx(h + td) + 4}" y="${R.g1[0] - 12}">dead time 2%</text>`;
     const evs = [...iv.map((v) => v.a), T];
     let lastX = -1e9;
     const labels = evs.map((t, k) => {
@@ -563,6 +570,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
     const lvl = [2, 1, -1, -2].map((m) => `<line class="w-axis" x1="${WX0}" y1="${vy(m * D.Vc)}" x2="${WX1}" y2="${vy(m * D.Vc)}"/>`).join('');
     $('#wave').innerHTML = `
       <rect id="wBand" class="w-band" x="0" y="22" width="0" height="${R.i2 + R.iAmp - 16}"/>
+      ${dead}
       ${lvl}${zero(R.v)}${zero(R.i1)}${zero(R.i2)}
       <text class="w-lvl" x="${WX1}" y="${vy(2 * D.Vc) - 4}" text-anchor="end">±2V_C</text>
       <text class="w-lvl" x="${WX1}" y="${vy(D.Vc) - 4}" text-anchor="end">±V_C</text>
@@ -677,7 +685,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       const inc = v.a < 1e-12 ? 'S1' : 'S2', out = inc === 'S1' ? 'S2' : 'S1';
       const i2 = v.i2s, zvs = inc === 'S1' ? i2 > 0 : i2 < 0;
       parts.push(zvs
-        ? `${dn([out], 'g')} turns off with i<sub>2</sub> = ${i2.toFixed(2)} A. That current swings the switch node and flows in the body diode of ${dn([inc], 'g')}, so ${dn([inc], 'g')} turns on at zero voltage (ZVS). No control is needed: i<sub>2</sub> has zero average, so it is always positive at one edge and negative at the other.`
+        ? `${dn([out], 'g')} turns off with i<sub>2</sub> = ${i2.toFixed(2)} A. That current swings the switch node in a few tens of nanoseconds, which is why V<sub>2</sub> is drawn stepping right here, and then flows in the body diode of ${dn([inc], 'g')} for the rest of the 2% dead time. ${dn([inc], 'g')} then turns on at zero voltage (ZVS). No control is needed: i<sub>2</sub> has zero average, so it is always positive at one edge and negative at the other.`
         : `${dn([out], 'g')} turns off, but i<sub>2</sub> = ${i2.toFixed(2)} A has the wrong sign, so ${dn([inc], 'g')} turns on hard.`);
     }
     if (Math.abs(v.i1s) < 1e-9 && v.j !== 0) parts.push(`i<sub>1</sub> crossed zero, so the bridge diodes commutate at zero current (no reverse recovery).`);
@@ -703,7 +711,7 @@ svg .lbl-big { font-size: 15px; fill: var(--text); font-weight: 500; }
       return `<tr data-k="${k}" tabindex="0">
         <td class="mono">t${k} → t${k + 1}<br><span style="color:var(--text3)">${Dd.paperJ}</span></td>
         <td>${Dd.diodes.length ? dn(Dd.diodes, 'd') : 'all off'}</td>
-        <td>${dn([Dd.sw], 's')}</td>
+        <td>${dn([Dd.sw], 's')}${Math.abs(v.a) < 1e-12 || Math.abs(v.a - D.T / 2) < 1e-12 ? ' <span style="color:var(--text3)">(its body diode during the first 2%: dead time)</span>' : ''}</td>
         <td class="mono">${Dd.vx} / ${v.V2 > 0 ? '+' : '−'}V<sub>C</sub></td>
         <td>${Dd.head}</td></tr>`;
     }).join('');
